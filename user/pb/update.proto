@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Update {
+
+    rpc Username (UpdateRequest) returns (gs.commons.dto.Status);
+
+    rpc RealName (UpdateRequest) returns (gs.commons.dto.Status);
+
+    rpc Phone (UpdateRequest) returns (gs.commons.dto.Status);
+
+    rpc Email (UpdateRequest) returns (gs.commons.dto.Status);
+
+    rpc UserIcon (UpdateRequest) returns (gs.commons.dto.Status);
+
+    rpc Password (UpdatePasswordRequest) returns (gs.commons.dto.Status);
+
+}
+
+message UpdateRequest {
+    string content = 1;
+}
+
+message UpdatePasswordRequest {
+    string original = 1;
+    string new = 2;
+}

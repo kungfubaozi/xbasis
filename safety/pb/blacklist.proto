@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package gs.service.safety;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Blacklist {
+
+    rpc AddBlacklist (AddRequest) returns (gs.commons.dto.Status);
+
+    rpc RemoveBlacklist (RemoveBlacklistRequest) returns (gs.commons.dto.Status);
+
+}
+
+message RemoveBlacklistRequest {
+    string id = 1;
+}
+
+message AddRequest {
+    int64 type = 1;
+    string content = 2;
+}

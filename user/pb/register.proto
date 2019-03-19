@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Register {
+
+    rpc New (NewRequest) returns (gs.commons.dto.Status);
+
+}
+
+message NewRequest {
+    string username = 1;
+    string phone = 2;
+    string clientId = 3;
+    string password = 4;
+}

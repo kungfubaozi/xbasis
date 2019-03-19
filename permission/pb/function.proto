@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package gs.service.permission;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+//功能
+service Function {
+
+    rpc add (FunctionRequest) returns (gs.commons.dto.Status);
+
+    rpc rename (FunctionRequest) returns (gs.commons.dto.Status);
+
+    rpc move (FunctionRequest) returns (gs.commons.dto.Status);
+
+    rpc addGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+
+    rpc moveGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+
+    rpc renameGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+
+}
+
+message FunctionRequest {
+    string appId = 1;
+    string name = 2;
+    string api = 3;
+    int64 type = 4;
+    string bindGroupId = 5;
+    repeated int64 authTypes = 6;
+}
+
+message FunctionGroupRequest {
+    string appId = 1;
+    string name = 2;
+    string bindGroupId = 3;
+    int64 type = 4;
+}

@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package gs.service.application;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+//import "konekko.me/gosion/application/pb/settings.proto";
+
+service Application {
+
+    rpc Create (CreateRequest) returns (gs.commons.dto.Status);
+
+    rpc Remove (RemoveRequest) returns (gs.commons.dto.Status);
+
+    rpc ChangeName (ChangeNameRequest) returns (gs.commons.dto.Status);
+
+    rpc FindByAppId (FindRequest) returns (SimpleApplicationResponse);
+
+    rpc FindByClientId (FindRequest) returns (SimpleApplicationResponse);
+
+    rpc List (FindRequest) returns (ListResponse);
+
+    rpc Status (FindRequest) returns (StatusResponse);
+}
+
+message StatusResponse {
+    gs.commons.dto.State state = 1;
+    string appId = 2;
+    int64 openMode = 3;
+}
+
+message FindRequest {
+    string content = 1;
+}
+
+message ListResponse {
+    gs.commons.dto.State state = 1;
+    repeated AppInfo info = 2;
+}
+
+message SimpleApplicationResponse {
+    gs.commons.dto.State state = 1;
+    AppInfo info = 2;
+}
+
+message CreateRequest {
+    string name = 1;
+    string desc = 2;
+}
+
+message RemoveRequest {
+    string appId = 1;
+}
+
+message ChangeNameRequest {
+    string appId = 2;
+    string name = 3;
+}
+
+message AppInfo {
+    string name = 1;
+    string desc = 2;
+    string appId = 3;
+    int64 enabled = 4;
+    int64 createAt = 5;
+    repeated AppClientInfo clients = 6;
+    gs.commons.dto.AppSettings settings = 7;
+    string createUserId = 8;
+}
+
+message AppClientInfo {
+    string clientId = 1;
+    int64 enabled = 2;
+    int64 platform = 3;
+}

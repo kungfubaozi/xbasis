@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package gs.service.permission;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+//验证
+service Verification {
+
+    //是否有权限
+    rpc test (HasPermissionRequest) returns (gs.commons.dto.Status);
+
+}
+
+message HasPermissionRequest {
+
+}

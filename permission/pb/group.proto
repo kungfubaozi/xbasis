@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package gs.service.permission;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+//组结构
+service GroupStructure {
+
+    rpc linkTo (SimpleGroup) returns (gs.commons.dto.Status);
+
+    rpc unlink (SimpleGroup) returns (gs.commons.dto.Status);
+
+    rpc add (SimpleGroup) returns (gs.commons.dto.Status);
+
+    rpc remove (SimpleGroup) returns (gs.commons.dto.Status);
+
+    rpc rename (SimpleGroup) returns (gs.commons.dto.Status);
+
+    rpc addUserToGroup (SimpleUserNode) returns (gs.commons.dto.Status);
+
+    rpc moveUserToGroup (SimpleUserNode) returns (gs.commons.dto.Status);
+
+}
+
+message SimpleGroup {
+    string appId = 1;
+    string name = 2;
+    string id = 3;
+    string bindGroupId = 4;
+}
+
+message SimpleUserNode {
+    string userId = 1;
+}

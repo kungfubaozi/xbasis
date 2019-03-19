@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Login {
+
+    rpc WithPhone (EntryRequest) returns (gs.commons.dto.Status);
+
+    rpc WithEmail (EntryRequest) returns (gs.commons.dto.Status);
+
+    rpc WithPassword (EntryRequest) returns (gs.commons.dto.Status);
+
+    //use phone confirm
+    rpc WithQRCode (EntryRequest) returns (EntryWithQRCodeResponse);
+
+}
+
+message EntryRequest {
+    string content = 1;
+}
+
+message EntryWithQRCodeRequest {
+    string clientId = 1;
+}
+
+message EntryWithQRCodeResponse {
+    gs.commons.dto.State state = 1;
+    string code = 2;
+}

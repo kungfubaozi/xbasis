@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package gs.service.authentication;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Auth {
+
+    //response authorize data save to context
+    rpc Verify (VerifyRequest) returns (gs.commons.dto.Status);
+
+}
+
+message VerifyRequest {
+    string token = 1;
+    string clientId = 2;
+}
+

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Invite {
+
+    rpc User (InviteRequest) returns (gs.commons.dto.Status);
+
+}
+
+message InviteRequest {
+    string phone = 1;
+    string email = 2;
+    string username = 3;
+    string realName = 4;
+    string bindGroupId = 5;
+    repeated int64 roles = 6;
+}

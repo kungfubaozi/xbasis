@@ -1,0 +1,5 @@
+package safetysvc
+
+func StartService() {
+
+}

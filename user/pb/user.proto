@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service User {
+
+    rpc FindUserInfoById (FindRequest) returns (SimpleUserInfo);
+
+    rpc FindUserIdByPhone (FindRequest) returns (UserIdResponse);
+
+    rpc FindUserIdByEmail (FindRequest) returns (UserIdResponse);
+
+    rpc FindUserIdByAccount (FindRequest) returns (UserIdResponse);
+}
+
+message SimpleUserInfo {
+    gs.commons.dto.State state = 1;
+    string userId = 2;
+    string email = 3;
+    string phone = 4;
+}
+
+message UserIdResponse {
+    string userId = 1;
+    gs.commons.dto.State state = 2;
+}
+
+message FindRequest {
+    string userId = 1;
+}
