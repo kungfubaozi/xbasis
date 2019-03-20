@@ -19,6 +19,7 @@ service Function {
 
     rpc renameGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
 
+
 }
 
 message FunctionRequest {

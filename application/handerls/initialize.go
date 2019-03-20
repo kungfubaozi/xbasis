@@ -24,6 +24,7 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 				Name: config.AppName,
 				Desc: config.Desc,
 				Id:   id.Generate().String(),
+				Main: 101,
 				Settings: &application_repositories.AppSetting{
 					Enabled:  gs_commons_constants.Enabled,
 					OpenMode: gs_commons_constants.OpenModeOfSelfOrganization,

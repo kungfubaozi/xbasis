@@ -26,8 +26,14 @@ func StartService() {
 	go func() {
 
 		//watch config change to init def data
-		gs_commons_config.ListenInitializeConfig(gs_commons_constants.UserService, user_handlers.Initialize())
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, user_handlers.Initialize())
 
+	}()
+
+	go func() {
+		gs_commons_config.WatchGosionConfig(func(config *gs_commons_config.GosionConfiguration) {
+
+		})
 	}()
 
 	if err := s.Run(); err != nil {

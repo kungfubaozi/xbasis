@@ -8,6 +8,7 @@ It is generated from these files:
 	safety/pb/blacklist.proto
 
 It has these top-level messages:
+	CheckRequest
 	RemoveBlacklistRequest
 	AddRequest
 */
@@ -46,6 +47,7 @@ var _ server.Option
 type BlacklistService interface {
 	AddBlacklist(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type blacklistService struct {
@@ -86,17 +88,29 @@ func (c *blacklistService) RemoveBlacklist(ctx context.Context, in *RemoveBlackl
 	return out, nil
 }
 
+func (c *blacklistService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Blacklist.Check", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Blacklist service
 
 type BlacklistHandler interface {
 	AddBlacklist(context.Context, *AddRequest, *gs_commons_dto.Status) error
 	RemoveBlacklist(context.Context, *RemoveBlacklistRequest, *gs_commons_dto.Status) error
+	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterBlacklistHandler(s server.Server, hdlr BlacklistHandler, opts ...server.HandlerOption) error {
 	type blacklist interface {
 		AddBlacklist(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error
 		RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, out *gs_commons_dto.Status) error
+		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
 	}
 	type Blacklist struct {
 		blacklist
@@ -115,4 +129,8 @@ func (h *blacklistHandler) AddBlacklist(ctx context.Context, in *AddRequest, out
 
 func (h *blacklistHandler) RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, out *gs_commons_dto.Status) error {
 	return h.BlacklistHandler.RemoveBlacklist(ctx, in, out)
+}
+
+func (h *blacklistHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
+	return h.BlacklistHandler.Check(ctx, in, out)
 }

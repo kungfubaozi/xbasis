@@ -13,5 +13,13 @@ service Verification {
 }
 
 message HasPermissionRequest {
-
+    string stat = 1;
+    string clientId = 2;
+    string token = 3;
+    string userAgent = 4;
+    string userDevice = 5;
+    string ip = 6;
+    string api = 7;
+    string service = 8;
 }
+

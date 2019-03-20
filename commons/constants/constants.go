@@ -1,14 +1,15 @@
 package gs_commons_constants
 
 const (
-	PermissionService  = "gs.svc.permission"
-	MessageService     = "gs.svc.message"
-	ConnectionService  = "gs.svc.connection"
-	UserService        = "gs.svc.service"
-	ApplicationService = "gs.svc.application"
-	SafetyService      = "gs.svc.safety"
-	AuthWrapperService = "inside.gs.svc.auth.wrapper"
-	GoMicroApi         = "go.micro.api"
+	PermissionService     = "gs.svc.permission"
+	MessageService        = "gs.svc.message"
+	ConnectionService     = "gs.svc.connection"
+	UserService           = "gs.svc.service"
+	ApplicationService    = "gs.svc.application"
+	SafetyService         = "gs.svc.safety"
+	AuthenticationService = "gs.svc.authentication"
+	AuthWrapperService    = "inside.gs.svc.auth.wrapper"
+	GoMicroApi            = "go.micro.api"
 )
 
 const (
@@ -63,6 +64,11 @@ const (
 const (
 	UserGroupTypeOfRoot   = 7 << 5
 	UserGroupTypeOfNormal = 7 << 6
+)
+
+const (
+	BlacklistOfIP         = 5 << 4
+	BlacklistOfUserDevice = 5 << 6
 )
 
 const (

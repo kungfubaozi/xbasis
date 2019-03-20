@@ -4,13 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/samuel/go-zookeeper/zk"
-	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/permission/pb"
 	"reflect"
-	"time"
+	"sync"
 )
 
 type Message struct {
@@ -35,42 +32,70 @@ func main() {
 	//}
 	//
 	//fmt.Println("value is ", string(pair.Value))
+	//
+	//c, _, err := zk.Connect([]string{"192.168.2.57:2181"}, time.Second) //*10)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//acl := zk.WorldACL(zk.PermAll)
+	//_, err = c.Create("/gosion.test.3", nil, int32(0), acl)
+	//if err != nil {
+	//	fmt.Printf("create: %+v\n", err)
+	//}
+	//
+	//for {
+	//	_, _, ch, err := c.GetW("/gosion.test.3")
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	select {
+	//	case e := <-ch:
+	//		if e.Type == zk.EventNodeDataChanged {
+	//			v, s, err := c.Get("/gosion.test.3")
+	//			if err != nil {
+	//				fmt.Println("err", err)
+	//			} else {
+	//				var config gs_commons_config.GosionInitializeConfig
+	//				err = msgpack.Unmarshal(v, &config)
+	//				if err == nil {
+	//					fmt.Println(config.UserId)
+	//					return
+	//				}
+	//				fmt.Println("version", s.Version)
+	//			}
+	//
+	//		}
+	//	}
+	//}
 
-	c, _, err := zk.Connect([]string{"192.168.2.57:2181"}, time.Second) //*10)
-	if err != nil {
-		panic(err)
+	s := &UserSecretKey{}
+	//s.SecretKey = make(chan string)
+	t := test(s)
+	s.SecretKey = "324324"
+	t()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		s.SecretKey = "2343324"
+		wg.Done()
+	}()
+	wg.Wait()
+
+	//fmt.Println(s.SecretKey)
+
+	t()
+}
+
+type TestController func()
+
+func test(config *UserSecretKey) TestController {
+	return func() {
+		fmt.Println(config.SecretKey)
 	}
-	acl := zk.WorldACL(zk.PermAll)
-	_, err = c.Create("/gosion.test.3", nil, int32(0), acl)
-	if err != nil {
-		fmt.Printf("create: %+v\n", err)
-	}
+}
 
-	for {
-		_, _, ch, err := c.GetW("/gosion.test.3")
-		if err != nil {
-			panic(err)
-		}
-		select {
-		case e := <-ch:
-			if e.Type == zk.EventNodeDataChanged {
-				v, s, err := c.Get("/gosion.test.3")
-				if err != nil {
-					fmt.Println("err", err)
-				} else {
-					var config gs_commons_config.GosionInitializeConfig
-					err = msgpack.Unmarshal(v, &config)
-					if err == nil {
-						fmt.Println(config.UserId)
-						return
-					}
-					fmt.Println("version", s.Version)
-				}
-
-			}
-		}
-	}
-
+type UserSecretKey struct {
+	SecretKey string
 }
 
 func Add(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {

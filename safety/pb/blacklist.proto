@@ -10,6 +10,12 @@ service Blacklist {
 
     rpc RemoveBlacklist (RemoveBlacklistRequest) returns (gs.commons.dto.Status);
 
+    rpc Check(CheckRequest) returns (gs.commons.dto.Status);
+}
+
+message CheckRequest {
+    int64 type = 1;
+    string content = 2;
 }
 
 message RemoveBlacklistRequest {

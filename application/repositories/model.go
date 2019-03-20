@@ -8,6 +8,7 @@ type AppInfo struct {
 	CreateAt     int64        `bson:"create_at"`
 	Settings     *AppSetting  `bson:"settings"`
 	Clients      []*AppClient `bson:"clients"`
+	Main         int64        `bson:"main"` //main application, provider sso, permission, user and so more
 }
 
 type AppSetting struct {
