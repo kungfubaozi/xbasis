@@ -73,7 +73,7 @@ func cbcDncrypt(encryptData, key []byte) ([]byte, error) {
 	return encryptData, nil
 }
 
-func encrypt(rawData, key []byte) (string, error) {
+func AESEncrypt(rawData, key []byte) (string, error) {
 	data, err := cbcEncrypt(rawData, key)
 	if err != nil {
 		return "", err
@@ -81,7 +81,7 @@ func encrypt(rawData, key []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-func decrypt(rawData string, key []byte) (string, error) {
+func AESDecrypt(rawData string, key []byte) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(rawData)
 	if err != nil {
 		return "", err

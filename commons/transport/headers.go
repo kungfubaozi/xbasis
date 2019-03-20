@@ -9,6 +9,13 @@ import (
 	"zskparker.com/foundation/pkg/constants"
 )
 
+type ApiRequestHeaders struct {
+	UserId   string
+	AppId    string
+	ClientId string
+	IP       string
+}
+
 func GRPCToContext() grpc.ServerRequestFunc {
 	return func(ctx context.Context, mds metadata.MD) context.Context {
 		header, ok := mds["authorization"]

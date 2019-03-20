@@ -29,11 +29,11 @@ type hiService struct {
 }
 
 func (svc *hiService) SayHello(ctx context.Context, request *gs_service_permission.Request, out *gs_service_permission.Response) error {
-	fmt.Println("456")
+	fmt.Println("456wer")
 
 	md, ok := metadata.FromContext(ctx)
 	if ok {
-		fmt.Println("value is ", md[":path"])
+		fmt.Println("value is ", md)
 	}
 
 	out.Msg = "asdfasdf"
@@ -41,37 +41,44 @@ func (svc *hiService) SayHello(ctx context.Context, request *gs_service_permissi
 }
 
 func (svc *sayService) Hello(ctx context.Context, request *gs_service_permission.Request, out *gs_service_permission.Response) error {
-	fmt.Println("456")
+	fmt.Println("456werwer")
 
 	md, ok := metadata.FromContext(ctx)
 	if ok {
 		fmt.Println("value is ", md)
 	}
 
-	svc.hiService.SayHello(context.Background(), &gs_service_permission.Request{})
+	//svc.hiService.SayHello(context.Background(), &gs_service_permission.Request{})
 
 	out.Msg = "ikasdfasdf"
 	return nil
 }
 
 func main() {
+	errc := make(chan error, 2)
 
-	s := microservice.NewService(gs_commons_constants.PermissionService)
+	s1 := microservice.NewService(gs_commons_constants.PermissionService)
+	//s2 := microservice.NewService(gs_commons_constants.SafetyService)
 
-	s.Init()
+	go func() {
+		s := mircogrpc.NewService(micro.Registry(consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
+			registry.Secure(false))))
+		gs_service_permission.RegisterSayHandler(s1.Server(), &sayService{
+			gs_service_permission.NewHiService(gs_commons_constants.PermissionService, s.Client()),
+		})
+		gs_service_permission.RegisterHiHandler(s1.Server(), &hiService{})
 
-	s1 := mircogrpc.NewService(micro.Registry(consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
-		registry.Secure(false))),
-		micro.Name(gs_commons_constants.PermissionService))
+		errc <- s1.Run()
 
-	s1.Init()
+	}()
 
-	gs_service_permission.RegisterSayHandler(s.Server(), &sayService{
-		gs_service_permission.NewHiService(gs_commons_constants.PermissionService, s1.Client()),
-	})
+	//go func() {
+	//
+	//	gs_service_permission.RegisterHiHandler(s2.Server(), &hiService{})
+	//
+	//	errc <- s2.Run()
+	//}()
 
-	gs_service_permission.RegisterHiHandler(s.Server(), &hiService{})
-
-	s.Run()
+	fmt.Println(<-errc)
 
 }

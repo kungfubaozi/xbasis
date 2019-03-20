@@ -29,6 +29,9 @@ const (
 
 	//uncheck
 	AuthTypeOfNone = 11 << 11
+
+	//password
+	AuthTypeOfPassword = 11 << 12
 )
 
 const (

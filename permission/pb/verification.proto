@@ -8,18 +8,19 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 service Verification {
 
     //是否有权限
-    rpc test (HasPermissionRequest) returns (gs.commons.dto.Status);
+    rpc test (HasPermissionRequest) returns (HasPermissionResponse);
 
 }
 
 message HasPermissionRequest {
-    string stat = 1;
-    string clientId = 2;
-    string token = 3;
-    string userAgent = 4;
-    string userDevice = 5;
-    string ip = 6;
-    string api = 7;
-    string service = 8;
+
 }
 
+message HasPermissionResponse {
+    gs.commons.dto.State state = 1;
+    string user = 2;
+    string appId = 3;
+    string clientId = 4;
+    string traceId = 5;
+    string ip = 6;
+}

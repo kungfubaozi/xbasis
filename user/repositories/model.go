@@ -6,6 +6,7 @@ type UserInfo struct {
 	CardId     string `bson:"card_id"`
 	Account    string `bson:"account"`
 	Password   string `bson:"password"`
+	PIN        int64  `bson:"pin"` //number
 	ModifyAt   int64  `bson:"modify_at"`
 	RegisterAt string `bson:"register_at"` //register at clientId
 }

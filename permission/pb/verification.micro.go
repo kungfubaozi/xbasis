@@ -9,13 +9,14 @@ It is generated from these files:
 
 It has these top-level messages:
 	HasPermissionRequest
+	HasPermissionResponse
 */
 package gs_service_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import _ "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +28,6 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,7 +44,7 @@ var _ server.Option
 
 type VerificationService interface {
 	// 是否有权限
-	Test(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Test(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*HasPermissionResponse, error)
 }
 
 type verificationService struct {
@@ -65,9 +65,9 @@ func NewVerificationService(name string, c client.Client) VerificationService {
 	}
 }
 
-func (c *verificationService) Test(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *verificationService) Test(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*HasPermissionResponse, error) {
 	req := c.c.NewRequest(c.name, "Verification.test", in)
-	out := new(gs_commons_dto.Status)
+	out := new(HasPermissionResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,12 +79,12 @@ func (c *verificationService) Test(ctx context.Context, in *HasPermissionRequest
 
 type VerificationHandler interface {
 	// 是否有权限
-	Test(context.Context, *HasPermissionRequest, *gs_commons_dto.Status) error
+	Test(context.Context, *HasPermissionRequest, *HasPermissionResponse) error
 }
 
 func RegisterVerificationHandler(s server.Server, hdlr VerificationHandler, opts ...server.HandlerOption) error {
 	type verification interface {
-		Test(ctx context.Context, in *HasPermissionRequest, out *gs_commons_dto.Status) error
+		Test(ctx context.Context, in *HasPermissionRequest, out *HasPermissionResponse) error
 	}
 	type Verification struct {
 		verification
@@ -97,6 +97,6 @@ type verificationHandler struct {
 	VerificationHandler
 }
 
-func (h *verificationHandler) Test(ctx context.Context, in *HasPermissionRequest, out *gs_commons_dto.Status) error {
+func (h *verificationHandler) Test(ctx context.Context, in *HasPermissionRequest, out *HasPermissionResponse) error {
 	return h.VerificationHandler.Test(ctx, in, out)
 }

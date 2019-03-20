@@ -8,6 +8,7 @@ import (
 	"konekko.me/gosion/permission/pb"
 	"reflect"
 	"sync"
+	"time"
 )
 
 type Message struct {
@@ -68,22 +69,40 @@ func main() {
 	//	}
 	//}
 
-	s := &UserSecretKey{}
-	//s.SecretKey = make(chan string)
-	t := test(s)
-	s.SecretKey = "324324"
-	t()
+	//s := &UserSecretKey{}
+	////s.SecretKey = make(chan string)
+	//t := test(s)
+	//s.SecretKey = "324324"
+	//t()
+	//var wg sync.WaitGroup
+	//wg.Add(1)
+	//go func() {
+	//	s.SecretKey = "2343324"
+	//	wg.Done()
+	//}()
+	//wg.Wait()
+	//
+	////fmt.Println(s.SecretKey)
+	//
+	//t()
+	done := make(chan error)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		s.SecretKey = "2343324"
-		wg.Done()
+		for {
+			select {
+			case err := <-done:
+				println("over", err)
+				wg.Done()
+				return
+			default:
+				println("entry")
+				time.Sleep(2000)
+				done <- errors.New("")
+			}
+		}
 	}()
 	wg.Wait()
-
-	//fmt.Println(s.SecretKey)
-
-	t()
 }
 
 type TestController func()
