@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb"
+	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -18,6 +19,7 @@ import (
 type verificationService struct {
 	pool               *redis.Pool
 	session            *mgo.Session
+	configuration      *gs_commons_config.GosionConfiguration
 	applicationService gs_service_application.ApplicationService
 	blacklistService   gs_service_safety.BlacklistService
 	functionService    gs_service_permission.FunctionService

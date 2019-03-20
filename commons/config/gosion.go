@@ -15,9 +15,9 @@ type GosionConfiguration struct {
 	PhoneValidateTemplate    string //no def
 	//How long does the user log in interval start locking
 	LoginIntervalToStartLock int64 //def: 30days unit:day
-	MainSecretKey            string
-	RegisterType             int64  //def: 1001 , [1001(phone), 1002(email), 1003(face)]
-	LoginType                string //def: all
+	ServiceContractSecretKey string
+	RegisterType             int64 //def: 1001 , [1001(phone), 1002(email), 1003(face)]
+	LoginType                int64 //def: all
 }
 
 type OnGosionConfigurationChanged func(config *GosionConfiguration)

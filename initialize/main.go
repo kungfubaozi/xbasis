@@ -7,9 +7,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/regx"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -83,7 +85,7 @@ func main() {
 		panic(err)
 	}
 
-	config := &gs_commons_config.GosionInitializeConfig{
+	initConfig := &gs_commons_config.GosionInitializeConfig{
 		AppId:    node.Generate().String(),
 		AppName:  enterprise,
 		UserId:   node.Generate().String(),
@@ -92,7 +94,18 @@ func main() {
 		Password: string(b),
 	}
 
-	b, err = msgpack.Marshal(config)
+	configuration := &gs_commons_config.GosionConfiguration{
+		AccessTokenExpiredTime:   10 * 60 * 1000,
+		RefreshTokenExpiredTime:  7 * 24 * 60 * 60 * 1000,
+		EmailValidateExpiredTime: 10 * 60 * 1000,
+		PhoneValidateExpiredTime: 10 * 60 * 1000,
+		LoginIntervalToStartLock: 30 * 24 * 60 * 60 * 1000,
+		ServiceContractSecretKey: gs_commons_encrypt.Md5("side-service-contract" + strconv.FormatInt(time.Now().UnixNano(), 10)),
+		RegisterType:             1001 | 1002 | 1003,
+		LoginType:                1001 | 1002 | 1003,
+	}
+
+	b, err = msgpack.Marshal(initConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -101,6 +114,15 @@ func main() {
 	c := gs_commons_config.NewConnect("192.168.2.57:2181")
 	//set def configs
 	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	b, err = msgpack.Marshal(configuration)
+	if err != nil {
+		panic(err)
+	}
+	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, 0)
 	if err != nil {
 		panic(err)
 	}
