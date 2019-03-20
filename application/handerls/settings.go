@@ -22,7 +22,7 @@ func (svc *settingsService) GetRepo() application_repositories.ApplicationRepo {
 }
 
 func (svc *settingsService) Update(ctx context.Context, in *gs_service_application.UpdateRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -58,7 +58,7 @@ func (svc *settingsService) Update(ctx context.Context, in *gs_service_applicati
 }
 
 func (svc *settingsService) EnabledClient(ctx context.Context, in *gs_service_application.EnabledRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()

@@ -15,25 +15,25 @@ type bindingService struct {
 }
 
 func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *bindingService) FunctionRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *bindingService) UnbindUserRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }

@@ -24,12 +24,12 @@ func (svc *functionService) GetRepo() permission_repositories.FunctionRepo {
 }
 
 func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		if len(in.AuthTypes) == 0 && len(in.AppId) == 0 && len(in.BindGroupId) == 0 && len(in.Name) == 0 {
+		if len(in.AppId) == 0 && len(in.BindGroupId) == 0 && len(in.Name) == 0 {
 			return errstate.ErrRequest
 		}
 
@@ -39,14 +39,17 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 		}
 
 		//check authTypes
-		for _, v := range in.AuthTypes {
-			switch v {
-			case gs_commons_constants.AuthTypeOfFace:
-			case gs_commons_constants.AuthTypeOfNone:
-			case gs_commons_constants.AuthTypeOfToken:
-			case gs_commons_constants.AuthTypeOfValcode:
-			default:
-				return errstate.ErrFunctionAuthType
+		if in.AuthTypes != nil && len(in.AuthTypes) > 0 {
+			for _, v := range in.AuthTypes {
+				switch v {
+				case gs_commons_constants.AuthTypeOfFace:
+				case gs_commons_constants.AuthTypeOfToken:
+				case gs_commons_constants.AuthTypeOfValcode:
+				case gs_commons_constants.AuthTypeOfMobileConfirm:
+				case gs_commons_constants.AuthTypeOfPassword:
+				default:
+					return errstate.ErrFunctionAuthType
+				}
 			}
 		}
 
@@ -57,7 +60,7 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				Id:           gs_commons_generator.ID().Generate().String(),
 				Name:         in.Name,
 				Type:         in.Type,
-				CreateUserId: auth.UserId,
+				CreateUserId: auth.User,
 				CreateAt:     time.Now().UnixNano(),
 				BindGroupId:  in.BindGroupId,
 				AppId:        in.AppId,
@@ -77,20 +80,20 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 }
 
 func (svc *functionService) Rename(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *functionService) Move(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 //one application one root group, bindGroupId = appId
 func (svc *functionService) AddGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		if len(in.Name) == 0 && len(in.AppId) == 0 {
 			return nil
@@ -101,13 +104,13 @@ func (svc *functionService) AddGroup(ctx context.Context, in *gs_service_permiss
 }
 
 func (svc *functionService) MoveGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *functionService) RenameGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }

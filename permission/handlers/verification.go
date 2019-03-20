@@ -50,7 +50,7 @@ func (svc *verificationService) GetRepo() permission_repositories.FunctionRepo {
 //ip, userDevice blacklist verify
 //api exists and authType verify
 func (svc *verificationService) Test(ctx context.Context, in *gs_service_permission.HasPermissionRequest, out *gs_service_permission.HasPermissionResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		md, ok := metadata.FromContext(ctx)
 		if ok {
 			//side service contract
@@ -177,6 +177,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 								return
 							}
 							conn := svc.pool.Get()
+
 							b, err := redis.Bytes(conn.Do("get", rh.dat))
 							if err != nil {
 								resp(errstate.ErrRequest)
@@ -188,11 +189,11 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 								resp(errstate.ErrSystem)
 								return
 							}
-							if time.Now().UnixNano() > dat.ExpiredAt {
+							if time.Now().UnixNano()-dat.ExpiredAt >= 0 {
 								resp(errstate.ErrDurationAccessExpired)
 								return
 							}
-							if dat.Path != rh.path || dat.AppId != appResp.AppId {
+							if dat.Path != rh.path || dat.ClientId != rh.clientId {
 								resp(errstate.ErrDurationAccess)
 								return
 							}
@@ -203,8 +204,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							break
 						case gs_commons_constants.AuthTypeOfPassword:
 							break
-						case gs_commons_constants.AuthTypeOfNone:
-							resp(errstate.Success)
+						case gs_commons_constants.AuthTypeOfMobileConfirm:
 							break
 						}
 					}()
@@ -217,7 +217,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 					if len(userId) == 0 {
 						userId = rh.ip
 					}
-					if dat.UserId != gs_commons_encrypt.SHA1(userId+rh.userAgent+rh.userDevice+rh.ip+datFix) {
+					if dat.UserId != gs_commons_encrypt.SHA1(userId+rh.userAgent+rh.userDevice+rh.ip+datFix+rh.clientId) {
 						return errstate.ErrDurationAccess
 					}
 				}

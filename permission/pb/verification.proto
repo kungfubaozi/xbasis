@@ -23,4 +23,6 @@ message HasPermissionResponse {
     string clientId = 4;
     string traceId = 5;
     string ip = 6;
+    string userAgent = 7;
+    string userDevice = 8;
 }

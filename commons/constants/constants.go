@@ -32,6 +32,9 @@ const (
 
 	//password
 	AuthTypeOfPassword = 11 << 12
+
+	//mobile confirm
+	AuthTypeOfMobileConfirm = 11 << 15
 )
 
 const (

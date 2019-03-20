@@ -9,7 +9,17 @@ import (
 	"reflect"
 )
 
-type WrapperEvent func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State
+type WrapperUser struct {
+	User       string
+	AppId      string
+	ClientId   string
+	IP         string
+	TraceId    string
+	UserAgent  string
+	UserDevice string
+}
+
+type WrapperEvent func(auth *WrapperUser) *gs_commons_dto.State
 
 func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent) error {
 	s := reflect.ValueOf(out).Elem().FieldByName("State")
@@ -23,13 +33,15 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 	s.Set(reflect.ValueOf(state))
 	md, ok := metadata.FromContext(ctx)
 	if ok {
-		auth := gs_commons_dto.Authorize{}
-		auth.UserId = md["TRANSPORT-USER-ID"]
-		auth.AppId = md["TRANSPORT-APP-ID"]
-		auth.ClientId = md["TRANSPORT-CLIENT-ID"]
-		auth.UserAgent = md["TRANSPORT-USER-AGENT"]
-		auth.Ip = md["X-Real-IP"]
-		state = event(&auth)
+		auth := &WrapperUser{}
+		auth.User = md["Transport-User"]
+		auth.AppId = md["Transport-AppId"]
+		auth.ClientId = md["Transport-ClientId"]
+		auth.IP = md["Transport-Ip"]
+		auth.TraceId = md["Transport-TraceId"]
+		auth.UserAgent = md["Transport-UserAgent"]
+		auth.UserDevice = md["Transport-UserDevice"]
+		state = event(auth)
 	}
 	if state == nil {
 		state = gserrors.ErrRequest

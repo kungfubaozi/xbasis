@@ -26,7 +26,7 @@ func (svc *applicationService) GetRepo() application_repositories.ApplicationRep
 
 //create new application if not exists(name)
 func (svc *applicationService) Create(ctx context.Context, in *gs_service_application.CreateRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -49,7 +49,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			Name:         in.Name,
 			CreateAt:     now,
 			Id:           appId,
-			CreateUserId: auth.UserId,
+			CreateUserId: auth.User,
 			Settings: &application_repositories.AppSetting{
 				Enabled:  gs_commons_constants.Enabled,
 				OpenMode: gs_commons_constants.OpenModeOfAllOrganization,
@@ -98,19 +98,19 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 }
 
 func (svc *applicationService) Remove(ctx context.Context, in *gs_service_application.RemoveRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *applicationService) ChangeName(ctx context.Context, in *gs_service_application.ChangeNameRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_application.FindRequest, out *gs_service_application.SimpleApplicationResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -152,7 +152,7 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 }
 
 func (svc *applicationService) Status(ctx context.Context, in *gs_service_application.FindRequest, out *gs_service_application.StatusResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
 
@@ -182,7 +182,7 @@ func (svc *applicationService) FindByClientId(context.Context, *gs_service_appli
 }
 
 func (svc *applicationService) List(ctx context.Context, in *gs_service_application.FindRequest, out *gs_service_application.ListResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()

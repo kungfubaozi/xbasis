@@ -22,7 +22,7 @@ func (svc *groupService) GetRepo() permission_repositories.GroupRepo {
 }
 
 func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -30,7 +30,7 @@ func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.Simp
 		_, err := repo.FindByName(in.AppId, in.Name)
 		if err != nil && err == mgo.ErrNotFound {
 
-			err = repo.Save(in.AppId, auth.UserId, in.Name)
+			err = repo.Save(in.AppId, auth.User, in.Name)
 
 			if err != nil {
 				return errstate.ErrRequest
@@ -48,37 +48,37 @@ func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.Simp
 }
 
 func (svc *groupService) LinkTo(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *groupService) Unlink(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *groupService) Rename(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *groupService) AddUserToGroup(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *groupService) MoveUserToGroup(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *groupService) Remove(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }

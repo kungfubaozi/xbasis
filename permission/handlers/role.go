@@ -21,13 +21,13 @@ func (svc *roleService) GetRepo() *permission_repositories.RoleRepo {
 
 //add new role if not exists
 func (svc *roleService) Add(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
 
 		_, err := repo.FindByName(in.Name, in.AppId)
 		if err != nil && err == mgo.ErrNotFound {
-			err = repo.Save(in.Name, auth.UserId, in.AppId)
+			err = repo.Save(in.Name, auth.User, in.AppId)
 			if err != nil {
 				return nil
 			}
@@ -44,13 +44,13 @@ func (svc *roleService) Add(ctx context.Context, in *gs_service_permission.RoleR
 
 //remove role
 func (svc *roleService) Remove(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 func (svc *roleService) Rename(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }

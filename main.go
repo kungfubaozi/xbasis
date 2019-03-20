@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/permission/pb"
 	"reflect"
-	"sync"
+	"strconv"
 	"time"
 )
 
@@ -85,24 +87,10 @@ func main() {
 	////fmt.Println(s.SecretKey)
 	//
 	//t()
-	done := make(chan error)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for {
-			select {
-			case err := <-done:
-				println("over", err)
-				wg.Done()
-				return
-			default:
-				println("entry")
-				time.Sleep(2000)
-				done <- errors.New("")
-			}
-		}
-	}()
-	wg.Wait()
+	stat := base64.StdEncoding.EncodeToString([]byte(gs_commons_encrypt.SHA1(
+		strconv.FormatInt(time.Now().UnixNano(), 10) + "s9df8a-s90df8a-s90df8-9082098234" + "190842-098-a09sf8a-s09f8-094kj4k-as9df0as8df90asidf/asdfa")))
+
+	println(stat)
 }
 
 type TestController func()

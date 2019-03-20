@@ -18,4 +18,5 @@ var (
 	ErrDurationAccessExpired    = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err function access key"}
 	ErrDurationAccess           = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err function access"}
 	ErrAuthorization            = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err authorization"}
+	ErrDurationAccessTokenBusy  = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err get function access key busy"}
 )

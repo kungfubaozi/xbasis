@@ -20,15 +20,22 @@ func (svc *blacklistService) GetRepo() safety_repositories.BlacklistRepo {
 	return safety_repositories.BlacklistRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
 }
 
+func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.CheckRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		return nil
+	})
+}
+
 func (svc *blacklistService) AddBlacklist(ctx context.Context, in *gs_service_safety.AddRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
 		if repo.CacheExists(in.Type, in.Content) {
 
-			err := repo.Save(in.Type, in.Content, auth.UserId)
+			err := repo.Save(in.Type, in.Content, auth.User)
 			if err != nil {
 
 				return errstate.ErrRequest
@@ -42,7 +49,7 @@ func (svc *blacklistService) AddBlacklist(ctx context.Context, in *gs_service_sa
 }
 
 func (svc *blacklistService) RemoveBlacklist(ctx context.Context, in *gs_service_safety.RemoveBlacklistRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_dto.Authorize) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()

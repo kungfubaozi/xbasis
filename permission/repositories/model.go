@@ -49,5 +49,5 @@ type Function struct {
 	AppId        string  `bson:"app_id"`
 	AuthTypes    []int64 `bson:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenLife int64 `bson:"val_token_life"` //def: 0ms
+	ValTokenLife int64 `bson:"val_token_life"` //def: 0 nanoTime
 }

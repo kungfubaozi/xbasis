@@ -28,12 +28,13 @@ func AuthWrapper(client client.Client, fn server.HandlerFunc) server.HandlerFunc
 
 		//compressed volume
 		ctx = metadata.NewContext(context.Background(), map[string]string{
-			"User":     status.User,
-			"AppId":    status.AppId,
-			"ClientId": status.ClientId,
-			"UserIP":   status.Ip,
-			"TraceId":  status.TraceId,
-			"Ip":       status.Ip,
+			"Transport-User":       status.User,
+			"Transport-AppId":      status.AppId,
+			"Transport-ClientId":   status.ClientId,
+			"Transport-TraceId":    status.TraceId,
+			"Transport-Ip":         status.Ip,
+			"Transport-UserDevice": status.UserDevice,
+			"Transport-UserAgent":  status.UserAgent,
 		})
 
 		fn(ctx, req, rsp)
