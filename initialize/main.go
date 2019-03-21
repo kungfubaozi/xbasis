@@ -100,7 +100,7 @@ func main() {
 		EmailValidateExpiredTime: 10 * 60 * 1000,
 		PhoneValidateExpiredTime: 10 * 60 * 1000,
 		LoginIntervalToStartLock: 30 * 24 * 60 * 60 * 1000,
-		ServiceContractSecretKey: gs_commons_encrypt.Md5("side-service-contract" + strconv.FormatInt(time.Now().UnixNano(), 10)),
+		CurrencySecretKey:        gs_commons_encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
 		RegisterType:             1001 | 1002 | 1003,
 		LoginType:                1001 | 1002 | 1003,
 	}
