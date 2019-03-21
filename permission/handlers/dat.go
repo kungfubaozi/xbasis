@@ -105,16 +105,16 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 			if svc.configuration.EmailVerificationCodeExpiredTime > 0 {
 				t = svc.configuration.EmailVerificationCodeExpiredTime
 			}
-			ext = time.Now().UnixNano() + t*1e6
+			ext = t * 1e6
 		} else if svc.configuration.DurationAccessTokenSendCodeToType == 1001 { //phone
 			var t int64
 			t = 10 * 60
 			if svc.configuration.PhoneVerificationCodeExpiredTime > 0 {
 				t = svc.configuration.PhoneVerificationCodeExpiredTime
 			}
-			ext = time.Now().UnixNano() + t*1e6
+			ext = t * 1e6
 		} else {
-			ext = time.Now().UnixNano() + 10*60*1e6 //10min
+			ext = 10 * 60 * 1e6 //10min
 		}
 
 		dat := &permission_repositories.DurationAccess{
@@ -122,7 +122,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 			ClientId:      clientId,
 			User:          to,
 			CreateAt:      time.Now().UnixNano(),
-			CodeExpiredAt: ext,
+			CodeExpiredAt: ext + time.Now().UnixNano(),
 			Code:          rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000),
 		}
 
