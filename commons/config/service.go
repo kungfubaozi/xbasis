@@ -25,13 +25,13 @@ type OnConfigNodeChanged func(config *GosionInitializeConfig)
 func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	c := NewConnect("192.168.2.57:2181")
 
-	path := "/_gosion.init.lock-" + gs_commons_encrypt.SHA1(serviceName)
+	path := "/_gosion.init.locking-" + gs_commons_encrypt.SHA1(serviceName)
 
 	//one same service process
 	acl := zk.WorldACL(zk.PermAll)
 	_, err := c.Create(path, nil, 1, acl)
 	if err != nil {
-		return
+		//return
 	}
 
 	watch(c, gs_commons_constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {

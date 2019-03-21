@@ -6,10 +6,19 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service DurationAccess {
 
-    rpc try (DurationAccessRequest) returns (gs.commons.dto.Status);
+    rpc datu (DurationAccessRequest) returns (DurationAccessResponse);
+
+    rpc datp (DurationAccessRequest) returns (DurationAccessResponse);
 
 }
 
 message DurationAccessRequest {
     string path = 1;
+    int64 code = 2;
+    string to = 3;
+}
+
+message DurationAccessResponse {
+    gs.commons.dto.State state = 1;
+    string message = 2;
 }

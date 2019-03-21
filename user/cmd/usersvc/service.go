@@ -5,23 +5,38 @@ import (
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/user/handlers"
+	"konekko.me/gosion/user/handlers/nops"
 	"konekko.me/gosion/user/pb"
+	"konekko.me/gosion/user/pb/nops"
 )
 
 func StartService() {
 
-	s := microservice.NewService(gs_commons_constants.UserService)
-	s.Init()
+	errc := make(chan error, 2)
 
-	gs_service_user.RegisterLoginHandler(s.Server(), user_handlers.NewLoginService())
+	go func() {
+		s := microservice.NewService(gs_commons_constants.NOPSPermissionService)
 
-	gs_service_user.RegisterRegisterHandler(s.Server(), user_handlers.NewRegisterService())
+		gs_nops_service_message.RegisterMessageHandler(s.Server(), user_nops_handlers.NewMessageService())
 
-	gs_service_user.RegisterSafetyHandler(s.Server(), user_handlers.NewSafetyService())
+		errc <- s.Run()
+	}()
 
-	gs_service_user.RegisterUpdateHandler(s.Server(), user_handlers.NewUpdateService())
+	go func() {
+		s := microservice.NewService(gs_commons_constants.UserService)
 
-	gs_service_user.RegisterUserHandler(s.Server(), user_handlers.NewUserService())
+		gs_service_user.RegisterLoginHandler(s.Server(), user_handlers.NewLoginService())
+
+		gs_service_user.RegisterRegisterHandler(s.Server(), user_handlers.NewRegisterService())
+
+		gs_service_user.RegisterSafetyHandler(s.Server(), user_handlers.NewSafetyService())
+
+		gs_service_user.RegisterUpdateHandler(s.Server(), user_handlers.NewUpdateService())
+
+		gs_service_user.RegisterUserHandler(s.Server(), user_handlers.NewUserService())
+
+		errc <- s.Run()
+	}()
 
 	go func() {
 
@@ -36,7 +51,7 @@ func StartService() {
 		})
 	}()
 
-	if err := s.Run(); err != nil {
+	if err := <-errc; err != nil {
 		panic(err)
 	}
 

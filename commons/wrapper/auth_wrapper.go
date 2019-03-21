@@ -31,7 +31,7 @@ func AuthWrapper(client client.Client, fn server.HandlerFunc) server.HandlerFunc
 			"Transport-User":       status.User,
 			"Transport-AppId":      status.AppId,
 			"Transport-ClientId":   status.ClientId,
-			"Transport-TraceId":    status.TraceId,
+			"transport-traceId":    status.TraceId,
 			"Transport-Ip":         status.Ip,
 			"Transport-UserDevice": status.UserDevice,
 			"Transport-UserAgent":  status.UserAgent,

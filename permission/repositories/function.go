@@ -30,7 +30,7 @@ func (repo *FunctionRepo) AddGroup(group *FunctionGroup) error {
 }
 
 func (repo *FunctionRepo) FindGroup(appId, name string) error {
-
+	return nil
 }
 
 func (repo *FunctionRepo) FindChildGroups(parentId string) ([]*FunctionGroup, error) {

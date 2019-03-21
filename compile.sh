@@ -10,6 +10,7 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/f
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/binding.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/verification.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/dat.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/provide/hi.proto
 
 #user
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/update.proto
@@ -20,6 +21,7 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/user.pr
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/invite.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/active.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/grant.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/nops/message.proto
 
 #safety
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/frozen.proto

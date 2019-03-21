@@ -2,6 +2,8 @@ package microservice
 
 import (
 	"github.com/juju/ratelimit"
+	"github.com/micro/go-grpc"
+
 	//"github.com/micro/go-grpc"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/registry"
@@ -18,7 +20,7 @@ func NewService(name string) micro.Service {
 
 	cr.Watch()
 
-	s := micro.NewService(micro.Registry(cr),
+	s := grpc.NewService(micro.Registry(cr),
 		micro.Name(name),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),

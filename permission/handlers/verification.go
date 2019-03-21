@@ -1,4 +1,4 @@
-package permission_handers
+package permission_handlers
 
 import (
 	"context"
@@ -20,7 +20,6 @@ import (
 	"konekko.me/gosion/permission/repositories"
 	"konekko.me/gosion/safety/pb"
 	"sync"
-	"time"
 )
 
 type verificationService struct {
@@ -55,9 +54,9 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 		if ok {
 			//side service contract
 			//prevent loop
-			traceId := md["X-Gosion-SCT"]
+			traceId := md["transport-traceId"]
 			if len(traceId) > 0 {
-				_, err := gs_commons_encrypt.AESDecrypt(traceId, []byte(svc.configuration.ServiceContractSecretKey))
+				_, err := gs_commons_encrypt.AESDecrypt(traceId, []byte(svc.configuration.CurrencySecretKey))
 				if err != nil {
 					return nil
 				}
@@ -66,13 +65,13 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 			//new request
 			rh := &requestHeaders{
-				authorization: md["Authorization"],
-				userAgent:     md["User-Agent"],
-				ip:            md["X-Real-Ip"],
-				clientId:      md["GS-Client-Id"],
-				userDevice:    md["GS-User-Device"],
-				path:          md["GS-Request-Path"],
-				dat:           md["GS-Duration-Token"],
+				authorization: md["authorization"],
+				userAgent:     md["user-agent"],
+				ip:            md["x-real-ip"],
+				clientId:      md["gs-client-id"],
+				userDevice:    md["gs-user-device"],
+				path:          md["gs-request-path"],
+				dat:           md["gs-duration-token"],
 			}
 
 			//check
@@ -91,7 +90,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 			traceId = base64.StdEncoding.EncodeToString([]byte(id.Generate().Base64() + uuid.NewV4().String()))
 
-			traceId, err := gs_commons_encrypt.AESEncrypt([]byte(traceId), []byte(svc.configuration.ServiceContractSecretKey))
+			traceId, err := gs_commons_encrypt.AESEncrypt([]byte(traceId), []byte(svc.configuration.CurrencySecretKey))
 			if err != nil {
 				return nil
 			}
@@ -104,7 +103,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 			}
 
 			ctx = metadata.NewContext(context.Background(), map[string]string{
-				"X-Gosion-SCT": traceId,
+				"transport-traceId": traceId,
 			})
 
 			//blacklist(ip)
@@ -166,20 +165,29 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 					return nil
 				}
 				dat := &permission_repositories.DurationAccess{}
-				datFix, userId := "", ""
+				userId := ""
 				wg.Add(len(a.AuthTypes))
 				for _, v := range a.AuthTypes {
 					go func() {
 						switch v {
 						case gs_commons_constants.AuthTypeOfValcode:
+							//user must login
 							if len(rh.dat) == 0 {
 								resp(errstate.ErrRequest)
 								return
 							}
-							conn := svc.pool.Get()
 
-							b, err := redis.Bytes(conn.Do("get", rh.dat))
+							v, err := gs_commons_encrypt.AESDecrypt(rh.dat, []byte(svc.configuration.CurrencySecretKey))
 							if err != nil {
+								resp(errstate.ErrNotFoundDurationAccessToken)
+								return
+							}
+
+							key := gs_commons_encrypt.SHA1(string(v) + rh.clientId)
+							dat.Key = key
+							conn := svc.pool.Get()
+							b, err := redis.Bytes(conn.Do("hmget", key, a.ApiTag))
+							if err != nil && err == redis.ErrNil {
 								resp(errstate.ErrRequest)
 								return
 							}
@@ -189,20 +197,19 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 								resp(errstate.ErrSystem)
 								return
 							}
-							if time.Now().UnixNano()-dat.ExpiredAt >= 0 {
-								resp(errstate.ErrDurationAccessExpired)
-								return
-							}
-							if dat.Path != rh.path || dat.ClientId != rh.clientId {
+							if dat.Stat != rh.dat || dat.Path != rh.path || dat.ClientId != rh.clientId {
 								resp(errstate.ErrDurationAccess)
 								return
 							}
+							//if time.Now().UnixNano()-dat.ExpiredAt >= 0 {
+							//	resp(errstate.ErrDurationAccessExpired)
+							//	return
+							//}
+							resp(errstate.Success)
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							break
 						case gs_commons_constants.AuthTypeOfFace:
-							break
-						case gs_commons_constants.AuthTypeOfPassword:
 							break
 						case gs_commons_constants.AuthTypeOfMobileConfirm:
 							break
@@ -213,13 +220,13 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				wg.Wait()
 
 				if len(dat.Path) > 0 {
-					//the user is ip
 					if len(userId) == 0 {
 						userId = rh.ip
 					}
-					if dat.UserId != gs_commons_encrypt.SHA1(userId+rh.userAgent+rh.userDevice+rh.ip+datFix+rh.clientId) {
+					if dat.UserId != userId {
 						return errstate.ErrDurationAccess
 					}
+
 				}
 
 				if !state.Ok {

@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/permission/pb"
+	"math/rand"
 	"reflect"
-	"strconv"
 	"time"
 )
 
@@ -87,10 +85,34 @@ func main() {
 	////fmt.Println(s.SecretKey)
 	//
 	//t()
-	stat := base64.StdEncoding.EncodeToString([]byte(gs_commons_encrypt.SHA1(
-		strconv.FormatInt(time.Now().UnixNano(), 10) + "s9df8a-s90df8a-s90df8-9082098234" + "190842-098-a09sf8a-s09f8-094kj4k-as9df0as8df90asidf/asdfa")))
+	//dat := &permission_repositories.DurationAccess{
+	//	ClientId: "192834-09123840989080918240-asdf",
+	//}
 
-	println(stat)
+	//str := "75089174091823740189237498"
+	////
+	////b, err := msgpack.Marshal(dat)
+	////if err != nil {
+	////	panic(err)
+	////}
+	//
+	//for i := 0; i <= 100; i++ {
+	//	v, err := gs_commons_encrypt.AESEncrypt([]byte(str), []byte("912ec803b2ce49e4a541068d495ab570"))
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	fmt.Println(v)
+	//}
+
+	//fmt.Println(time.Now().UnixNano())
+
+	//var createAt int64
+	//createAt = 1553175979844167000
+	//
+	//fmt.Println(time.Now().UnixNano()/1e9-createAt/1e9 >= 60)
+
+	fmt.Println(rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000))
 }
 
 type TestController func()

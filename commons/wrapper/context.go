@@ -17,6 +17,11 @@ type WrapperUser struct {
 	TraceId    string
 	UserAgent  string
 	UserDevice string
+	DAU        DurationAccessUser
+}
+
+type DurationAccessUser struct {
+	SendTo string
 }
 
 type WrapperEvent func(auth *WrapperUser) *gs_commons_dto.State
@@ -38,7 +43,7 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 		auth.AppId = md["Transport-AppId"]
 		auth.ClientId = md["Transport-ClientId"]
 		auth.IP = md["Transport-Ip"]
-		auth.TraceId = md["Transport-TraceId"]
+		auth.TraceId = md["transport-traceId"]
 		auth.UserAgent = md["Transport-UserAgent"]
 		auth.UserDevice = md["Transport-UserDevice"]
 		state = event(auth)

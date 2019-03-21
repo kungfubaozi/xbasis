@@ -8,8 +8,11 @@ const (
 	ApplicationService    = "gs.svc.application"
 	SafetyService         = "gs.svc.safety"
 	AuthenticationService = "gs.svc.authentication"
-	AuthWrapperService    = "inside.gs.svc.auth.wrapper"
-	GoMicroApi            = "go.micro.api"
+)
+
+//not open
+const (
+	NOPSPermissionService = "gs.nops.svc.permission"
 )
 
 const (
@@ -26,12 +29,6 @@ const (
 
 	//token, check user status, blacklist, token and so on
 	AuthTypeOfToken = 11 << 9
-
-	//uncheck
-	AuthTypeOfNone = 11 << 11
-
-	//password
-	AuthTypeOfPassword = 11 << 12
 
 	//mobile confirm
 	AuthTypeOfMobileConfirm = 11 << 15

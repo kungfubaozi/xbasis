@@ -1,4 +1,4 @@
-package permission_handers
+package permission_handlers
 
 import (
 	"context"

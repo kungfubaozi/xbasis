@@ -9,13 +9,14 @@ It is generated from these files:
 
 It has these top-level messages:
 	DurationAccessRequest
+	DurationAccessResponse
 */
 package gs_service_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import _ "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +28,6 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,8 @@ var _ server.Option
 // Client API for DurationAccess service
 
 type DurationAccessService interface {
-	Try(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Datu(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error)
+	Datp(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error)
 }
 
 type durationAccessService struct {
@@ -64,9 +65,19 @@ func NewDurationAccessService(name string, c client.Client) DurationAccessServic
 	}
 }
 
-func (c *durationAccessService) Try(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "DurationAccess.try", in)
-	out := new(gs_commons_dto.Status)
+func (c *durationAccessService) Datu(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error) {
+	req := c.c.NewRequest(c.name, "DurationAccess.datu", in)
+	out := new(DurationAccessResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *durationAccessService) Datp(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error) {
+	req := c.c.NewRequest(c.name, "DurationAccess.datp", in)
+	out := new(DurationAccessResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +88,14 @@ func (c *durationAccessService) Try(ctx context.Context, in *DurationAccessReque
 // Server API for DurationAccess service
 
 type DurationAccessHandler interface {
-	Try(context.Context, *DurationAccessRequest, *gs_commons_dto.Status) error
+	Datu(context.Context, *DurationAccessRequest, *DurationAccessResponse) error
+	Datp(context.Context, *DurationAccessRequest, *DurationAccessResponse) error
 }
 
 func RegisterDurationAccessHandler(s server.Server, hdlr DurationAccessHandler, opts ...server.HandlerOption) error {
 	type durationAccess interface {
-		Try(ctx context.Context, in *DurationAccessRequest, out *gs_commons_dto.Status) error
+		Datu(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error
+		Datp(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error
 	}
 	type DurationAccess struct {
 		durationAccess
@@ -95,6 +108,10 @@ type durationAccessHandler struct {
 	DurationAccessHandler
 }
 
-func (h *durationAccessHandler) Try(ctx context.Context, in *DurationAccessRequest, out *gs_commons_dto.Status) error {
-	return h.DurationAccessHandler.Try(ctx, in, out)
+func (h *durationAccessHandler) Datu(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error {
+	return h.DurationAccessHandler.Datu(ctx, in, out)
+}
+
+func (h *durationAccessHandler) Datp(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error {
+	return h.DurationAccessHandler.Datp(ctx, in, out)
 }

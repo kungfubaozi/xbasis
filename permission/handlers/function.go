@@ -1,4 +1,4 @@
-package permission_handers
+package permission_handlers
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
@@ -46,7 +47,6 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				case gs_commons_constants.AuthTypeOfToken:
 				case gs_commons_constants.AuthTypeOfValcode:
 				case gs_commons_constants.AuthTypeOfMobileConfirm:
-				case gs_commons_constants.AuthTypeOfPassword:
 				default:
 					return errstate.ErrFunctionAuthType
 				}
@@ -64,6 +64,8 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				CreateAt:     time.Now().UnixNano(),
 				BindGroupId:  in.BindGroupId,
 				AppId:        in.AppId,
+				ApiTag:       gs_commons_encrypt.SHA1(in.Api),
+				Api:          in.Api,
 				AuthTypes:    in.AuthTypes,
 			}
 
