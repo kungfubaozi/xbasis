@@ -31,11 +31,6 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 	if !s.CanSet() {
 		return errors.New("err return type canSet")
 	}
-	state := s.Interface().(*gs_commons_dto.State)
-	if state == nil {
-		state = new(gs_commons_dto.State)
-	}
-	s.Set(reflect.ValueOf(state))
 	md, ok := metadata.FromContext(ctx)
 	if ok {
 		auth := &WrapperUser{}
@@ -46,10 +41,10 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 		auth.TraceId = md["transport-traceId"]
 		auth.UserAgent = md["Transport-UserAgent"]
 		auth.UserDevice = md["Transport-UserDevice"]
-		state = event(auth)
+		event(auth)
 	}
-	if state == nil {
-		state = gserrors.ErrRequest
+	if s.IsNil() {
+		s.Set(reflect.ValueOf(gserrors.ErrRequest))
 	}
 	return nil
 }

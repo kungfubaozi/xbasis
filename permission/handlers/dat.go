@@ -38,7 +38,7 @@ func (svc *durationAccessService) Datp(ctx context.Context, in *gs_service_permi
 			return nil
 		}
 		hkey := gs_commons_encrypt.SHA1(auth.IP + auth.ClientId)
-		svc.dat(out, in.Path, in.To, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
+		svc.dat(auth.IP, out, in.Path, in.To, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
 			return svc.sendTo(ctx, to, code, 1)
 		})
 		return nil
@@ -52,7 +52,7 @@ func (svc *durationAccessService) Datu(ctx context.Context, in *gs_service_permi
 			return nil
 		}
 		hkey := gs_commons_encrypt.SHA1(auth.User + auth.ClientId)
-		svc.dat(out, in.Path, auth.User, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
+		svc.dat(auth.User, out, in.Path, auth.User, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
 			return svc.sendTo(ctx, to, code, 2)
 		})
 		return nil
@@ -61,9 +61,10 @@ func (svc *durationAccessService) Datu(ctx context.Context, in *gs_service_permi
 
 func (svc *durationAccessService) sendTo(ctx context.Context, to, code string, t int64) *gs_commons_dto.State {
 	s, err := svc.message.SendVerificationCode(ctx, &gs_nops_service_message.SendRequest{
-		To:   to,
-		Type: t,
-		Code: code,
+		To:          to,
+		Type:        t,
+		Code:        code,
+		MessageType: svc.configuration.SendVerificationCodeType,
 	})
 	if err != nil {
 		return errstate.ErrSystem
@@ -71,7 +72,7 @@ func (svc *durationAccessService) sendTo(ctx context.Context, to, code string, t
 	return s.State
 }
 
-func (svc *durationAccessService) dat(out *gs_service_permission.DurationAccessResponse, path, to, clientId,
+func (svc *durationAccessService) dat(user string, out *gs_service_permission.DurationAccessResponse, path, to, clientId,
 	appId, hkey string, code int64, conn redis.Conn, toUser sendToUserFunc) {
 	repo := svc.GetRepo()
 	defer repo.Close()
@@ -82,23 +83,54 @@ func (svc *durationAccessService) dat(out *gs_service_permission.DurationAccessR
 		return
 	}
 
+	write := func(dat *permission_repositories.DurationAccess) error {
+		b, err := msgpack.Marshal(dat)
+		if err != nil {
+			return err
+		}
+		_, err = conn.Do("hmset", hkey, api.ApiTag, b)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	addCode := func() {
 
-		et, err := gs_commons_encrypt.AESEncrypt([]byte(to), []byte(svc.configuration.CurrencySecretKey))
-		if err != nil {
+		var ext int64
+
+		if svc.configuration.DurationAccessTokenSendCodeToType == 1002 { //email
+			var t int64
+			t = 10 * 60
+			if svc.configuration.EmailVerificationCodeExpiredTime > 0 {
+				t = svc.configuration.EmailVerificationCodeExpiredTime
+			}
+			ext = time.Now().UnixNano() + t*1e6
+		} else if svc.configuration.DurationAccessTokenSendCodeToType == 1001 { //phone
+			var t int64
+			t = 10 * 60
+			if svc.configuration.PhoneVerificationCodeExpiredTime > 0 {
+				t = svc.configuration.PhoneVerificationCodeExpiredTime
+			}
+			ext = time.Now().UnixNano() + t*1e6
+		} else {
+			ext = time.Now().UnixNano() + 10*60*1e6 //10min
+		}
+
+		dat := &permission_repositories.DurationAccess{
+			Path:          path,
+			ClientId:      clientId,
+			User:          to,
+			CreateAt:      time.Now().UnixNano(),
+			CodeExpiredAt: ext,
+			Code:          rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000),
+		}
+
+		if write(dat) != nil {
 			out.State = errstate.ErrSystem
 			return
 		}
 
-		dat := &permission_repositories.DurationAccess{
-			Path:     path,
-			ClientId: clientId,
-			Key:      string(et),
-			User:     to,
-			CreateAt: time.Now().UnixNano(),
-			Life:     api.ValTokenLife,
-			Code:     rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000),
-		}
 		out.State = toUser(to, strconv.FormatInt(dat.Code, 10))
 	}
 
@@ -132,7 +164,31 @@ func (svc *durationAccessService) dat(out *gs_service_permission.DurationAccessR
 
 	if code < 1000000 && code > 100000 {
 		//verify
+		if dat.User != to && dat.ClientId != clientId && dat.Path != path && dat.Code != code {
+			out.State = errstate.ErrDurationAccess
+			return
+		}
+		if time.Now().UnixNano()-dat.CodeExpiredAt >= 0 {
+			out.State = errstate.ErrDurationAccessExpired
+			return
+		}
+		et, err := gs_commons_encrypt.AESEncrypt([]byte(user), []byte(svc.configuration.CurrencySecretKey))
+		if err != nil {
+			out.State = errstate.ErrSystem
+			return
+		}
+		stat := string(et)
+		dat.Stat = stat
+		dat.Life = api.ValTokenLife
 
+		//rewrite
+		if write(dat) != nil {
+			out.State = errstate.ErrSystem
+			return
+		}
+
+		out.State = errstate.Success
+		out.Dat = stat
 	} else if code == 0 {
 		//resend
 		if time.Now().UnixNano()/1e9-dat.CreateAt/1e9 >= svc.configuration.DurationAccessTokenRetryTime {
@@ -140,11 +196,9 @@ func (svc *durationAccessService) dat(out *gs_service_permission.DurationAccessR
 			return
 		}
 		out.State = errstate.ErrDurationAccessTokenBusy
-		return
 	} else {
 		//err code
 		out.State = errstate.ErrVerificationCode
-		return
 	}
 }
 

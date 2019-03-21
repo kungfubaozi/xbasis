@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/permission/pb"
-	"math/rand"
+	"konekko.me/gosion/commons/errstate"
 	"reflect"
 	"time"
 )
@@ -112,7 +110,14 @@ func main() {
 	//
 	//fmt.Println(time.Now().UnixNano()/1e9-createAt/1e9 >= 60)
 
-	fmt.Println(rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000))
+	//fmt.Println(rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000))
+
+	s := time.Now().UnixNano()
+	out := new(gs_commons_dto.Status)
+	Add(out)
+	v := time.Now().UnixNano() - s
+	fmt.Println(out.State)
+	fmt.Println(v / 1e6)
 }
 
 type TestController func()
@@ -127,24 +132,33 @@ type UserSecretKey struct {
 	SecretKey string
 }
 
-func Add(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
-	return ContextToAuthorize(ctx, out, func() *gs_commons_dto.State {
+func Add(out *gs_commons_dto.Status) error {
+	return ContextToAuthorize(out, func() *gs_commons_dto.State {
+		test1(out)
 		return nil
 	})
 }
 
+func test1(out *gs_commons_dto.Status) {
+	//out.State = errstate.ErrSystem
+}
+
 type ContextWrapperListener func() *gs_commons_dto.State
 
-func ContextToAuthorize(ctx context.Context, out interface{}, listener ContextWrapperListener) error {
+func ContextToAuthorize(out interface{}, listener ContextWrapperListener) error {
 	s := reflect.ValueOf(out).Elem().FieldByName("State")
 	if !s.CanSet() {
 		return errors.New("no found 'State' filed")
 	}
 	state := s.Interface().(*gs_commons_dto.State)
 	if state == nil {
-		state = new(gs_commons_dto.State)
+		//state = new(gs_commons_dto.State)
 	}
 	s.Set(reflect.ValueOf(state))
-	state = listener()
+	listener()
+	if s.IsNil() {
+		s.Set(reflect.ValueOf(errstate.ErrRequest))
+		fmt.Println("err")
+	}
 	return nil
 }

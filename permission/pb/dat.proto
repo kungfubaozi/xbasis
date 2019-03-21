@@ -20,5 +20,5 @@ message DurationAccessRequest {
 
 message DurationAccessResponse {
     gs.commons.dto.State state = 1;
-    string message = 2;
+    string dat = 2;
 }

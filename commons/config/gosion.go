@@ -7,21 +7,21 @@ import (
 )
 
 type GosionConfiguration struct {
-	AccessTokenExpiredTime    int64  //def: 10min unit:min
-	RefreshTokenExpiredTime   int64  //def: 7day unit:day
-	EmailValidateExpiredTime  int64  //def: 10min unit:min
-	PhoneValidateExpiredTime  int64  //def: 10min unit:min
-	EmailValidateTemplate     string //no def
-	EmailValidateSendDuration int64
-	PhoneValidateTemplate     string //no def
-	PhoneValidateSendDuration int64
+	AccessTokenExpiredTime           int64  //def: 10min unit:min
+	RefreshTokenExpiredTime          int64  //def: 7day unit:day
+	EmailValidateTemplate            string //no def
+	EmailVerificationCodeExpiredTime int64  //def: 10*60s unit:second
+	PhoneValidateTemplate            string //no def
+	PhoneVerificationCodeExpiredTime int64  //no 10*60s unit:second
+	SendVerificationCodeType         int64
 	//How long does the user log in interval start locking
-	LoginIntervalToStartLock     int64 //def: 30days unit:day
-	CurrencySecretKey            string
-	TokenSecretKey               string
-	RegisterType                 int64 //def: 1001 , [1001(phone), 1002(email), 1003(face)]
-	LoginType                    int64 //def: all
-	DurationAccessTokenRetryTime int64 //def: 60s
+	LoginIntervalToStartLock          int64 //def: 30days unit:day
+	CurrencySecretKey                 string
+	TokenSecretKey                    string
+	RegisterType                      int64 //def: 1001 , [1001(phone), 1002(email), 1003(face)]
+	LoginType                         int64 //def: all
+	DurationAccessTokenRetryTime      int64 //def: 60s
+	DurationAccessTokenSendCodeToType int64 //def: 1001
 }
 
 type OnGosionConfigurationChanged func(config *GosionConfiguration)
