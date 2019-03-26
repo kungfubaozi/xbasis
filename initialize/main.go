@@ -91,18 +91,19 @@ func main() {
 		UserId:   node.Generate().String(),
 		Desc:     desc,
 		Username: username,
+		Email:    email,
 		Password: string(b),
 	}
 
 	configuration := &gs_commons_config.GosionConfiguration{
-		AccessTokenExpiredTime:   10 * 60 * 1000,
-		RefreshTokenExpiredTime:  7 * 24 * 60 * 60 * 1000,
-		EmailValidateExpiredTime: 10 * 60 * 1000,
-		PhoneValidateExpiredTime: 10 * 60 * 1000,
-		LoginIntervalToStartLock: 30 * 24 * 60 * 60 * 1000,
-		CurrencySecretKey:        gs_commons_encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
-		RegisterType:             1001 | 1002 | 1003,
-		LoginType:                1001 | 1002 | 1003,
+		AccessTokenExpiredTime:           10 * 60 * 1000,
+		RefreshTokenExpiredTime:          7 * 24 * 60 * 60 * 1000,
+		EmailVerificationCodeExpiredTime: 10 * 60 * 1000,
+		PhoneVerificationCodeExpiredTime: 10 * 60 * 1000,
+		LoginIntervalToStartLock:         30 * 24 * 60 * 60 * 1000,
+		CurrencySecretKey:                gs_commons_encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
+		RegisterType:                     1001 | 1002 | 1003,
+		LoginType:                        1001 | 1002 | 1003,
 	}
 
 	b, err = msgpack.Marshal(initConfig)

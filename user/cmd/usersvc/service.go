@@ -3,6 +3,7 @@ package usersvc
 import (
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
+	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/user/handlers"
 	"konekko.me/gosion/user/handlers/nops"
@@ -17,10 +18,16 @@ func StartService() {
 	go func() {
 		s := microservice.NewService(gs_commons_constants.NOPSPermissionService)
 
-		gs_nops_service_message.RegisterMessageHandler(s.Server(), user_nops_handlers.NewMessageService())
+		gs_nops_service_user.RegisterMessageHandler(s.Server(), user_nops_handlers.NewMessageService())
 
 		errc <- s.Run()
 	}()
+
+	session, err := gs_commons_dao.CreateSession("192.168.2.60:27017")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
 
 	go func() {
 		s := microservice.NewService(gs_commons_constants.UserService)
@@ -33,15 +40,13 @@ func StartService() {
 
 		gs_service_user.RegisterUpdateHandler(s.Server(), user_handlers.NewUpdateService())
 
-		gs_service_user.RegisterUserHandler(s.Server(), user_handlers.NewUserService())
-
 		errc <- s.Run()
 	}()
 
 	go func() {
 
 		//watch config change to init def data
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, user_handlers.Initialize())
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, user_handlers.Initialize(session))
 
 	}()
 

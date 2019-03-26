@@ -6,19 +6,25 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Login {
 
-    rpc WithPhone (EntryRequest) returns (gs.commons.dto.Status);
-
-    rpc WithEmail (EntryRequest) returns (gs.commons.dto.Status);
-
-    rpc WithPassword (EntryRequest) returns (gs.commons.dto.Status);
+    //phone, email, account
+    rpc WithAccount (EntryRequest) returns (EntryWithAccountResponse);
 
     //use phone confirm
     rpc WithQRCode (EntryRequest) returns (EntryWithQRCodeResponse);
 
+    //phone or email
+    rpc WithValidateCode (EntryRequest) returns (EntryWithQRCodeResponse);
 }
 
 message EntryRequest {
     string content = 1;
+    string account = 2;
+}
+
+message EntryWithAccountResponse {
+    gs.commons.dto.State state = 1;
+    string accessToken = 2;
+    string refreshToken = 3;
 }
 
 message EntryWithQRCodeRequest {

@@ -15,10 +15,12 @@ var (
 	ErrApplicationAlreadyExists    = &gs_commons_dto.State{Ok: false, Code: 20009, Message: "err application already exists"}
 	ErrApplicationClosed           = &gs_commons_dto.State{Ok: false, Code: 20010, Message: "err application closed"}
 	ErrSystem                      = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err system"}
-	ErrDurationAccessExpired       = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err function access key"}
-	ErrDurationAccess              = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err function access"}
-	ErrAuthorization               = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err authorization"}
-	ErrDurationAccessTokenBusy     = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err get function access key busy"}
-	ErrNotFoundDurationAccessToken = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err not found duration access key"}
-	ErrVerificationCode            = &gs_commons_dto.State{Ok: false, Code: 20011, Message: "err verification code"}
+	ErrDurationAccessExpired       = &gs_commons_dto.State{Ok: false, Code: 20012, Message: "err function access key"}
+	ErrDurationAccess              = &gs_commons_dto.State{Ok: false, Code: 20013, Message: "err function access"}
+	ErrAuthorization               = &gs_commons_dto.State{Ok: false, Code: 20014, Message: "err authorization"}
+	ErrDurationAccessTokenBusy     = &gs_commons_dto.State{Ok: false, Code: 20015, Message: "err get function access key busy"}
+	ErrNotFoundDurationAccessToken = &gs_commons_dto.State{Ok: false, Code: 20016, Message: "err not found duration access key"}
+	ErrVerificationCode            = &gs_commons_dto.State{Ok: false, Code: 20017, Message: "err verification code"}
+	ErrInvalidUsernameOrPassword   = &gs_commons_dto.State{Ok: false, Code: 20018, Message: "err invalid username or password"}
+	ErrLoginFailed                 = &gs_commons_dto.State{Ok: false, Code: 20019, Message: "err login failed"}
 )

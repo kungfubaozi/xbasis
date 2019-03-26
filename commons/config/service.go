@@ -16,6 +16,7 @@ type GosionInitializeConfig struct {
 	Desc     string
 	Username string
 	Password string
+	Email    string
 }
 
 type OnNodeDataChanged func(data []byte, version int32) bool

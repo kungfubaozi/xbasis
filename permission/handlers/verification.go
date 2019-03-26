@@ -9,6 +9,7 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb"
+	"konekko.me/gosion/authentication/pb/nops"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -29,6 +30,7 @@ type verificationService struct {
 	applicationService gs_service_application.ApplicationService
 	blacklistService   gs_service_safety.BlacklistService
 	functionService    gs_service_permission.FunctionService
+	authService        gs_nops_service_authentication.AuthService
 }
 
 type requestHeaders struct {
@@ -208,6 +210,8 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							resp(errstate.Success)
 							break
 						case gs_commons_constants.AuthTypeOfToken:
+							//1.check token
+							//2.check user roles
 							break
 						case gs_commons_constants.AuthTypeOfFace:
 							break
@@ -223,7 +227,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 					if len(userId) == 0 {
 						userId = rh.ip
 					}
-					if dat.UserId != userId {
+					if dat.User != userId {
 						return errstate.ErrDurationAccess
 					}
 

@@ -9,6 +9,7 @@ It is generated from these files:
 
 It has these top-level messages:
 	EntryRequest
+	EntryWithAccountResponse
 	EntryWithQRCodeRequest
 	EntryWithQRCodeResponse
 */
@@ -17,7 +18,7 @@ package gs_service_user
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import _ "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -29,7 +30,6 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -45,11 +45,12 @@ var _ server.Option
 // Client API for Login service
 
 type LoginService interface {
-	WithPhone(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	WithEmail(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	WithPassword(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	// phone, email, account
+	WithAccount(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*EntryWithAccountResponse, error)
 	// use phone confirm
 	WithQRCode(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*EntryWithQRCodeResponse, error)
+	// phone or email
+	WithValidateCode(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*EntryWithQRCodeResponse, error)
 }
 
 type loginService struct {
@@ -70,29 +71,9 @@ func NewLoginService(name string, c client.Client) LoginService {
 	}
 }
 
-func (c *loginService) WithPhone(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Login.WithPhone", in)
-	out := new(gs_commons_dto.Status)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *loginService) WithEmail(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Login.WithEmail", in)
-	out := new(gs_commons_dto.Status)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *loginService) WithPassword(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Login.WithPassword", in)
-	out := new(gs_commons_dto.Status)
+func (c *loginService) WithAccount(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*EntryWithAccountResponse, error) {
+	req := c.c.NewRequest(c.name, "Login.WithAccount", in)
+	out := new(EntryWithAccountResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -110,22 +91,32 @@ func (c *loginService) WithQRCode(ctx context.Context, in *EntryRequest, opts ..
 	return out, nil
 }
 
+func (c *loginService) WithValidateCode(ctx context.Context, in *EntryRequest, opts ...client.CallOption) (*EntryWithQRCodeResponse, error) {
+	req := c.c.NewRequest(c.name, "Login.WithValidateCode", in)
+	out := new(EntryWithQRCodeResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Login service
 
 type LoginHandler interface {
-	WithPhone(context.Context, *EntryRequest, *gs_commons_dto.Status) error
-	WithEmail(context.Context, *EntryRequest, *gs_commons_dto.Status) error
-	WithPassword(context.Context, *EntryRequest, *gs_commons_dto.Status) error
+	// phone, email, account
+	WithAccount(context.Context, *EntryRequest, *EntryWithAccountResponse) error
 	// use phone confirm
 	WithQRCode(context.Context, *EntryRequest, *EntryWithQRCodeResponse) error
+	// phone or email
+	WithValidateCode(context.Context, *EntryRequest, *EntryWithQRCodeResponse) error
 }
 
 func RegisterLoginHandler(s server.Server, hdlr LoginHandler, opts ...server.HandlerOption) error {
 	type login interface {
-		WithPhone(ctx context.Context, in *EntryRequest, out *gs_commons_dto.Status) error
-		WithEmail(ctx context.Context, in *EntryRequest, out *gs_commons_dto.Status) error
-		WithPassword(ctx context.Context, in *EntryRequest, out *gs_commons_dto.Status) error
+		WithAccount(ctx context.Context, in *EntryRequest, out *EntryWithAccountResponse) error
 		WithQRCode(ctx context.Context, in *EntryRequest, out *EntryWithQRCodeResponse) error
+		WithValidateCode(ctx context.Context, in *EntryRequest, out *EntryWithQRCodeResponse) error
 	}
 	type Login struct {
 		login
@@ -138,18 +129,14 @@ type loginHandler struct {
 	LoginHandler
 }
 
-func (h *loginHandler) WithPhone(ctx context.Context, in *EntryRequest, out *gs_commons_dto.Status) error {
-	return h.LoginHandler.WithPhone(ctx, in, out)
-}
-
-func (h *loginHandler) WithEmail(ctx context.Context, in *EntryRequest, out *gs_commons_dto.Status) error {
-	return h.LoginHandler.WithEmail(ctx, in, out)
-}
-
-func (h *loginHandler) WithPassword(ctx context.Context, in *EntryRequest, out *gs_commons_dto.Status) error {
-	return h.LoginHandler.WithPassword(ctx, in, out)
+func (h *loginHandler) WithAccount(ctx context.Context, in *EntryRequest, out *EntryWithAccountResponse) error {
+	return h.LoginHandler.WithAccount(ctx, in, out)
 }
 
 func (h *loginHandler) WithQRCode(ctx context.Context, in *EntryRequest, out *EntryWithQRCodeResponse) error {
 	return h.LoginHandler.WithQRCode(ctx, in, out)
+}
+
+func (h *loginHandler) WithValidateCode(ctx context.Context, in *EntryRequest, out *EntryWithQRCodeResponse) error {
+	return h.LoginHandler.WithValidateCode(ctx, in, out)
 }

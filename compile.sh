@@ -21,17 +21,20 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/user.pr
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/invite.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/active.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/grant.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/oauth.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/nops/message.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/nops/user.proto
 
 #safety
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/frozen.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/blacklist.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/locking.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/status.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/nops/security.proto
 
 #authentication
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/auth.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/token.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/nops/auth.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/nops/token.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/route.proto
 
 #application
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/application.proto

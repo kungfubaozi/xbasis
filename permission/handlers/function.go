@@ -47,6 +47,8 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				case gs_commons_constants.AuthTypeOfToken:
 				case gs_commons_constants.AuthTypeOfValcode:
 				case gs_commons_constants.AuthTypeOfMobileConfirm:
+				case gs_commons_constants.AuthTypeOfMiniProgramUserConfirm:
+				case gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm:
 				default:
 					return errstate.ErrFunctionAuthType
 				}

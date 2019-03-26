@@ -15,6 +15,7 @@ type AppSetting struct {
 	Enabled     int64  `bson:"enabled"`
 	SyncUserURL string `bson:"sync_user_url"` //sync new user to your application database
 	OpenMode    int64  `bson:"open_mode"`     //open mode
+	RedirectURL string `bson:"redirect_url"`
 }
 
 type AppClient struct {

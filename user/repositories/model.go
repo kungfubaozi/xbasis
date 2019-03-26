@@ -20,6 +20,12 @@ type UserContractInfo struct {
 	ModifyAt int64  `bson:"modify_at"`
 }
 
+type UserOAuth struct {
+	OpenId   string
+	Type     int64
+	CreateAt int64
+}
+
 type UserPersonInfo struct {
 	UserId   string `bson:"user_id"`
 	Icon     string `bson:"icon"`

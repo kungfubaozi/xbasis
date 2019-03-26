@@ -47,6 +47,10 @@ func SHA256_BASE64(value string) string {
 	return base64.StdEncoding.EncodeToString([]byte(SHA256(value)))
 }
 
+func SHA1_BASE64(value string) string {
+	return base64.StdEncoding.EncodeToString([]byte(SHA1(value)))
+}
+
 func MD5_SHA256(value string) string {
 	return SHA256(Md5(value))
 }

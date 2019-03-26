@@ -39,11 +39,11 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			return errstate.ErrApplicationAlreadyExists
 		}
 
-		node := gs_commons_generator.ID()
+		id := gs_commons_generator.NewIDG()
 
 		now := time.Now().UnixNano()
 
-		appId := node.Generate().String()
+		appId := id.Get()
 
 		info := &application_repositories.AppInfo{
 			Name:         in.Name,
@@ -56,33 +56,33 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			},
 			Clients: []*application_repositories.AppClient{
 				{
-					Id:       node.Generate().String(),
+					Id:       id.Get(),
 					Platform: gs_commons_constants.PlatformOfAndroid,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(node.Generate().String() + appId),
+					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       node.Generate().String(),
+					Id:       id.Get(),
 					Platform: gs_commons_constants.PlatformOfIOS,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(node.Generate().String() + appId),
+					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       node.Generate().String(),
+					Id:       id.Get(),
 					Platform: gs_commons_constants.PlatformOfWeb,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(node.Generate().String() + appId),
+					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       node.Generate().String(),
+					Id:       id.Get(),
 					Platform: gs_commons_constants.PlatformOfWindows,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(node.Generate().String() + appId),
+					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       node.Generate().String(),
+					Id:       id.Get(),
 					Platform: gs_commons_constants.PlatfromOfMacOS,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(node.Generate().String() + appId),
+					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 			},

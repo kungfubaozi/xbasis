@@ -3,10 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/vmihailenco/msgpack"
+	"konekko.me/gosion/authentication/repositories"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/generator"
 	"reflect"
-	"time"
 )
 
 type Message struct {
@@ -112,12 +115,38 @@ func main() {
 
 	//fmt.Println(rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000))
 
-	s := time.Now().UnixNano()
-	out := new(gs_commons_dto.Status)
-	Add(out)
-	v := time.Now().UnixNano() - s
-	fmt.Println(out.State)
-	fmt.Println(v / 1e6)
+	//s := time.Now().UnixNano()
+	//out := new(gs_commons_dto.Status)
+	//Add(out)
+	//v := time.Now().UnixNano() - s
+	//fmt.Println(out.State)
+	//fmt.Println(v / 1e6)
+
+	id := gs_commons_generator.NewIDG()
+
+	sut := &authentication_repositories.SimpleUserToken{
+		UserId:   id.Get(),
+		AppId:    id.Get(),
+		ClientId: id.Get(),
+		Relation: id.Get(),
+	}
+
+	fmt.Println(sut)
+
+	b, err := msgpack.Marshal(sut)
+	if err != nil {
+		panic(err)
+	}
+
+	s, err := gs_commons_encrypt.AESEncrypt(b, []byte("912ec803b2ce49e4a541068d495ab570"))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("value", s)
+
+	gs_service_user.ActiveService{}
+
 }
 
 type TestController func()

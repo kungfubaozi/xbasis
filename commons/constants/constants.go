@@ -32,6 +32,12 @@ const (
 
 	//mobile confirm
 	AuthTypeOfMobileConfirm = 11 << 15
+
+	////weixin mini program --- Gosion
+	AuthTypeOfMiniProgramCodeConfirm = 11 << 17
+	//
+	////weixin mini program
+	AuthTypeOfMiniProgramUserConfirm = 11 << 19
 )
 
 const (
@@ -78,4 +84,9 @@ const (
 	ZKWatchInitializeConfigPath        = "/_gosion-initialize-config"
 	ZKWatchInitializeVersionListenPath = "/_gosion-initialize-version"
 	GosionConfiguration                = "/_gosion-configuration"
+)
+
+const (
+	DatTypeOfSendToWeixin  = 40801
+	DatTypeOfSendToDefault = 40803
 )
