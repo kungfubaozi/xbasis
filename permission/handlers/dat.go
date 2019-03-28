@@ -19,10 +19,10 @@ import (
 )
 
 type durationAccessService struct {
-	pool          *redis.Pool
-	session       *mgo.Session
-	configuration *gs_commons_config.GosionConfiguration
-	message       gs_nops_service_message.MessageService
+	pool           *redis.Pool
+	session        *mgo.Session
+	configuration  *gs_commons_config.GosionConfiguration
+	messageService gs_nops_service_user.MessageService
 }
 
 func (svc *durationAccessService) GetRepo() permission_repositories.FunctionRepo {
@@ -60,7 +60,7 @@ func (svc *durationAccessService) Datu(ctx context.Context, in *gs_service_permi
 }
 
 func (svc *durationAccessService) sendTo(ctx context.Context, to, code string, t int64) *gs_commons_dto.State {
-	s, err := svc.message.SendVerificationCode(ctx, &gs_nops_service_message.SendRequest{
+	s, err := svc.messageService.SendVerificationCode(ctx, &gs_nops_service_user.SendRequest{
 		To:          to,
 		Type:        t,
 		Code:        code,

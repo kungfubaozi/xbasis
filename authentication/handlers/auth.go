@@ -13,14 +13,12 @@ import (
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/connection/cmd/connectioncli"
 	"konekko.me/gosion/safety/pb/nops"
-	"konekko.me/gosion/user/pb/nops"
 )
 
 type authService struct {
 	pool               *redis.Pool
 	configuration      *gs_commons_config.GosionConfiguration
 	nopSecurityService gs_nops_service_safety.SecurityService
-	nopUserService     gs_nops_service_user.UserService
 	connectioncli      connectioncli.ConnectionClient
 }
 
@@ -57,13 +55,26 @@ func (svc *authService) Verify(ctx context.Context, in *gs_nops_service_authenti
 			return errstate.ErrAccessTokenOrClient
 		}
 
-		var ui authentication_repositories.UserAuthorizeInfo
-		err = msgpack.Unmarshal(b, &ui)
+		var uai authentication_repositories.UserAuthorizeInfo
+		err = msgpack.Unmarshal(b, &uai)
 		if err != nil {
 			return errstate.ErrSystem
 		}
 
-		return nil
+		//check
+		if claims.Token.UserId != uai.UserId || claims.Token.ClientId != uai.ClientId ||
+			claims.Token.Relation != uai.Relation || claims.Token.AppId != uai.AppId ||
+			uai.Device != auth.UserDevice || uai.UserAgent != auth.UserAgent ||
+			auth.ClientId != uai.ClientId || auth.User != uai.UserId || auth.AppId != uai.AppId {
+			return errstate.ErrAccessToken
+		}
+
+		s, err := svc.nopSecurityService.Get(ctx, &gs_nops_service_safety.GetRequest{UserId: uai.UserId})
+		if err != nil {
+			return errstate.ErrSystem
+		}
+
+		return s.State
 	})
 }
 

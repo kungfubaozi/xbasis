@@ -17,14 +17,13 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 			return
 		}
 		if c == 0 {
-			id := gs_commons_generator.ID()
+			id := gs_commons_generator.NewIDG()
 			functionRepo := permission_repositories.FunctionRepo{Session: session, Conn: pool.Get()}
 			defer functionRepo.Close()
 			groupRepo := permission_repositories.GroupRepo{Session: session, ID: id}
 			defer groupRepo.Close()
 			roleRepo := permission_repositories.RoleRepo{Session: session, ID: id}
 			defer roleRepo.Close()
-
 		}
 	}
 }

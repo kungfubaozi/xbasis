@@ -28,8 +28,7 @@ message RefreshResponse {
 
 message PushRequest {
     string routeTo = 1; // clientId
-    string token = 2;
-    string redirect = 3;
+    string redirect = 2;
 }
 
 message PushResponse {

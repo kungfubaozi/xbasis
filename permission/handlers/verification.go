@@ -3,6 +3,7 @@ package permission_handlers
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
 	"github.com/twinj/uuid"
@@ -170,9 +171,9 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 					return nil
 				}
 
-				//no grant platform
-				if a.NoGrantPlatform != nil && len(a.NoGrantPlatform) > 0 {
-					for _, v := range a.NoGrantPlatform {
+				//grant platform
+				if a.GrantPlatforms != nil && len(a.GrantPlatforms) > 0 {
+					for _, v := range a.GrantPlatforms {
 						if v == appResp.ClientPlatform {
 							return errstate.ErrRequest
 						}
@@ -181,6 +182,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 				dat := &permission_repositories.DurationAccess{}
 				userId := ""
+				conn := svc.pool.Get()
 				wg.Add(len(a.AuthTypes))
 				for _, v := range a.AuthTypes {
 					go func() {
@@ -200,7 +202,6 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 							key := gs_commons_encrypt.SHA1(string(v) + rh.clientId)
 							dat.Key = key
-							conn := svc.pool.Get()
 							b, err := redis.Bytes(conn.Do("hmget", key, a.ApiTag))
 							if err != nil && err == redis.ErrNil {
 								resp(errstate.ErrRequest)
@@ -237,7 +238,56 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 								return
 							}
 							//2.check user roles
-
+							//appId.userId
+							var userRoles, functionRoles []interface{}
+							var swg sync.WaitGroup
+							swg.Add(2)
+							urk := fmt.Sprintf("u/r.%s.%s", appResp.AppId, status.Content)
+							frk := fmt.Sprintf("f/r.%s.%s", appResp.AppId, a.Id)
+							go func() {
+								userRoles, err = redis.Values(conn.Do("SMEMBERS", urk))
+								swg.Add(1)
+							}()
+							go func() {
+								functionRoles, err = redis.Values(conn.Do("SMEMBERS", frk))
+								swg.Add(1)
+							}()
+							swg.Wait()
+							if userRoles != nil && functionRoles != nil && len(userRoles) > 0 && len(functionRoles) > 0 {
+								roles := make(map[string]string)
+								ok := false
+								for _, v := range userRoles {
+									b := string(v.([]byte))
+									roles[b] = "ok"
+								}
+								for _, v := range functionRoles {
+									b := string(v.([]byte))
+									//The current design is to delete the role only by deleting the corresponding data,
+									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
+									if roles[b] != "ok" {
+										//check role
+										_, err := conn.Do("sismember", fmt.Sprintf("app.%s.roles.%s", appResp.AppId, b))
+										if err != nil && err == redis.ErrNil { //invalid role
+											//possibly due to the removal of roles
+											//remove role
+											conn.Do("srem", urk, b)
+											conn.Do("srem", frk, b)
+											break
+										}
+										ok = true
+									}
+								}
+								if ok {
+									resp(errstate.Success)
+									return
+								} else {
+									resp(errstate.ErrUserPermission)
+									return
+								}
+							} else {
+								resp(errstate.ErrRequest)
+								return
+							}
 							break
 						case gs_commons_constants.AuthTypeOfFace:
 							break

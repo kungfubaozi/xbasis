@@ -6,7 +6,6 @@ type SimpleUserToken struct {
 	ClientId string
 	Relation string
 	Type     int64
-	ExpireAt int64 //expire at time ; nanoTime
 }
 
 type UserAuthorizeInfo struct {

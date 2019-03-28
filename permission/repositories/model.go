@@ -1,10 +1,9 @@
 package permission_repositories
 
-type UserRole struct {
+type UserOrientate struct {
 	Id            string          `bson:"_id"`
-	CreateUserId  string          `bson:"create_user_id"`
 	CreateAt      int64           `bson:"create_at"`
-	Name          string          `bson:"name"`
+	UserId        string          `bson:"user_id"`
 	LinkRoles     []*LinkRole     `bson:"link_roles"`
 	LinkAppGroups []*LinkAppGroup `bson:"link_app_groups"`
 }
@@ -16,6 +15,15 @@ type UserGroup struct {
 	Name          string          `bson:"name"`
 	Type          int64           `bson:"type"`
 	LinkAppGroups []*LinkAppGroup `bson:"link_app_groups"`
+}
+
+type Role struct {
+	Id           string `bson:"_id"`
+	CreateUserId string `bson:"create_user_id"`
+	CreateAt     int64  `bson:"create_at"`
+	Name         string `bson:"name"`
+	Enabled      bool   `bson:"enabled"`
+	AppId        string `bson:"app_id"`
 }
 
 type LinkRole struct {
@@ -50,6 +58,6 @@ type Function struct {
 	AppId        string  `bson:"app_id"`
 	AuthTypes    []int64 `bson:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenLife    int64   `bson:"val_token_life"` //def: 0 second (your value must >= 60s)
-	NoGrantPlatform []int64 `bson:"no_grant_platform"`
+	ValTokenLife   int64   `bson:"val_token_life"` //def: 0 second (your value must >= 60s)
+	GrantPlatforms []int64 `bson:"grant_platforms"`
 }
