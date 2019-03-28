@@ -2,6 +2,7 @@ package permission_handlers
 
 import (
 	"context"
+	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -13,6 +14,7 @@ import (
 
 type roleService struct {
 	session *mgo.Session
+	pool    *redis.Pool
 }
 
 func (svc *roleService) GetRepo() *permission_repositories.RoleRepo {
@@ -55,6 +57,6 @@ func (svc *roleService) Rename(ctx context.Context, in *gs_service_permission.Ro
 	})
 }
 
-func NewRoleService(session *mgo.Session) gs_service_permission.RoleHandler {
-	return &roleService{session: session}
+func NewRoleService(session *mgo.Session, pool *redis.Pool) gs_service_permission.RoleHandler {
+	return &roleService{session: session, pool: pool}
 }

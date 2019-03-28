@@ -6,10 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-//token过期时间
-var TOKEN_EX_TIME string
-
-func CreatePool(addr string) *redis.Pool {
+func CreatePool(addr string) (*redis.Pool, error) {
 
 	pool := &redis.Pool{
 		MaxIdle: 20,
@@ -24,7 +21,13 @@ func CreatePool(addr string) *redis.Pool {
 		},
 	}
 
-	return pool
+	conn, err := pool.Dial()
+	if err != nil {
+		return nil, err
+	}
+	conn.Close()
+
+	return pool, nil
 }
 
 // 建立与mongo的连接

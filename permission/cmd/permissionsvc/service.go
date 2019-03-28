@@ -15,7 +15,10 @@ func StartService() {
 
 	configuration := &gs_commons_config.GosionConfiguration{}
 
-	pool := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	pool, err := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	if err != nil {
+		panic(err)
+	}
 	defer pool.Close()
 
 	session, err := gs_commons_dao.CreateSession("192.168.2.60:27017")

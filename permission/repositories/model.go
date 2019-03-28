@@ -22,7 +22,6 @@ type Role struct {
 	CreateUserId string `bson:"create_user_id"`
 	CreateAt     int64  `bson:"create_at"`
 	Name         string `bson:"name"`
-	Enabled      bool   `bson:"enabled"`
 	AppId        string `bson:"app_id"`
 }
 
