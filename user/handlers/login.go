@@ -25,6 +25,7 @@ func (svc *loginService) GetRepo() *user_repositories.UserRepo {
 	return &user_repositories.UserRepo{Session: svc.session.Clone()}
 }
 
+//web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithAccountResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Account) > 0 && len(in.Content) > 0 {
@@ -78,13 +79,17 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				}
 
 				//generate token
-				s1, err := svc.tokenService.Generate(ctx, &gs_commons_dto.Authorize{
-					ClientId:  auth.ClientId,
-					UserId:    info.Id,
-					Ip:        auth.IP,
-					Device:    auth.UserDevice,
-					UserAgent: auth.UserAgent,
-					AppId:     auth.AppId,
+				s1, err := svc.tokenService.Generate(ctx, &gs_nops_service_authentication.GenerateRequest{
+					Auth: &gs_commons_dto.Authorize{
+						ClientId:  in.ClientId,
+						UserId:    info.Id,
+						Ip:        auth.IP,
+						Device:    auth.UserDevice,
+						UserAgent: auth.UserAgent,
+						AppId:     auth.AppId,
+					},
+					Route:      false,
+					RelationId: "",
 				})
 				if err != nil {
 					return nil
@@ -107,13 +112,14 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 	})
 }
 
+//web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithValidateCode(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithQRCodeResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-//只有在对应的client上登录并验证才可成功登录
+//web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithQRCodeResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil

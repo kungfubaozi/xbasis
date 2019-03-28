@@ -8,7 +8,7 @@ import (
 	"github.com/twinj/uuid"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/application/pb"
+	"konekko.me/gosion/application/pb/nops"
 	"konekko.me/gosion/authentication/pb/nops"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
@@ -24,13 +24,13 @@ import (
 )
 
 type verificationService struct {
-	pool               *redis.Pool
-	session            *mgo.Session
-	configuration      *gs_commons_config.GosionConfiguration
-	applicationService gs_service_application.ApplicationService
-	blacklistService   gs_service_safety.BlacklistService
-	functionService    gs_service_permission.FunctionService
-	authService        gs_nops_service_authentication.AuthService
+	pool                        *redis.Pool
+	session                     *mgo.Session
+	configuration               *gs_commons_config.GosionConfiguration
+	nopApplicationStatusService gs_nops_service_application.ApplicationStatusService
+	blacklistService            gs_service_safety.BlacklistService
+	functionService             gs_service_permission.FunctionService
+	nopAuthService              gs_nops_service_authentication.AuthService
 }
 
 type requestHeaders struct {
@@ -134,14 +134,13 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				resp(s.State)
 			}()
 
-			var appResp *gs_service_application.StatusResponse
+			var appResp *gs_nops_service_application.GetAppClientStatusResponse
 
 			//application
 			go func() {
-				s, err := svc.applicationService.Status(ctx,
-					&gs_service_application.FindRequest{
-						Content: rh.clientId,
-					})
+				s, err := svc.nopApplicationStatusService.GetAppClientStatus(ctx, &gs_nops_service_application.GetAppClientStatusRequest{
+					ClientId: rh.clientId,
+				})
 				if err != nil {
 					resp(errstate.ErrRequest)
 					return
@@ -159,6 +158,10 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 			if appResp != nil {
 
+				if appResp.ClientEnabled != gs_commons_constants.Enabled {
+					return errstate.ErrClientClosed
+				}
+
 				repo := svc.GetRepo()
 				defer repo.Close()
 
@@ -166,6 +169,16 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				if err != nil {
 					return nil
 				}
+
+				//no grant platform
+				if a.NoGrantPlatform != nil && len(a.NoGrantPlatform) > 0 {
+					for _, v := range a.NoGrantPlatform {
+						if v == appResp.ClientPlatform {
+							return errstate.ErrRequest
+						}
+					}
+				}
+
 				dat := &permission_repositories.DurationAccess{}
 				userId := ""
 				wg.Add(len(a.AuthTypes))
@@ -211,7 +224,20 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							//1.check token
+							status, err := svc.nopAuthService.Verify(ctx, &gs_nops_service_authentication.VerifyRequest{
+								Token:    rh.authorization,
+								ClientId: rh.clientId,
+							})
+							if err != nil {
+								resp(errstate.ErrSystem)
+								return
+							}
+							if !status.State.Ok {
+								resp(status.State)
+								return
+							}
 							//2.check user roles
+
 							break
 						case gs_commons_constants.AuthTypeOfFace:
 							break

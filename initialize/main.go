@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/vmihailenco/msgpack"
-	"golang.org/x/crypto/bcrypt"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/encrypt"
@@ -78,21 +77,15 @@ func main() {
 	fmt.Println("system initialize...")
 	time.Sleep(200)
 
-	node := gs_commons_generator.ID()
-
-	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
+	id := gs_commons_generator.NewIDG()
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
-		AppId:    node.Generate().String(),
+		AppId:    id.Short(),
 		AppName:  enterprise,
-		UserId:   node.Generate().String(),
+		UserId:   id.Get(),
 		Desc:     desc,
 		Username: username,
 		Email:    email,
-		Password: string(b),
 	}
 
 	configuration := &gs_commons_config.GosionConfiguration{
@@ -106,7 +99,7 @@ func main() {
 		LoginType:                        1001 | 1002 | 1003,
 	}
 
-	b, err = msgpack.Marshal(initConfig)
+	b, err := msgpack.Marshal(initConfig)
 	if err != nil {
 		panic(err)
 	}

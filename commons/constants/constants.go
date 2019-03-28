@@ -90,3 +90,8 @@ const (
 	DatTypeOfSendToWeixin  = 40801
 	DatTypeOfSendToDefault = 40803
 )
+
+const (
+	AccessToken  = 8 >> 10
+	RefreshToken = 9
+)

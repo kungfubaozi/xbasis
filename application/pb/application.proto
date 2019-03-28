@@ -19,13 +19,6 @@ service Application {
 
     rpc List (FindRequest) returns (ListResponse);
 
-    rpc Status (FindRequest) returns (StatusResponse);
-}
-
-message StatusResponse {
-    gs.commons.dto.State state = 1;
-    string appId = 2;
-    int64 openMode = 3;
 }
 
 message FindRequest {

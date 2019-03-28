@@ -8,7 +8,6 @@ It is generated from these files:
 	application/pb/application.proto
 
 It has these top-level messages:
-	StatusResponse
 	FindRequest
 	ListResponse
 	SimpleApplicationResponse
@@ -57,7 +56,6 @@ type ApplicationService interface {
 	FindByAppId(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*SimpleApplicationResponse, error)
 	FindByClientId(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*SimpleApplicationResponse, error)
 	List(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*ListResponse, error)
-	Status(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*StatusResponse, error)
 }
 
 type applicationService struct {
@@ -138,16 +136,6 @@ func (c *applicationService) List(ctx context.Context, in *FindRequest, opts ...
 	return out, nil
 }
 
-func (c *applicationService) Status(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*StatusResponse, error) {
-	req := c.c.NewRequest(c.name, "Application.Status", in)
-	out := new(StatusResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for Application service
 
 type ApplicationHandler interface {
@@ -157,7 +145,6 @@ type ApplicationHandler interface {
 	FindByAppId(context.Context, *FindRequest, *SimpleApplicationResponse) error
 	FindByClientId(context.Context, *FindRequest, *SimpleApplicationResponse) error
 	List(context.Context, *FindRequest, *ListResponse) error
-	Status(context.Context, *FindRequest, *StatusResponse) error
 }
 
 func RegisterApplicationHandler(s server.Server, hdlr ApplicationHandler, opts ...server.HandlerOption) error {
@@ -168,7 +155,6 @@ func RegisterApplicationHandler(s server.Server, hdlr ApplicationHandler, opts .
 		FindByAppId(ctx context.Context, in *FindRequest, out *SimpleApplicationResponse) error
 		FindByClientId(ctx context.Context, in *FindRequest, out *SimpleApplicationResponse) error
 		List(ctx context.Context, in *FindRequest, out *ListResponse) error
-		Status(ctx context.Context, in *FindRequest, out *StatusResponse) error
 	}
 	type Application struct {
 		application
@@ -203,8 +189,4 @@ func (h *applicationHandler) FindByClientId(ctx context.Context, in *FindRequest
 
 func (h *applicationHandler) List(ctx context.Context, in *FindRequest, out *ListResponse) error {
 	return h.ApplicationHandler.List(ctx, in, out)
-}
-
-func (h *applicationHandler) Status(ctx context.Context, in *FindRequest, out *StatusResponse) error {
-	return h.ApplicationHandler.Status(ctx, in, out)
 }

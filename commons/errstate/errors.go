@@ -3,7 +3,7 @@ package errstate
 import "konekko.me/gosion/commons/dto"
 
 var (
-	Success                        = &gs_commons_dto.State{Ok: false, Code: 0, Message: "success"}
+	Success                        = &gs_commons_dto.State{Ok: true, Code: 0, Message: "success"}
 	ErrRequest                     = &gs_commons_dto.State{Ok: false, Code: 20001, Message: "err request"}
 	ErrInvalidStateField           = &gs_commons_dto.State{Ok: false, Code: 20002, Message: "err return type, no found 'State' file"}
 	ErrRoleAlreadyExists           = &gs_commons_dto.State{Ok: false, Code: 20003, Message: "err role already exists"}
@@ -23,4 +23,11 @@ var (
 	ErrVerificationCode            = &gs_commons_dto.State{Ok: false, Code: 20017, Message: "err verification code"}
 	ErrInvalidUsernameOrPassword   = &gs_commons_dto.State{Ok: false, Code: 20018, Message: "err invalid username or password"}
 	ErrLoginFailed                 = &gs_commons_dto.State{Ok: false, Code: 20019, Message: "err login failed"}
+	ErrRefreshToken                = &gs_commons_dto.State{Ok: false, Code: 20020, Message: "err refresh token"}
+	ErrAccessToken                 = &gs_commons_dto.State{Ok: false, Code: 20021, Message: "err access token"}
+	ErrAccessTokenExpired          = &gs_commons_dto.State{Ok: false, Code: 20022, Message: "err access token expired"}
+	ErrRefreshTokenExpired         = &gs_commons_dto.State{Ok: false, Code: 20023, Message: "err refresh token expired"}
+	ErrOperate                     = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err operate"}
+	ErrClientClosed                = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err client closed"}
+	ErrAccessTokenOrClient         = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err access token or client"}
 )

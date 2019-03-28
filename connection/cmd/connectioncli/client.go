@@ -20,7 +20,7 @@ type ConnectionClient interface {
 	OfflineToAppUser(msg *Message) error
 
 	//disconnect user to target app client
-	OfflineToAppClientUser(msg *Message) error
+	OfflineToAppClientUser(userId, clientId string) error
 
 	//disconnect user all socket connection
 	OfflineToUser(msg *Message) error
@@ -45,11 +45,14 @@ type operation struct {
 	conn *amqp.Connection
 }
 
-func (o *operation) OfflineToAppClientUser(msg *Message) error {
-	if len(msg.TargetId) == 0 || len(msg.UserId) == 0 {
+func (o *operation) OfflineToAppClientUser(userId, clientId string) error {
+	if len(clientId) == 0 || len(userId) == 0 {
 		return errMessage
 	}
-	return o.send("otacu", msg)
+	return o.send("otacu", &Message{
+		UserId:   userId,
+		TargetId: clientId,
+	})
 }
 
 func (o *operation) BroadcastToAppClient(msg *Message) error {

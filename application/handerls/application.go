@@ -8,7 +8,6 @@ import (
 	"konekko.me/gosion/application/repositories"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
@@ -43,7 +42,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 
 		now := time.Now().UnixNano()
 
-		appId := id.Get()
+		appId := id.Short()
 
 		info := &application_repositories.AppInfo{
 			Name:         in.Name,
@@ -56,33 +55,28 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			},
 			Clients: []*application_repositories.AppClient{
 				{
-					Id:       id.Get(),
+					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfAndroid,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       id.Get(),
+					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfIOS,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       id.Get(),
+					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfWeb,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       id.Get(),
+					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfWindows,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 				{
-					Id:       id.Get(),
+					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatfromOfMacOS,
-					Secret:   gs_commons_encrypt.SHA256_BASE64(id.Get() + appId),
 					Enabled:  gs_commons_constants.Enabled,
 				},
 			},
@@ -145,32 +139,6 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 
 		out.Info.Clients = ar
 
-		out.State = errstate.Success
-
-		return nil
-	})
-}
-
-func (svc *applicationService) Status(ctx context.Context, in *gs_service_application.FindRequest, out *gs_service_application.StatusResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		repo := svc.GetRepo()
-		defer repo.Close()
-
-		if len(in.Content) == 0 {
-			return errstate.ErrRequest
-		}
-
-		info, err := repo.FindByApplicationId(in.Content)
-		if err != nil {
-			return errstate.ErrRequest
-		}
-
-		if info.Settings.Enabled == gs_commons_constants.Closed {
-			return errstate.ErrApplicationClosed
-		}
-
-		out.AppId = info.Id
-		out.OpenMode = info.Settings.OpenMode
 		out.State = errstate.Success
 
 		return nil

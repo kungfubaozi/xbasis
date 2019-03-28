@@ -8,6 +8,7 @@ It is generated from these files:
 	authentication/pb/nops/token.proto
 
 It has these top-level messages:
+	GenerateRequest
 	GenerateResponse
 */
 package gs_nops_service_authentication
@@ -15,7 +16,7 @@ package gs_nops_service_authentication
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import _ "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +28,6 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Authorize{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Token service
 
 type TokenService interface {
-	Generate(ctx context.Context, in *gs_commons_dto.Authorize, opts ...client.CallOption) (*GenerateResponse, error)
+	Generate(ctx context.Context, in *GenerateRequest, opts ...client.CallOption) (*GenerateResponse, error)
 }
 
 type tokenService struct {
@@ -64,7 +64,7 @@ func NewTokenService(name string, c client.Client) TokenService {
 	}
 }
 
-func (c *tokenService) Generate(ctx context.Context, in *gs_commons_dto.Authorize, opts ...client.CallOption) (*GenerateResponse, error) {
+func (c *tokenService) Generate(ctx context.Context, in *GenerateRequest, opts ...client.CallOption) (*GenerateResponse, error) {
 	req := c.c.NewRequest(c.name, "Token.Generate", in)
 	out := new(GenerateResponse)
 	err := c.c.Call(ctx, req, out, opts...)
@@ -77,12 +77,12 @@ func (c *tokenService) Generate(ctx context.Context, in *gs_commons_dto.Authoriz
 // Server API for Token service
 
 type TokenHandler interface {
-	Generate(context.Context, *gs_commons_dto.Authorize, *GenerateResponse) error
+	Generate(context.Context, *GenerateRequest, *GenerateResponse) error
 }
 
 func RegisterTokenHandler(s server.Server, hdlr TokenHandler, opts ...server.HandlerOption) error {
 	type token interface {
-		Generate(ctx context.Context, in *gs_commons_dto.Authorize, out *GenerateResponse) error
+		Generate(ctx context.Context, in *GenerateRequest, out *GenerateResponse) error
 	}
 	type Token struct {
 		token
@@ -95,6 +95,6 @@ type tokenHandler struct {
 	TokenHandler
 }
 
-func (h *tokenHandler) Generate(ctx context.Context, in *gs_commons_dto.Authorize, out *GenerateResponse) error {
+func (h *tokenHandler) Generate(ctx context.Context, in *GenerateRequest, out *GenerateResponse) error {
 	return h.TokenHandler.Generate(ctx, in, out)
 }

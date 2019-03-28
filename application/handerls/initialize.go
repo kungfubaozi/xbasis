@@ -19,11 +19,11 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 		}
 		//init
 		if count == 0 {
-			id := gs_commons_generator.ID()
+			id := gs_commons_generator.NewIDG()
 			info := &application_repositories.AppInfo{
 				Name: config.AppName,
 				Desc: config.Desc,
-				Id:   id.Generate().String(),
+				Id:   id.Short(),
 				Main: 101,
 				Settings: &application_repositories.AppSetting{
 					Enabled:  gs_commons_constants.Enabled,
@@ -31,8 +31,28 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 				},
 				Clients: []*application_repositories.AppClient{
 					{
-						Id:       id.Generate().String(),
+						Id:       id.Short(),
 						Platform: gs_commons_constants.PlatformOfWeb,
+						Enabled:  gs_commons_constants.Enabled,
+					},
+					{
+						Id:       id.Short(),
+						Platform: gs_commons_constants.PlatfromOfMacOS,
+						Enabled:  gs_commons_constants.Closed,
+					},
+					{
+						Id:       id.Short(),
+						Platform: gs_commons_constants.PlatformOfWindows,
+						Enabled:  gs_commons_constants.Closed,
+					},
+					{
+						Id:       id.Short(),
+						Platform: gs_commons_constants.PlatformOfIOS,
+						Enabled:  gs_commons_constants.Enabled,
+					},
+					{
+						Id:       id.Short(),
+						Platform: gs_commons_constants.PlatformOfAndroid,
 						Enabled:  gs_commons_constants.Enabled,
 					},
 				},

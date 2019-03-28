@@ -28,16 +28,21 @@ func (repo *UserRepo) FindById(id string) (*UserInfo, error) {
 }
 
 func (repo *UserRepo) userCollection() *mgo.Collection {
-	return repo.Session.DB("gosion").C("users")
+	return repo.Session.DB("gosion").C("users_")
 }
 
 func (repo *UserRepo) contractCollection() *mgo.Collection {
-	return repo.Session.DB("gosion").C("user_contract")
+	return repo.Session.DB("gosion").C("user_contract_")
 }
 
 func (repo *UserRepo) infoCollection() *mgo.Collection {
-	return repo.Session.DB("gosion").C("user_info")
+	return repo.Session.DB("gosion").C("user_info_")
 }
+
+//
+//func (repo *UserRepo) randModuloCollection(fix string) string {
+//
+//}
 
 func (repo *UserRepo) Close() {
 	repo.Session.Close()

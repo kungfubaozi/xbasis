@@ -19,6 +19,7 @@ service Login {
 message EntryRequest {
     string content = 1;
     string account = 2;
+    string clientId = 3;
 }
 
 message EntryWithAccountResponse {

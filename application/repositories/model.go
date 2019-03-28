@@ -16,11 +16,11 @@ type AppSetting struct {
 	SyncUserURL string `bson:"sync_user_url"` //sync new user to your application database
 	OpenMode    int64  `bson:"open_mode"`     //open mode
 	RedirectURL string `bson:"redirect_url"`
+	Quarantine  int64  `bson:"quarantine"` //create local self database
 }
 
 type AppClient struct {
 	Id       string `bson:"id"`
-	Secret   string `bson:"secret"`
 	Platform int64  `bson:"platform"`
 	Enabled  int64  `bson:"enabled"`
 }

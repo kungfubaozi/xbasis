@@ -8,6 +8,22 @@ service Router {
 
     rpc push (PushRequest) returns (PushResponse);
 
+    rpc refresh (RefreshRequest) returns (RefreshResponse);
+
+    rpc logout (LogoutRequest) returns (gs.commons.dto.Status);
+}
+
+message LogoutRequest {
+    string accessToken = 1;
+}
+
+message RefreshRequest {
+    string accessToken = 1;
+}
+
+message RefreshResponse {
+    gs.commons.dto.State state = 1;
+    string token = 2;
 }
 
 message PushRequest {

@@ -8,6 +8,9 @@ It is generated from these files:
 	authentication/pb/route.proto
 
 It has these top-level messages:
+	LogoutRequest
+	RefreshRequest
+	RefreshResponse
 	PushRequest
 	PushResponse
 */
@@ -16,7 +19,7 @@ package gs_service_authentication
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import gs_commons_dto "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -28,6 +31,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = gs_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,6 +48,8 @@ var _ server.Option
 
 type RouterService interface {
 	Push(ctx context.Context, in *PushRequest, opts ...client.CallOption) (*PushResponse, error)
+	Refresh(ctx context.Context, in *RefreshRequest, opts ...client.CallOption) (*RefreshResponse, error)
+	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type routerService struct {
@@ -74,15 +80,39 @@ func (c *routerService) Push(ctx context.Context, in *PushRequest, opts ...clien
 	return out, nil
 }
 
+func (c *routerService) Refresh(ctx context.Context, in *RefreshRequest, opts ...client.CallOption) (*RefreshResponse, error) {
+	req := c.c.NewRequest(c.name, "Router.refresh", in)
+	out := new(RefreshResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routerService) Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Router.logout", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Router service
 
 type RouterHandler interface {
 	Push(context.Context, *PushRequest, *PushResponse) error
+	Refresh(context.Context, *RefreshRequest, *RefreshResponse) error
+	Logout(context.Context, *LogoutRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterRouterHandler(s server.Server, hdlr RouterHandler, opts ...server.HandlerOption) error {
 	type router interface {
 		Push(ctx context.Context, in *PushRequest, out *PushResponse) error
+		Refresh(ctx context.Context, in *RefreshRequest, out *RefreshResponse) error
+		Logout(ctx context.Context, in *LogoutRequest, out *gs_commons_dto.Status) error
 	}
 	type Router struct {
 		router
@@ -97,4 +127,12 @@ type routerHandler struct {
 
 func (h *routerHandler) Push(ctx context.Context, in *PushRequest, out *PushResponse) error {
 	return h.RouterHandler.Push(ctx, in, out)
+}
+
+func (h *routerHandler) Refresh(ctx context.Context, in *RefreshRequest, out *RefreshResponse) error {
+	return h.RouterHandler.Refresh(ctx, in, out)
+}
+
+func (h *routerHandler) Logout(ctx context.Context, in *LogoutRequest, out *gs_commons_dto.Status) error {
+	return h.RouterHandler.Logout(ctx, in, out)
 }

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package gs.nops.service.application;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service ApplicationStatus {
+
+    rpc getAppClientStatus (GetAppClientStatusRequest) returns (GetAppClientStatusResponse);
+
+}
+
+message GetAppClientStatusRequest {
+    string clientId = 1;
+}
+
+message GetAppClientStatusResponse {
+    gs.commons.dto.State state = 1;
+    string appId = 2;
+    int64 appOpenMode = 3;
+    int64 appQuarantine = 4;
+    int64 clientPlatform = 5;
+    int64 clientEnabled = 6;
+}

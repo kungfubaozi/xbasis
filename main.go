@@ -3,13 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/authentication/repositories"
 	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"reflect"
+	"strings"
 )
 
 type Message struct {
@@ -124,28 +122,48 @@ func main() {
 
 	id := gs_commons_generator.NewIDG()
 
-	sut := &authentication_repositories.SimpleUserToken{
-		UserId:   id.Get(),
-		AppId:    id.Get(),
-		ClientId: id.Get(),
-		Relation: id.Get(),
-	}
+	//fmt.Println(id.Short())
+	//
+	//k := gs_commons_encrypt.Md5(id.Get() + id.Short())
+	//
+	//fmt.Println(k)
+	//
+	//v, err := gs_commons_encrypt.AESEncrypt([]byte("this is test data"), []byte(k))
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//fmt.Println(string(v))
 
-	fmt.Println(sut)
+	//
+	//sut := &authentication_repositories.SimpleUserToken{
+	//	UserId:   id.Get(),
+	//	AppId:    id.Get(),
+	//	ClientId: id.Get(),
+	//	Relation: id.Get(),
+	//}
+	//
+	//fmt.Println(sut)
+	//for i := 0; i < 100; i++ {
+	//	fmt.Println(id.Short(), gs_commons_map.Hashcode(id.Short()))
+	//}
+	//
+	//fmt.Println(gs_commons_map.Hashcode("tvrkak9uttbova=="))
+	//
+	//b, err := msgpack.Marshal(sut)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//s, err := gs_commons_encrypt.AESEncrypt(b, []byte("912ec803b2ce49e4a541068d495ab570"))
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	b, err := msgpack.Marshal(sut)
-	if err != nil {
-		panic(err)
-	}
+	//fmt.Println("value", id.Node().Generate().Base58())
 
-	s, err := gs_commons_encrypt.AESEncrypt(b, []byte("912ec803b2ce49e4a541068d495ab570"))
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("value", s)
-
-	gs_service_user.ActiveService{}
+	key := id.Short() + "." + id.Get()
+	fmt.Println("value", key[strings.Index(key, ".")+1:])
 
 }
 

@@ -18,11 +18,23 @@ type IDGenerator interface {
 	Get() string
 
 	String() string
+
+	Short() string
+
+	Node() *snowflake.Node
 }
 
 type generator struct {
 	node *snowflake.Node
 	h    hash.Hash
+}
+
+func (g *generator) Short() string {
+	return base64.StdEncoding.EncodeToString([]byte(g.Get()[:10]))
+}
+
+func (g *generator) Node() *snowflake.Node {
+	return g.node
 }
 
 func (g *generator) String() string {

@@ -39,6 +39,7 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/
 #application
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/application.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/settings.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/nops/status.proto
 
 
 #micro
