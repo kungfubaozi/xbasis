@@ -3,7 +3,6 @@ package permission_handlers
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
 	"github.com/twinj/uuid"
@@ -20,6 +19,7 @@ import (
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/repositories"
+	"konekko.me/gosion/permission/uitls"
 	"konekko.me/gosion/safety/pb"
 	"sync"
 )
@@ -102,7 +102,6 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				if state.Ok {
 					state = s
 				}
-				wg.Done()
 			}
 
 			ctx = metadata.NewContext(context.Background(), map[string]string{
@@ -111,6 +110,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 			//blacklist(ip)
 			go func() {
+				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
 					&gs_service_safety.CheckRequest{
 						Type: gs_commons_constants.BlacklistOfIP,
@@ -124,6 +124,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 			//blacklist(userDevice)
 			go func() {
+				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
 					&gs_service_safety.CheckRequest{
 						Type: gs_commons_constants.BlacklistOfUserDevice,
@@ -139,6 +140,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 			//application
 			go func() {
+				defer wg.Done()
 				s, err := svc.nopApplicationStatusService.GetAppClientStatus(ctx, &gs_nops_service_application.GetAppClientStatusRequest{
 					ClientId: rh.clientId,
 				})
@@ -186,6 +188,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				wg.Add(len(a.AuthTypes))
 				for _, v := range a.AuthTypes {
 					go func() {
+						defer wg.Done()
 						switch v {
 						case gs_commons_constants.AuthTypeOfValcode:
 							//user must login
@@ -242,15 +245,15 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							var userRoles, functionRoles []interface{}
 							var swg sync.WaitGroup
 							swg.Add(2)
-							urk := fmt.Sprintf("u/r.%s.%s", appResp.AppId, status.Content)
-							frk := fmt.Sprintf("f/r.%s.%s", appResp.AppId, a.Id)
+							urk := permission_uitls.GetAppUserRoleKey(appResp.AppId, status.Content)
+							frk := permission_uitls.GetAppFunctionRoleKey(appResp.AppId, a.Id)
 							go func() {
+								defer swg.Done()
 								userRoles, err = redis.Values(conn.Do("SMEMBERS", urk))
-								swg.Add(1)
 							}()
 							go func() {
+								defer swg.Done()
 								functionRoles, err = redis.Values(conn.Do("SMEMBERS", frk))
-								swg.Add(1)
 							}()
 							swg.Wait()
 							if userRoles != nil && functionRoles != nil && len(userRoles) > 0 && len(functionRoles) > 0 {
@@ -266,7 +269,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
 									if roles[b] != "ok" {
 										//check role
-										_, err := conn.Do("sismember", fmt.Sprintf("app.%s.roles.%s", appResp.AppId, b))
+										_, err := conn.Do("hmget", permission_uitls.GetAppRoleKey(appResp.AppId), b)
 										if err != nil && err == redis.ErrNil { //invalid role
 											//possibly due to the removal of roles
 											//remove role

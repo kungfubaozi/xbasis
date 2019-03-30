@@ -18,7 +18,8 @@ type roleService struct {
 }
 
 func (svc *roleService) GetRepo() *permission_repositories.RoleRepo {
-	return &permission_repositories.RoleRepo{Session: svc.session.Clone(), ID: gs_commons_generator.NewIDG()}
+	return &permission_repositories.RoleRepo{Session: svc.session.Clone(),
+		ID: gs_commons_generator.NewIDG(), Conn: svc.pool.Get()}
 }
 
 //add new role if not exists
