@@ -4,21 +4,21 @@ import (
 	"context"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/authentication/pb/nops"
+	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/safety/pb/nops"
+	"konekko.me/gosion/safety/pb/ext"
 	"konekko.me/gosion/user/pb"
 	"konekko.me/gosion/user/repositories"
 )
 
 type loginService struct {
 	session         *mgo.Session
-	securityService gs_nops_service_safety.SecurityService
-	tokenService    gs_nops_service_authentication.TokenService
+	securityService gs_ext_service_safety.SecurityService
+	tokenService    gs_ext_service_authentication.TokenService
 }
 
 func (svc *loginService) GetRepo() *user_repositories.UserRepo {
@@ -56,7 +56,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			}
 			if info != nil && len(info.Id) > 0 {
 				//check state
-				s, err := svc.securityService.Get(ctx, &gs_nops_service_safety.GetRequest{
+				s, err := svc.securityService.Get(ctx, &gs_ext_service_safety.GetRequest{
 					UserId: info.Id,
 				})
 
@@ -79,7 +79,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				}
 
 				//generate token
-				s1, err := svc.tokenService.Generate(ctx, &gs_nops_service_authentication.GenerateRequest{
+				s1, err := svc.tokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
 					Auth: &gs_commons_dto.Authorize{
 						ClientId:  in.ClientId,
 						UserId:    info.Id,

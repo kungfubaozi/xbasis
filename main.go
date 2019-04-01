@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
 	"reflect"
-	"strings"
 )
 
 type Message struct {
@@ -120,7 +118,7 @@ func main() {
 	//fmt.Println(out.State)
 	//fmt.Println(v / 1e6)
 
-	id := gs_commons_generator.NewIDG()
+	//id := gs_commons_generator.NewIDG()
 
 	//fmt.Println(id.Short())
 	//
@@ -161,9 +159,22 @@ func main() {
 	//}
 
 	//fmt.Println("value", id.Node().Generate().Base58())
+	//
+	//key := id.Short() + "." + id.Get()
+	//fmt.Println("value", key[strings.Index(key, ".")+1:])
 
-	key := id.Short() + "." + id.Get()
-	fmt.Println("value", key[strings.Index(key, ".")+1:])
+	es := make(chan *gs_commons_dto.State)
+
+	for {
+		select {
+		case e := <-es:
+			fmt.Println("e", e)
+			break
+		default:
+			//fmt.Println("out")
+			break
+		}
+	}
 
 }
 

@@ -9,11 +9,13 @@ import (
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/repositories"
+	"konekko.me/gosion/user/pb/ext"
 )
 
 type bindingService struct {
-	pool    *redis.Pool
-	session *mgo.Session
+	pool           *redis.Pool
+	session        *mgo.Session
+	extUserService gs_ext_service_user.UserService
 }
 
 func (svc *bindingService) GetRepo() *permission_repositories.RoleRepo {
@@ -32,8 +34,9 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 			repo := svc.GetRepo()
 			defer repo.Close()
 
-			//check for user roles
 			urs := make(map[string][]string)
+
+			//check for user roles
 			for _, v := range in.Id {
 				ums, err := repo.GetUserRoleMembers(in.AppId, v)
 
@@ -55,6 +58,15 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 					err = nil
 					//check user exists
 					//....
+					s, err := svc.extUserService.IsExists(ctx, &gs_ext_service_user.ExistsRequest{
+						UserId: v,
+					})
+					if err != nil {
+						return nil
+					}
+					if !s.State.Ok {
+						return nil
+					}
 				}
 				if err != nil {
 					return nil

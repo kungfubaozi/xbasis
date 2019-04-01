@@ -8,8 +8,8 @@ import (
 	"github.com/twinj/uuid"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/application/pb/nops"
-	"konekko.me/gosion/authentication/pb/nops"
+	"konekko.me/gosion/application/pb/ext"
+	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -28,10 +28,10 @@ type verificationService struct {
 	pool                        *redis.Pool
 	session                     *mgo.Session
 	configuration               *gs_commons_config.GosionConfiguration
-	nopApplicationStatusService gs_nops_service_application.ApplicationStatusService
+	nopApplicationStatusService gs_ext_service_application.ApplicationStatusService
 	blacklistService            gs_service_safety.BlacklistService
 	functionService             gs_service_permission.FunctionService
-	nopAuthService              gs_nops_service_authentication.AuthService
+	nopAuthService              gs_ext_service_authentication.AuthService
 }
 
 type requestHeaders struct {
@@ -136,12 +136,12 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				resp(s.State)
 			}()
 
-			var appResp *gs_nops_service_application.GetAppClientStatusResponse
+			var appResp *gs_ext_service_application.GetAppClientStatusResponse
 
 			//application
 			go func() {
 				defer wg.Done()
-				s, err := svc.nopApplicationStatusService.GetAppClientStatus(ctx, &gs_nops_service_application.GetAppClientStatusRequest{
+				s, err := svc.nopApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 					ClientId: rh.clientId,
 				})
 				if err != nil {
@@ -228,7 +228,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							//1.check token
-							status, err := svc.nopAuthService.Verify(ctx, &gs_nops_service_authentication.VerifyRequest{
+							status, err := svc.nopAuthService.Verify(ctx, &gs_ext_service_authentication.VerifyRequest{
 								Token:    rh.authorization,
 								ClientId: rh.clientId,
 							})

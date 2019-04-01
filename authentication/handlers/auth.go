@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/authentication/pb/nops"
+	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/authentication/repositories"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
@@ -12,13 +12,13 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/connection/cmd/connectioncli"
-	"konekko.me/gosion/safety/pb/nops"
+	"konekko.me/gosion/safety/pb/ext"
 )
 
 type authService struct {
 	pool               *redis.Pool
 	configuration      *gs_commons_config.GosionConfiguration
-	nopSecurityService gs_nops_service_safety.SecurityService
+	nopSecurityService gs_ext_service_safety.SecurityService
 	connectioncli      connectioncli.ConnectionClient
 }
 
@@ -26,7 +26,7 @@ func (svc *authService) GetRepo() *authentication_repositories.TokenRepo {
 	return &authentication_repositories.TokenRepo{Conn: svc.pool.Get()}
 }
 
-func (svc *authService) Verify(ctx context.Context, in *gs_nops_service_authentication.VerifyRequest, out *gs_commons_dto.Status) error {
+func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentication.VerifyRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		//1.verify token
 
@@ -69,7 +69,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_nops_service_authenti
 			return errstate.ErrAccessToken
 		}
 
-		s, err := svc.nopSecurityService.Get(ctx, &gs_nops_service_safety.GetRequest{UserId: uai.UserId})
+		s, err := svc.nopSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{UserId: uai.UserId})
 		if err != nil {
 			return errstate.ErrSystem
 		}
@@ -78,6 +78,6 @@ func (svc *authService) Verify(ctx context.Context, in *gs_nops_service_authenti
 	})
 }
 
-func NewAuthService() gs_nops_service_authentication.AuthHandler {
+func NewAuthService() gs_ext_service_authentication.AuthHandler {
 	return &authService{}
 }

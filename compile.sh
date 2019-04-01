@@ -22,24 +22,24 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/invite.
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/active.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/grant.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/oauth.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/nops/message.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/nops/user.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/ext/message.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/ext/user.proto
 
 #safety
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/frozen.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/blacklist.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/locking.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/nops/security.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/ext/security.proto
 
 #authentication
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/nops/auth.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/nops/token.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/ext/auth.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/ext/token.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/route.proto
 
 #application
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/application.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/settings.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/nops/status.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/ext/status.proto
 
 
 #micro

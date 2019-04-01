@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/application/pb/nops"
+	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/application/repositories"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -16,8 +16,8 @@ type applicationStatusService struct {
 	pool    *redis.Pool
 }
 
-func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in *gs_nops_service_application.GetAppClientStatusRequest,
-	out *gs_nops_service_application.GetAppClientStatusResponse) error {
+func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in *gs_ext_service_application.GetAppClientStatusRequest,
+	out *gs_ext_service_application.GetAppClientStatusResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		repo := svc.GetRepo()
 		defer repo.Close()

@@ -2,14 +2,14 @@ package authentication_handlers
 
 import (
 	"context"
-	"konekko.me/gosion/application/pb/nops"
+	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/wrapper"
 )
 
 type routeService struct {
-	nopApplicationStatusService gs_nops_service_application.ApplicationStatusService
+	nopApplicationStatusService gs_ext_service_application.ApplicationStatusService
 }
 
 func (svc *routeService) Logout(ctx context.Context, in *gs_service_authentication.LogoutRequest, out *gs_commons_dto.Status) error {
