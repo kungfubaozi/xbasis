@@ -11,7 +11,6 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/repositories"
 	"time"
 )
 
@@ -30,8 +29,12 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		if len(in.AppId) == 0 && len(in.BindGroupId) == 0 && len(in.Name) == 0 {
+		if len(in.StructureId) == 0 || len(in.BindGroupId) == 0 || len(in.Name) == 0 {
 			return errstate.ErrRequest
+		}
+
+		if isStructureExists(repo.session, in.StructureId) == 0 {
+			return errstate.ErrInvalidStructure
 		}
 
 		//find group exists
@@ -55,7 +58,7 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 			}
 		}
 
-		_, err := repo.FindApi(in.AppId, in.Api)
+		_, err := repo.FindApi(in.StructureId, in.Api)
 		if err != nil && err == mgo.ErrNotFound {
 
 			f := &function{
@@ -65,7 +68,7 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				CreateUserId: auth.User,
 				CreateAt:     time.Now().UnixNano(),
 				BindGroupId:  in.BindGroupId,
-				AppId:        in.AppId,
+				StructureId:  in.StructureId,
 				ApiTag:       gs_commons_encrypt.SHA1(in.Api),
 				Api:          in.Api,
 				AuthTypes:    in.AuthTypes,
@@ -99,7 +102,7 @@ func (svc *functionService) Move(ctx context.Context, in *gs_service_permission.
 func (svc *functionService) AddGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(in.Name) == 0 && len(in.AppId) == 0 {
+		if len(in.Name) == 0 && len(in.StructureId) == 0 {
 			return nil
 		}
 

@@ -18,7 +18,7 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/uitls"
+	"konekko.me/gosion/permission/utils"
 	"konekko.me/gosion/safety/pb"
 	"sync"
 )
@@ -138,6 +138,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 			}()
 
 			var appResp *gs_ext_service_application.GetAppClientStatusResponse
+			ccs := &cacheStructure{}
 
 			//application
 			go func() {
@@ -153,9 +154,18 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				appResp = s
 				if s != nil && s.State.Ok && len(s.AppId) > 0 {
 					//get current structure id
-					v, err := redis.String(conn.Do("get", permissionuitls.GetCurrentStructureIdKey(s.AppId)))
+					get := func(t int64) (string, error) {
+						return redis.String(conn.Do("get",
+							permissionutils.GetTypeCurrentStructureKey(s.AppId, t)))
+					}
+
+					v, err := get(permissionutils.TypeUserStructure)
 					if err == nil && len(v) > 0 {
-						appResp.Content = v
+						ccs.UserStructureId = v
+						v, err = get(permissionutils.TypeFunctionStructure)
+						if err != nil && len(v) > 0 {
+							ccs.FunctionStructureId = v
+						}
 					}
 				}
 			}()
@@ -167,23 +177,16 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				return nil
 			}
 
-			if appResp != nil {
+			if appResp != nil && len(ccs.UserStructureId) > 0 && len(ccs.FunctionStructureId) > 0 {
 
 				if appResp.ClientEnabled != gs_commons_constants.Enabled {
 					return errstate.ErrClientClosed
 				}
 
-				//check structure
-				if len(appResp.Content) == 0 {
-					return errstate.ErrAppStructureNotOpening
-				}
-
-				structureId := appResp.Content
-
 				repo := svc.GetRepo()
 				defer repo.Close()
 
-				a, err := repo.FindApiInCache(appResp.AppId, rh.path)
+				a, err := repo.FindApiInCache(ccs.FunctionStructureId, rh.path)
 				if err != nil {
 					return nil
 				}
@@ -259,8 +262,8 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							var userRoles, functionRoles []interface{}
 							var swg sync.WaitGroup
 							swg.Add(2)
-							urk := permissionuitls.GetStructureUserRoleKey(structureId, status.Content)
-							frk := permissionuitls.GetStructureFunctionRoleKey(structureId, a.Id)
+							urk := permissionutils.GetStructureUserRoleKey(ccs.UserStructureId, status.Content)
+							frk := permissionutils.GetStructureFunctionRoleKey(ccs.UserStructureId, a.Id)
 							go func() {
 								defer swg.Done()
 								userRoles, err = redis.Values(conn.Do("SMEMBERS", urk))
@@ -283,7 +286,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
 									if roles[b] != "ok" {
 										//check role
-										_, err := conn.Do("hmget", permissionuitls.GetStructureRoleKey(structureId), b)
+										_, err := conn.Do("hmget", permissionutils.GetStructureRoleKey(ccs.UserStructureId), b)
 										if err != nil && err == redis.ErrNil { //invalid role
 											//possibly due to the removal of roles
 											//remove role

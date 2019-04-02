@@ -6,7 +6,9 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Structure {
 
-    rpc Create (CreateRequest) returns (gs.commons.dto.Status);
+    rpc CreateUserStructure (CreateRequest) returns (gs.commons.dto.Status);
+
+    rpc CreateFunctionStructure (CreateRequest) returns (gs.commons.dto.Status);
 
     rpc Enabled (EnabledRequest) returns (gs.commons.dto.Status);
 
@@ -16,11 +18,12 @@ service Structure {
 
 message CreateRequest {
     string name = 1;
-    bool open = 2;
+    string appId = 2;
 }
 
 message EnabledRequest {
-    string structureId = 2;
+    string structureId = 1;
+    bool opening = 2;
 }
 
 message GetListRequest {

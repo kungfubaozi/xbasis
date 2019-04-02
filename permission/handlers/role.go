@@ -17,8 +17,8 @@ type roleService struct {
 }
 
 func (svc *roleService) GetRepo() *roleRepo {
-	return &roleRepo{Session: svc.session.Clone(),
-		id: gs_commons_generator.NewIDG(), Conn: svc.pool.Get()}
+	return &roleRepo{session: svc.session.Clone(),
+		id: gs_commons_generator.NewIDG(), conn: svc.pool.Get()}
 }
 
 //add new role if not exists
@@ -27,9 +27,14 @@ func (svc *roleService) Add(ctx context.Context, in *gs_service_permission.RoleR
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		_, err := repo.FindByName(in.Name, in.AppId)
+		//check
+		if isStructureExists(repo.session, in.StructureId) == 0 {
+			return errstate.ErrInvalidStructure
+		}
+
+		_, err := repo.FindByName(in.Name, in.StructureId)
 		if err != nil && err == mgo.ErrNotFound {
-			err = repo.Save(in.Name, auth.User, in.AppId)
+			err = repo.Save(in.Name, auth.User, in.StructureId)
 			if err != nil {
 				return nil
 			}

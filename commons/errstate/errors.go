@@ -32,4 +32,5 @@ var (
 	ErrAccessTokenOrClient         = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err access token or client"}
 	ErrUserPermission              = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err permission"}
 	ErrAppStructureNotOpening      = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err app structure not opening"}
+	ErrInvalidStructure            = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err invalid structure"}
 )

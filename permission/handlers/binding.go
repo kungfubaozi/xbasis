@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
@@ -28,16 +29,21 @@ func (svc *bindingService) verifyRoleEffectiveness() {
 
 func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.AppId) == 0 && len(in.Id) == 0 && len(in.RoleId) == 0 {
+		if len(in.StructureId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
 			//check roles
 			repo := svc.GetRepo()
 			defer repo.Close()
+
+			//check structure exists
+			if isStructureExists(repo.session, in.StructureId) == 0 {
+				return errstate.ErrInvalidStructure
+			}
 
 			urs := make(map[string][]string)
 
 			//check for user roles
 			for _, v := range in.Id {
-				ums, err := repo.GetUserRoleMembers(in.AppId, v)
+				ums, err := repo.GetUserRoleMembers(in.StructureId, v)
 
 				add := func(userId string) {
 					var uml []string
@@ -75,7 +81,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 
 			//check for role exists
 			for _, v := range in.RoleId {
-				ok, err := repo.Exists(in.AppId, v)
+				ok, err := repo.Exists(in.StructureId, v)
 				if err != nil {
 					return nil
 				}

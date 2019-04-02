@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/encrypt"
+	"konekko.me/gosion/permission/utils"
 )
 
 type functionRepo struct {
@@ -18,7 +19,8 @@ func (repo *functionRepo) AddFunction(function *function) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.conn.Do("set", gs_commons_encrypt.SHA1(function.Api+function.AppId), b)
+	_, err = repo.conn.Do("hmset", permissionutils.GetTypeStructureKey(function.StructureId,
+		permissionutils.TypeFunctionStructure), function.ApiTag, b)
 	if err != nil {
 		return err
 	}
@@ -45,9 +47,9 @@ func (repo *functionRepo) FindChildFunctions(parentId string) ([]*function, erro
 	return functions, err
 }
 
-func (repo *functionRepo) FindApi(appId, api string) (*function, error) {
+func (repo *functionRepo) FindApi(structureId, api string) (*function, error) {
 	var f function
-	err := repo.functionCollection().Find(bson.M{"app_id": appId, "api": api}).One(&f)
+	err := repo.functionCollection().Find(bson.M{"structure_id": structureId, "api": api}).One(&f)
 	return &f, err
 }
 
@@ -59,8 +61,10 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 	return c > 0
 }
 
-func (repo *functionRepo) FindApiInCache(appId, api string) (*function, error) {
-	b, err := redis.Bytes(repo.conn.Do("get", gs_commons_encrypt.SHA1(api+appId)))
+func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, error) {
+	b, err := redis.Bytes(repo.conn.Do("hmget", permissionutils.GetTypeStructureKey(structureId,
+		permissionutils.TypeFunctionStructure),
+		gs_commons_encrypt.SHA1(api)))
 	if err != nil {
 		return nil, err
 	}

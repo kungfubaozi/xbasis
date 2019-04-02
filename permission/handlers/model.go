@@ -1,5 +1,10 @@
 package permissionhandlers
 
+type cacheStructure struct {
+	UserStructureId     string
+	FunctionStructureId string
+}
+
 type durationAccess struct {
 	User          string
 	Path          string
@@ -18,6 +23,8 @@ type structure struct {
 	CreateUserId string `bson:"create_user_id"`
 	AppId        string `bson:"app_id"`
 	Opening      bool   `bson:"opening"`
+	Name         string `bson:"name"`
+	Type         int64  `bson:"type"` //user or function structure
 }
 
 type userOrientate struct {
@@ -74,7 +81,7 @@ type function struct {
 	CreateUserId string  `bson:"create_user_id"`
 	CreateAt     int64   `bson:"create_at"`
 	BindGroupId  string  `bson:"bind_group_id"`
-	AppId        string  `bson:"app_id"`
+	StructureId  string  `bson:"structure_id"`
 	AuthTypes    []int64 `bson:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
 	ValTokenLife   int64   `bson:"val_token_life"` //def: 0 second (your value must >= 60s)

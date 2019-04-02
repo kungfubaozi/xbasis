@@ -5,7 +5,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/permission/uitls"
+	"konekko.me/gosion/permission/utils"
 	"time"
 )
 
@@ -22,15 +22,15 @@ func (repo *roleRepo) FindByName(appId, name string) (*role, error) {
 }
 
 func (repo *roleRepo) Exists(appId, roleId string) (bool, error) {
-	return redis.Bool(repo.conn.Do("hexists", permission_uitls.GetAppRoleKey(appId), roleId))
+	return redis.Bool(repo.conn.Do("hexists", permissionutils.GetStructureRoleKey(appId), roleId))
 }
 
 func (repo *roleRepo) GetUserRoleMembers(appId, userId string) ([]interface{}, error) {
-	return redis.Values(repo.conn.Do("SMEMBERS", permission_uitls.GetAppUserRoleKey(appId, userId)))
+	return redis.Values(repo.conn.Do("SMEMBERS", permissionutils.GetStructureUserRoleKey(appId, userId)))
 }
 
 func (repo *roleRepo) Remove(appId, roleId string) error {
-	_, err := repo.conn.Do("hdel", permission_uitls.GetAppRoleKey(appId), roleId)
+	_, err := repo.conn.Do("hdel", permissionutils.GetStructureRoleKey(appId), roleId)
 	if err != nil && err == redis.ErrNil {
 		err = nil
 	}
@@ -51,7 +51,7 @@ func (repo *roleRepo) Save(name, appId, userId string) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.conn.Do("hmset", permission_uitls.GetAppRoleKey(appId), r.Id, r.Name)
+	_, err = repo.conn.Do("hmset", permissionutils.GetStructureRoleKey(appId), r.Id, r.Name)
 	return err
 }
 

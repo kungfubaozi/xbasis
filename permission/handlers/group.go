@@ -26,10 +26,14 @@ func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.Simp
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		_, err := repo.FindByName(in.AppId, in.Name)
+		if isStructureExists(repo.session, in.StructureId) == 0 {
+			return errstate.ErrInvalidStructure
+		}
+
+		_, err := repo.FindByName(in.StructureId, in.Name)
 		if err != nil && err == mgo.ErrNotFound {
 
-			err = repo.Save(in.AppId, auth.User, in.Name)
+			err = repo.Save(in.StructureId, auth.User, in.Name)
 
 			if err != nil {
 				return errstate.ErrRequest
