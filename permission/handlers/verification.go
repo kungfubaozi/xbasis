@@ -222,7 +222,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 							key := gs_commons_encrypt.SHA1(string(v) + rh.clientId)
 							dat.Key = key
-							b, err := redis.Bytes(conn.Do("hmget", key, a.ApiTag))
+							b, err := redis.Bytes(conn.Do("hmget", key, a.Api))
 							if err != nil && err == redis.ErrNil {
 								resp(errstate.ErrRequest)
 								return
