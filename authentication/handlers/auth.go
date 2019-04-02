@@ -18,7 +18,7 @@ import (
 type authService struct {
 	pool               *redis.Pool
 	configuration      *gs_commons_config.GosionConfiguration
-	nopSecurityService gs_ext_service_safety.SecurityService
+	extSecurityService gs_ext_service_safety.SecurityService
 	connectioncli      connectioncli.ConnectionClient
 }
 
@@ -69,7 +69,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 			return errstate.ErrAccessToken
 		}
 
-		s, err := svc.nopSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{UserId: uai.UserId})
+		s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{UserId: uai.UserId})
 		if err != nil {
 			return errstate.ErrSystem
 		}

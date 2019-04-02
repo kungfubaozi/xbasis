@@ -18,5 +18,5 @@ service Role {
 message RoleRequest {
     int64 id = 1;
     string name = 2;
-    string appId = 3;
+    string structureId = 3;
 }

@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/repositories"
 )
 
 type roleService struct {
@@ -17,9 +16,9 @@ type roleService struct {
 	pool    *redis.Pool
 }
 
-func (svc *roleService) GetRepo() *permission_repositories.RoleRepo {
-	return &permission_repositories.RoleRepo{Session: svc.session.Clone(),
-		ID: gs_commons_generator.NewIDG(), Conn: svc.pool.Get()}
+func (svc *roleService) GetRepo() *roleRepo {
+	return &roleRepo{Session: svc.session.Clone(),
+		id: gs_commons_generator.NewIDG(), Conn: svc.pool.Get()}
 }
 
 //add new role if not exists

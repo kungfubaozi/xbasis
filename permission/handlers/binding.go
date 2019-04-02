@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/repositories"
 	"konekko.me/gosion/user/pb/ext"
 )
 
@@ -18,8 +17,8 @@ type bindingService struct {
 	extUserService gs_ext_service_user.UserService
 }
 
-func (svc *bindingService) GetRepo() *permission_repositories.RoleRepo {
-	return &permission_repositories.RoleRepo{Conn: svc.pool.Get(), Session: svc.session.Clone(), ID: gs_commons_generator.NewIDG()}
+func (svc *bindingService) GetRepo() *roleRepo {
+	return &roleRepo{conn: svc.pool.Get(), session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
 }
 
 //verify roles effectiveness

@@ -16,7 +16,7 @@ service Binding {
 }
 
 message BindingRoleRequest {
-    string appId = 1;
+    string structureId = 1;
     repeated string id = 2;
     repeated string roleId = 3;
 }

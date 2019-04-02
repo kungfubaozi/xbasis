@@ -43,7 +43,7 @@ func encodeToken(tokenKey string, et time.Duration, authorize *authentication_re
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(tokenKey)
+	return token.SignedString([]byte(tokenKey))
 
 }
 

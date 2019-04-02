@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/authentication/pb/nops"
+	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/authentication/repositories"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
@@ -26,7 +26,7 @@ func (svc *tokenService) GetRepo() *authentication_repositories.TokenRepo {
 	return &authentication_repositories.TokenRepo{Conn: svc.pool.Get()}
 }
 
-func (svc *tokenService) Generate(ctx context.Context, in *gs_nops_service_authentication.GenerateRequest, out *gs_nops_service_authentication.GenerateResponse) error {
+func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authentication.GenerateRequest, out *gs_ext_service_authentication.GenerateResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -97,6 +97,6 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_nops_service_authe
 	})
 }
 
-func NewTokenService(pool *redis.Pool) gs_nops_service_authentication.TokenHandler {
+func NewTokenService(pool *redis.Pool) gs_ext_service_authentication.TokenHandler {
 	return &tokenService{pool: pool}
 }

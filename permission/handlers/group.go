@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/repositories"
 )
 
 type groupService struct {
@@ -17,8 +16,8 @@ type groupService struct {
 	session *mgo.Session
 }
 
-func (svc *groupService) GetRepo() permission_repositories.GroupRepo {
-	return permission_repositories.GroupRepo{Session: svc.session.Clone(), ID: gs_commons_generator.ID()}
+func (svc *groupService) GetRepo() *groupRepo {
+	return &groupRepo{session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
 }
 
 func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
@@ -47,6 +46,7 @@ func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.Simp
 	})
 }
 
+//You can link to other application groups, or to this application group.
 func (svc *groupService) LinkTo(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
@@ -65,6 +65,7 @@ func (svc *groupService) Rename(ctx context.Context, in *gs_service_permission.S
 	})
 }
 
+//User cannot be in the same group under the same application
 func (svc *groupService) AddUserToGroup(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
@@ -77,6 +78,7 @@ func (svc *groupService) MoveUserToGroup(ctx context.Context, in *gs_service_per
 	})
 }
 
+//If there are users under the current group, they cannot be deleted
 func (svc *groupService) Remove(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil

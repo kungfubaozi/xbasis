@@ -1,15 +1,19 @@
-package permission_uitls
+package permissionuitls
 
 import "fmt"
 
-func GetAppRoleKey(appId string) string {
-	return fmt.Sprintf("a/r.%s", appId)
+func GetStructureRoleKey(appId string) string {
+	return fmt.Sprintf("s/r.%s", appId)
 }
 
-func GetAppUserRoleKey(appId, userId string) string {
-	return fmt.Sprintf("a/u/r.%s-%s", appId, userId)
+func GetStructureUserRoleKey(appId, userId string) string {
+	return fmt.Sprintf("s/u/r.%s-%s", appId, userId)
 }
 
-func GetAppFunctionRoleKey(appId, functionId string) string {
-	return fmt.Sprintf("a/f/r.%s-%s", appId, functionId)
+func GetStructureFunctionRoleKey(appId, functionId string) string {
+	return fmt.Sprintf("s/f/r.%s-%s", appId, functionId)
+}
+
+func GetCurrentStructureIdKey(appId string) string {
+	return fmt.Sprintf("a/s.%s", appId)
 }

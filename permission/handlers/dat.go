@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"context"
@@ -11,8 +11,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/repositories"
-	"konekko.me/gosion/user/pb/nops"
+	"konekko.me/gosion/user/pb/ext"
 	"math/rand"
 	"strconv"
 	"time"
@@ -22,11 +21,11 @@ type durationAccessService struct {
 	pool           *redis.Pool
 	session        *mgo.Session
 	configuration  *gs_commons_config.GosionConfiguration
-	messageService gs_nops_service_user.MessageService
+	messageService gs_ext_service_user.MessageService
 }
 
-func (svc *durationAccessService) GetRepo() permission_repositories.FunctionRepo {
-	return permission_repositories.FunctionRepo{Conn: svc.pool.Get(), Session: svc.session.Clone()}
+func (svc *durationAccessService) GetRepo() functionRepo {
+	return functionRepo{conn: svc.pool.Get(), session: svc.session.Clone()}
 }
 
 type sendToUserFunc func(to, code string) *gs_commons_dto.State
@@ -60,7 +59,7 @@ func (svc *durationAccessService) Datu(ctx context.Context, in *gs_service_permi
 }
 
 func (svc *durationAccessService) sendTo(ctx context.Context, to, code string, t int64) *gs_commons_dto.State {
-	s, err := svc.messageService.SendVerificationCode(ctx, &gs_nops_service_user.SendRequest{
+	s, err := svc.messageService.SendVerificationCode(ctx, &gs_ext_service_user.SendRequest{
 		To:          to,
 		Type:        t,
 		Code:        code,
@@ -83,7 +82,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		return
 	}
 
-	write := func(dat *permission_repositories.DurationAccess) error {
+	write := func(dat *durationAccess) error {
 		b, err := msgpack.Marshal(dat)
 		if err != nil {
 			return err
@@ -117,7 +116,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 			ext = 10 * 60 * 1e6 //10min
 		}
 
-		dat := &permission_repositories.DurationAccess{
+		dat := &durationAccess{
 			Path:          path,
 			ClientId:      clientId,
 			User:          to,
@@ -150,7 +149,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		return
 	}
 
-	dat := &permission_repositories.DurationAccess{}
+	dat := &durationAccess{}
 	err = msgpack.Unmarshal(b, dat)
 	if err != nil {
 		out.State = errstate.ErrRequest

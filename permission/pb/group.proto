@@ -24,7 +24,7 @@ service GroupStructure {
 }
 
 message SimpleGroup {
-    string appId = 1;
+    string structureId = 1;
     string name = 2;
     string id = 3;
     string bindGroupId = 4;

@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"context"
@@ -20,8 +20,8 @@ type functionService struct {
 	session *mgo.Session
 }
 
-func (svc *functionService) GetRepo() permission_repositories.FunctionRepo {
-	return permission_repositories.FunctionRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
+func (svc *functionService) GetRepo() *functionRepo {
+	return &functionRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
 func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
@@ -35,7 +35,7 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 		}
 
 		//find group exists
-		if repo.FindGroupExits(in.BindGroupId) {
+		if repo.FindGroupExists(in.BindGroupId) {
 			return errstate.ErrFunctionBindGroupId
 		}
 
@@ -58,7 +58,7 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 		_, err := repo.FindApi(in.AppId, in.Api)
 		if err != nil && err == mgo.ErrNotFound {
 
-			f := &permission_repositories.Function{
+			f := &function{
 				Id:           gs_commons_generator.ID().Generate().String(),
 				Name:         in.Name,
 				Type:         in.Type,

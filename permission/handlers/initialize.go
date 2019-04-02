@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/permission/repositories"
 )
 
 func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConfigNodeChanged {
@@ -18,11 +17,11 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 		}
 		if c == 0 {
 			id := gs_commons_generator.NewIDG()
-			functionRepo := permission_repositories.FunctionRepo{Session: session, Conn: pool.Get()}
+			functionRepo := functionRepo{session: session, conn: pool.Get()}
 			defer functionRepo.Close()
-			groupRepo := permission_repositories.GroupRepo{Session: session, ID: id}
+			groupRepo := groupRepo{session: session, id: id}
 			defer groupRepo.Close()
-			roleRepo := permission_repositories.RoleRepo{Session: session, ID: id}
+			roleRepo := roleRepo{Session: session, id: id}
 			defer roleRepo.Close()
 		}
 	}

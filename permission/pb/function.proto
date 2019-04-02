@@ -23,7 +23,7 @@ service Function {
 }
 
 message FunctionRequest {
-    string appId = 1;
+    string structureId = 1;
     string name = 2;
     string api = 3;
     int64 type = 4;
@@ -32,7 +32,7 @@ message FunctionRequest {
 }
 
 message FunctionGroupRequest {
-    string appId = 1;
+    string structureId = 1;
     string name = 2;
     string bindGroupId = 3;
     int64 type = 4;

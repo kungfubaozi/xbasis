@@ -1,4 +1,4 @@
-package permission_handlers
+package permissionhandlers
 
 import (
 	"context"
@@ -18,7 +18,6 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/repositories"
 	"konekko.me/gosion/permission/uitls"
 	"konekko.me/gosion/safety/pb"
 	"sync"
@@ -28,10 +27,10 @@ type verificationService struct {
 	pool                        *redis.Pool
 	session                     *mgo.Session
 	configuration               *gs_commons_config.GosionConfiguration
-	nopApplicationStatusService gs_ext_service_application.ApplicationStatusService
+	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
 	blacklistService            gs_service_safety.BlacklistService
 	functionService             gs_service_permission.FunctionService
-	nopAuthService              gs_ext_service_authentication.AuthService
+	extAuthService              gs_ext_service_authentication.AuthService
 }
 
 type requestHeaders struct {
@@ -44,8 +43,8 @@ type requestHeaders struct {
 	dat           string
 }
 
-func (svc *verificationService) GetRepo() permission_repositories.FunctionRepo {
-	return permission_repositories.FunctionRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
+func (svc *verificationService) GetRepo() *functionRepo {
+	return &functionRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
 //application verify
@@ -108,6 +107,8 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				"transport-traceId": traceId,
 			})
 
+			conn := svc.pool.Get()
+
 			//blacklist(ip)
 			go func() {
 				defer wg.Done()
@@ -141,7 +142,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 			//application
 			go func() {
 				defer wg.Done()
-				s, err := svc.nopApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
+				s, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 					ClientId: rh.clientId,
 				})
 				if err != nil {
@@ -150,6 +151,13 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				}
 				resp(s.State)
 				appResp = s
+				if s != nil && s.State.Ok && len(s.AppId) > 0 {
+					//get current structure id
+					v, err := redis.String(conn.Do("get", permissionuitls.GetCurrentStructureIdKey(s.AppId)))
+					if err == nil && len(v) > 0 {
+						appResp.Content = v
+					}
+				}
 			}()
 
 			wg.Wait()
@@ -164,6 +172,13 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				if appResp.ClientEnabled != gs_commons_constants.Enabled {
 					return errstate.ErrClientClosed
 				}
+
+				//check structure
+				if len(appResp.Content) == 0 {
+					return errstate.ErrAppStructureNotOpening
+				}
+
+				structureId := appResp.Content
 
 				repo := svc.GetRepo()
 				defer repo.Close()
@@ -182,9 +197,8 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 					}
 				}
 
-				dat := &permission_repositories.DurationAccess{}
+				dat := &durationAccess{}
 				userId := ""
-				conn := svc.pool.Get()
 				wg.Add(len(a.AuthTypes))
 				for _, v := range a.AuthTypes {
 					go func() {
@@ -228,7 +242,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							//1.check token
-							status, err := svc.nopAuthService.Verify(ctx, &gs_ext_service_authentication.VerifyRequest{
+							status, err := svc.extAuthService.Verify(ctx, &gs_ext_service_authentication.VerifyRequest{
 								Token:    rh.authorization,
 								ClientId: rh.clientId,
 							})
@@ -245,8 +259,8 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 							var userRoles, functionRoles []interface{}
 							var swg sync.WaitGroup
 							swg.Add(2)
-							urk := permission_uitls.GetAppUserRoleKey(appResp.AppId, status.Content)
-							frk := permission_uitls.GetAppFunctionRoleKey(appResp.AppId, a.Id)
+							urk := permissionuitls.GetStructureUserRoleKey(structureId, status.Content)
+							frk := permissionuitls.GetStructureFunctionRoleKey(structureId, a.Id)
 							go func() {
 								defer swg.Done()
 								userRoles, err = redis.Values(conn.Do("SMEMBERS", urk))
@@ -269,7 +283,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
 									if roles[b] != "ok" {
 										//check role
-										_, err := conn.Do("hmget", permission_uitls.GetAppRoleKey(appResp.AppId), b)
+										_, err := conn.Do("hmget", permissionuitls.GetStructureRoleKey(structureId), b)
 										if err != nil && err == redis.ErrNil { //invalid role
 											//possibly due to the removal of roles
 											//remove role
