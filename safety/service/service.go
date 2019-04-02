@@ -1,0 +1,5 @@
+package safetyservice
+
+func StartService() {
+
+}

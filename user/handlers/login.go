@@ -1,4 +1,4 @@
-package user_handlers
+package userhandlers
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/safety/pb/ext"
 	"konekko.me/gosion/user/pb"
-	"konekko.me/gosion/user/repositories"
 )
 
 type loginService struct {
@@ -21,8 +20,8 @@ type loginService struct {
 	tokenService    gs_ext_service_authentication.TokenService
 }
 
-func (svc *loginService) GetRepo() *user_repositories.UserRepo {
-	return &user_repositories.UserRepo{Session: svc.session.Clone()}
+func (svc *loginService) GetRepo() *userRepo {
+	return &userRepo{session: svc.session.Clone()}
 }
 
 //web client just support the root project, you need the login to root project and then route to the target client
@@ -32,7 +31,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			repo := svc.GetRepo()
 			defer repo.Close()
 
-			var info *user_repositories.UserInfo
+			var info *userInfo
 
 			eiup := func() *gs_commons_dto.State {
 				return errstate.ErrInvalidUsernameOrPassword

@@ -76,7 +76,6 @@ type function struct {
 	Id           string  `bson:"_id"`
 	Name         string  `bson:"name"`
 	Api          string  `bson:"api"`
-	ApiTag       string  `bson:"api_tag"`
 	Type         int64   `bson:"type"`
 	CreateUserId string  `bson:"create_user_id"`
 	CreateAt     int64   `bson:"create_at"`

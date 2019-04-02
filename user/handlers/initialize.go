@@ -1,4 +1,4 @@
-package user_handlers
+package userhandlers
 
 import (
 	"golang.org/x/crypto/bcrypt"

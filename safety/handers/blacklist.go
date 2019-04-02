@@ -8,7 +8,6 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/safety/pb"
-	"konekko.me/gosion/safety/repositories"
 )
 
 type blacklistService struct {
@@ -16,8 +15,8 @@ type blacklistService struct {
 	pool    *redis.Pool
 }
 
-func (svc *blacklistService) GetRepo() safety_repositories.BlacklistRepo {
-	return safety_repositories.BlacklistRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
+func (svc *blacklistService) GetRepo() blacklistRepo {
+	return blacklistRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
 func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.CheckRequest, out *gs_commons_dto.Status) error {

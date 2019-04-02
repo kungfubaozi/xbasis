@@ -87,7 +87,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		if err != nil {
 			return err
 		}
-		_, err = conn.Do("hmset", hkey, api.ApiTag, b)
+		_, err = conn.Do("hmset", hkey, api.Api, b)
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		out.State = toUser(to, strconv.FormatInt(dat.Code, 10))
 	}
 
-	b, err := redis.Bytes(conn.Do("hmget", hkey, api.ApiTag))
+	b, err := redis.Bytes(conn.Do("hmget", hkey, api.Api))
 	if err != nil && err == redis.ErrNil {
 		if code > 0 {
 			out.State = errstate.ErrDurationAccess

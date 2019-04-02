@@ -6,7 +6,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
@@ -69,7 +68,6 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				CreateAt:     time.Now().UnixNano(),
 				BindGroupId:  in.BindGroupId,
 				StructureId:  in.StructureId,
-				ApiTag:       gs_commons_encrypt.SHA1(in.Api),
 				Api:          in.Api,
 				AuthTypes:    in.AuthTypes,
 			}

@@ -1,4 +1,4 @@
-package authentication_handlers
+package authenticationhandlers
 
 import (
 	"github.com/dgrijalva/jwt-go"

@@ -5,7 +5,6 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/permission/utils"
 )
 
@@ -20,7 +19,7 @@ func (repo *functionRepo) AddFunction(function *function) error {
 		return err
 	}
 	_, err = repo.conn.Do("hmset", permissionutils.GetTypeStructureKey(function.StructureId,
-		permissionutils.TypeFunctionStructure), function.ApiTag, b)
+		permissionutils.TypeFunctionStructure), function.Api, b)
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,7 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, error) {
 	b, err := redis.Bytes(repo.conn.Do("hmget", permissionutils.GetTypeStructureKey(structureId,
 		permissionutils.TypeFunctionStructure),
-		gs_commons_encrypt.SHA1(api)))
+		api))
 	if err != nil {
 		return nil, err
 	}
