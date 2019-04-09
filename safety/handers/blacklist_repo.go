@@ -1,4 +1,4 @@
-package safety_handers
+package safetyhanders
 
 import (
 	"github.com/garyburd/redigo/redis"

@@ -48,6 +48,6 @@ func (svc *updateService) Password(ctx context.Context, in *gs_service_user.Upda
 	})
 }
 
-func NewUpdateService() gs_service_user.UpdateHandler {
-	return &updateService{}
+func NewUpdateService(session *mgo.Session) gs_service_user.UpdateHandler {
+	return &updateService{session: session}
 }

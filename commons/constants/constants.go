@@ -4,15 +4,18 @@ const (
 	PermissionService     = "gs.svc.permission"
 	MessageService        = "gs.svc.message"
 	ConnectionService     = "gs.svc.connection"
-	UserService           = "gs.svc.service"
+	UserService           = "gs.svc.user"
 	ApplicationService    = "gs.svc.application"
 	SafetyService         = "gs.svc.safety"
 	AuthenticationService = "gs.svc.authentication"
 )
 
-//not open
 const (
-	NOPSPermissionService = "gs.nops.svc.permission"
+	ExtPermissionService     = "gs.ext.svc.permission"
+	ExtUserService           = "gs.ext.svc.user"
+	ExtSafetyService         = "gs.ext.svc.safety"
+	ExtApplicationService    = "gs.ext.svc.application"
+	ExtAuthenticationService = "gs.ext.svc.authentication"
 )
 
 const (

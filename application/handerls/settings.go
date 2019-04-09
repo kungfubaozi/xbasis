@@ -5,7 +5,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb"
-	"konekko.me/gosion/application/repositories"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -17,8 +16,8 @@ type settingsService struct {
 	pool    *redis.Pool
 }
 
-func (svc *settingsService) GetRepo() application_repositories.ApplicationRepo {
-	return application_repositories.ApplicationRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
+func (svc *settingsService) GetRepo() *applicationRepo {
+	return &applicationRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
 func (svc *settingsService) Update(ctx context.Context, in *gs_service_application.UpdateRequest, out *gs_commons_dto.Status) error {

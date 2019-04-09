@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/bwmarrin/snowflake"
+	"github.com/twinj/uuid"
 	"hash"
 	"zskparker.com/foundation/pkg/osenv"
 )
@@ -16,6 +17,8 @@ func ID() *snowflake.Node {
 
 type IDGenerator interface {
 	Get() string
+
+	UUID() string
 
 	String() string
 
@@ -29,8 +32,13 @@ type generator struct {
 	h    hash.Hash
 }
 
+func (g *generator) UUID() string {
+	g.h.Write([]byte(str(g.node.Generate().String())))
+	return uuid.New([]byte(fmt.Sprintf("%x", g.h.Sum(nil)))).String()
+}
+
 func (g *generator) Short() string {
-	return base64.StdEncoding.EncodeToString([]byte(g.Get()[:10]))
+	return uuid.New([]byte(g.Get()[:10])).String()
 }
 
 func (g *generator) Node() *snowflake.Node {

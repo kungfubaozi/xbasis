@@ -18,6 +18,6 @@ func (svc *messageService) SendVerificationCode(ctx context.Context, in *gs_ext_
 	})
 }
 
-func NewMessageService() gs_ext_service_user.MessageHandler {
-	return &messageService{}
+func NewMessageService(message messagecli.MessageClient) gs_ext_service_user.MessageHandler {
+	return &messageService{message: message}
 }

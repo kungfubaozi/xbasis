@@ -1,7 +1,7 @@
-package application
+package main
 
-import "konekko.me/gosion/application/cmd/applicationsvc"
+import "konekko.me/gosion/application/service"
 
 func main() {
-	applicationsvc.StartService()
+	applicationservice.StartService()
 }

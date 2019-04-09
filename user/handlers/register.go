@@ -18,6 +18,6 @@ func (svc *registerService) New(ctx context.Context, in *gs_service_user.NewRequ
 	})
 }
 
-func NewRegisterService() gs_service_user.RegisterHandler {
-	return &registerService{}
+func NewRegisterService(session *mgo.Session) gs_service_user.RegisterHandler {
+	return &registerService{session: session}
 }

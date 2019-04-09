@@ -80,13 +80,17 @@ func main() {
 	id := gs_commons_generator.NewIDG()
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
-		AppId:    id.Short(),
-		AppName:  enterprise,
-		UserId:   id.Get(),
-		Desc:     desc,
-		Username: username,
-		Email:    email,
+		AppId:       id.Short(),
+		AppName:     enterprise,
+		UserId:      id.Get(),
+		Desc:        desc,
+		Username:    username,
+		Email:       email,
+		Password:    password,
+		WebClientId: id.Short(),
 	}
+
+	fmt.Println("init application def clientId(web) is:", initConfig.WebClientId)
 
 	configuration := &gs_commons_config.GosionConfiguration{
 		AccessTokenExpiredTime:           10 * 60 * 1000,
@@ -105,7 +109,7 @@ func main() {
 	}
 
 	//once
-	c := gs_commons_config.NewConnect("192.168.2.57:2181")
+	c := gs_commons_config.NewConnect(config)
 	//set def configs
 	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, 0)
 	if err != nil {
@@ -120,6 +124,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func usage() {

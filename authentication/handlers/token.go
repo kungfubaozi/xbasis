@@ -5,7 +5,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/authentication/pb/ext"
-	"konekko.me/gosion/authentication/repositories"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -22,8 +21,8 @@ type tokenService struct {
 	connectioncli connectioncli.ConnectionClient
 }
 
-func (svc *tokenService) GetRepo() *authentication_repositories.TokenRepo {
-	return &authentication_repositories.TokenRepo{Conn: svc.pool.Get()}
+func (svc *tokenService) GetRepo() *tokenRepo {
+	return &tokenRepo{conn: svc.pool.Get()}
 }
 
 func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authentication.GenerateRequest, out *gs_ext_service_authentication.GenerateResponse) error {
@@ -41,7 +40,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 
 		relationId := id.Get()
 
-		refresh := &authentication_repositories.SimpleUserToken{
+		refresh := &simpleUserToken{
 			UserId:   in.Auth.UserId,
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
@@ -49,7 +48,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			Type:     gs_commons_constants.RefreshToken,
 		}
 
-		access := &authentication_repositories.SimpleUserToken{
+		access := &simpleUserToken{
 			UserId:   in.Auth.UserId,
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
@@ -57,7 +56,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			Type:     gs_commons_constants.AccessToken,
 		}
 
-		ui := &authentication_repositories.UserAuthorizeInfo{
+		ui := &userAuthorizeInfo{
 			AppId:     in.Auth.AppId,
 			Platform:  in.Auth.Platform,
 			Relation:  relationId,

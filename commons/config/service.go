@@ -10,12 +10,14 @@ import (
 )
 
 type GosionInitializeConfig struct {
-	UserId   string
-	AppId    string
-	AppName  string
-	Desc     string
-	Username string
-	Email    string
+	UserId      string
+	AppId       string
+	WebClientId string
+	AppName     string
+	Desc        string
+	Username    string
+	Email       string
+	Password    string
 }
 
 type OnNodeDataChanged func(data []byte, version int32) bool
@@ -32,6 +34,7 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	_, err := c.Create(path, nil, 1, acl)
 	if err != nil {
 		//return
+		return
 	}
 
 	watch(c, gs_commons_constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {
@@ -79,11 +82,11 @@ func watch(c *zk.Conn, path string, event OnNodeDataChanged) {
 		fmt.Printf("create: %+v\n", err)
 	}
 	fmt.Println("listen start")
+	_, _, ch, err := c.GetW(path)
+	if err != nil {
+		panic(err)
+	}
 	for {
-		_, _, ch, err := c.GetW(path)
-		if err != nil {
-			panic(err)
-		}
 		select {
 		case e := <-ch:
 			if e.Type == zk.EventNodeDataChanged {

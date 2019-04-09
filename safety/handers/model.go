@@ -1,4 +1,4 @@
-package safety_handers
+package safetyhanders
 
 type blacklist struct {
 	Type         int64  `bson:"type"`

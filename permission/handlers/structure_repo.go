@@ -13,11 +13,11 @@ type structureRepo struct {
 }
 
 func (repo *structureRepo) GetCurrent() (string, error) {
-
+	return "", nil
 }
 
 func (repo *structureRepo) Add(s *structure) error {
-
+	return nil
 }
 
 func (repo *structureRepo) FindCountByNameAndType(name string, t int64) (int, error) {

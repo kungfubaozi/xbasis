@@ -29,7 +29,6 @@ type verificationService struct {
 	configuration               *gs_commons_config.GosionConfiguration
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
 	blacklistService            gs_service_safety.BlacklistService
-	functionService             gs_service_permission.FunctionService
 	extAuthService              gs_ext_service_authentication.AuthService
 }
 
@@ -46,6 +45,8 @@ type requestHeaders struct {
 func (svc *verificationService) GetRepo() *functionRepo {
 	return &functionRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
+
+var openPermission = false
 
 //application verify
 //ip, userDevice blacklist verify
@@ -257,6 +258,10 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 								resp(status.State)
 								return
 							}
+							if !openPermission {
+								resp(errstate.Success)
+								return
+							}
 							//2.check user roles
 							//appId.userId
 							var userRoles, functionRoles []interface{}
@@ -343,6 +348,9 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 	})
 }
 
-func NewVerificationService(pool *redis.Pool, session *mgo.Session) gs_service_permission.VerificationHandler {
-	return &verificationService{pool: pool, session: session}
+func NewVerificationService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration,
+	extApplicationStatusService gs_ext_service_application.ApplicationStatusService, blacklistService gs_service_safety.BlacklistService,
+	extAuthService gs_ext_service_authentication.AuthService) gs_service_permission.VerificationHandler {
+	return &verificationService{pool: pool, session: session, configuration: configuration, extApplicationStatusService: extApplicationStatusService,
+		blacklistService: blacklistService, extAuthService: extAuthService}
 }

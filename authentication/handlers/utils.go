@@ -2,7 +2,6 @@ package authenticationhandlers
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"konekko.me/gosion/authentication/repositories"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/connection/cmd/connectioncli"
@@ -11,7 +10,7 @@ import (
 )
 
 type UserClaims struct {
-	Token *authentication_repositories.SimpleUserToken
+	Token *simpleUserToken
 
 	jwt.StandardClaims
 }
@@ -28,7 +27,7 @@ func decodeToken(token, tokenKey string) (*UserClaims, error) {
 }
 
 //加密token
-func encodeToken(tokenKey string, et time.Duration, authorize *authentication_repositories.SimpleUserToken) (string, error) {
+func encodeToken(tokenKey string, et time.Duration, authorize *simpleUserToken) (string, error) {
 	expireTime := time.Now().Add(et).Unix()
 
 	c := jwt.StandardClaims{
@@ -55,7 +54,7 @@ func b2s(bs []uint8) string {
 	return string(ba)
 }
 
-func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *authentication_repositories.TokenRepo, userId, clientId string) *gs_commons_dto.State {
+func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, clientId string) *gs_commons_dto.State {
 	v, err := repo.SizeOf(userId)
 	if err != nil {
 		return errstate.ErrSystem
@@ -74,7 +73,7 @@ func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *authenticatio
 	return errstate.Success
 }
 
-func offlineRelation(connectioncli connectioncli.ConnectionClient, repo *authentication_repositories.TokenRepo, userId, relation string) *gs_commons_dto.State {
+func offlineRelation(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, relation string) *gs_commons_dto.State {
 	v, err := repo.SizeOf(userId)
 	if err != nil {
 		return errstate.ErrSystem
@@ -91,7 +90,7 @@ func offlineRelation(connectioncli connectioncli.ConnectionClient, repo *authent
 	return errstate.Success
 }
 
-func offlineTarget(connectioncli connectioncli.ConnectionClient, repo *authentication_repositories.TokenRepo, userId, key, clientId string) {
+func offlineTarget(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, key, clientId string) {
 	repo.Remove(userId, key)
 	connectioncli.OfflineToAppClientUser(userId, clientId)
 }

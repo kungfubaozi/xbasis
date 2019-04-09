@@ -125,6 +125,7 @@ func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.Ent
 	})
 }
 
-func NewLoginService() gs_service_user.LoginHandler {
-	return &loginService{}
+func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
+	tokenService gs_ext_service_authentication.TokenService) gs_service_user.LoginHandler {
+	return &loginService{session: session, securityService: securityService, tokenService: tokenService}
 }

@@ -18,8 +18,8 @@ type bindingService struct {
 	extUserService gs_ext_service_user.UserService
 }
 
-func (svc *bindingService) GetRepo() *roleRepo {
-	return &roleRepo{conn: svc.pool.Get(), session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
+func (svc *bindingService) GetRepo() *bindingRepo {
+	return &bindingRepo{conn: svc.pool.Get(), session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
 }
 
 //verify roles effectiveness
@@ -39,22 +39,20 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 				return errstate.ErrInvalidStructure
 			}
 
-			urs := make(map[string][]string)
+			//all roles corresponding to valid users
+			urs := make(map[string]map[string]bool)
 
 			//check for user roles
 			for _, v := range in.Id {
 				ums, err := repo.GetUserRoleMembers(in.StructureId, v)
 
 				add := func(userId string) {
-					var uml []string
+					uml := make(map[string]bool)
 					if ums != nil {
 						for _, v := range ums {
 							s := string(v.([]byte))
-							uml = append(uml, s)
+							uml[s] = true
 						}
-					}
-					if uml == nil {
-						uml = make([]string, 0)
 					}
 					urs[userId] = uml
 				}
@@ -90,9 +88,24 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 				}
 			}
 
-			for user, rs := range urs {
-				var nars []string //need add roles
-
+			for userId, userRoles := range urs {
+				var roles []string
+				if len(userRoles) > 0 {
+					for _, v := range in.RoleId {
+						if !userRoles[v] {
+							roles = append(roles, v)
+						}
+					}
+				} else {
+					roles = in.RoleId
+				}
+				if roles != nil && len(roles) > 0 {
+					err := repo.SetUserRoleMembersInCache(userId, in.StructureId, roles)
+					if err == nil {
+						//add  to database
+						return errstate.Success
+					}
+				}
 			}
 
 		}
@@ -103,22 +116,68 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 
 func (svc *bindingService) FunctionRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(in.StructureId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
+
+			repo := svc.GetRepo()
+			defer repo.Close()
+
+			//check structure exists
+			if isStructureExists(repo.session, in.StructureId) == 0 {
+				return errstate.ErrInvalidStructure
+			}
+			//
+			//for _, v := range in.Id {
+			//	f, err := repo.GetFunctionRoleMembers(in.StructureId, v)
+			//	if err != nil && err == redis.ErrNil {
+			//		//check function exists
+			//
+			//	}
+			//}
+
+		}
+
 		return nil
 	})
 }
 
 func (svc *bindingService) UnbindUserRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		if len(in.StructureId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
+
+			repo := svc.GetRepo()
+			defer repo.Close()
+
+			//check structure exists
+			if isStructureExists(repo.session, in.StructureId) == 0 {
+				return errstate.ErrInvalidStructure
+			}
+
+		}
+
 		return nil
 	})
 }
 
 func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		if len(in.StructureId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
+
+			repo := svc.GetRepo()
+			defer repo.Close()
+
+			//check structure exists
+			if isStructureExists(repo.session, in.StructureId) == 0 {
+				return errstate.ErrInvalidStructure
+			}
+
+		}
+
 		return nil
 	})
 }
 
-func NewBindingService(pool *redis.Pool, session *mgo.Session) gs_service_permission.BindingHandler {
-	return &bindingService{pool: pool, session: session}
+func NewBindingService(pool *redis.Pool, session *mgo.Session, extUserService gs_ext_service_user.UserService) gs_service_permission.BindingHandler {
+	return &bindingService{pool: pool, session: session, extUserService: extUserService}
 }

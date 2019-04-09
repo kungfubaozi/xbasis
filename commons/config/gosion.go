@@ -1,6 +1,7 @@
 package gs_commons_config
 
 import (
+	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/commons/constants"
@@ -32,7 +33,8 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 	acl := zk.WorldACL(zk.PermAll)
 	_, err := c.Create(gs_commons_constants.GosionConfiguration, nil, 1, acl)
 	if err != nil {
-		return
+		fmt.Println("node register error:", err)
+		//return
 	}
 
 	watch(c, gs_commons_constants.GosionConfiguration, func(data []byte, version int32) bool {

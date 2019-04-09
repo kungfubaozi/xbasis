@@ -2,17 +2,16 @@ package gs_commons_wrapper
 
 import (
 	"context"
-	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
-	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/permission/client"
 	"konekko.me/gosion/permission/pb"
 )
 
-func AuthWrapper(client client.Client, fn server.HandlerFunc) server.HandlerFunc {
-	verificationClient := gs_service_permission.NewVerificationService(gs_commons_constants.PermissionService, client)
+func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
+	verificationClient := permissioncli.NewVerificationClient()
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 
 		status, err := verificationClient.Test(ctx, &gs_service_permission.HasPermissionRequest{})

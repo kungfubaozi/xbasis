@@ -1,4 +1,4 @@
-package safety_handers
+package safetyhanders
 
 import (
 	"context"
@@ -62,6 +62,6 @@ func (svc *blacklistService) RemoveBlacklist(ctx context.Context, in *gs_service
 	})
 }
 
-func NewBlakclistService(session *mgo.Session, pool *redis.Pool) gs_service_safety.BlacklistHandler {
+func NewBlacklistService(session *mgo.Session, pool *redis.Pool) gs_service_safety.BlacklistHandler {
 	return &blacklistService{}
 }

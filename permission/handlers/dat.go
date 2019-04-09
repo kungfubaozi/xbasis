@@ -201,6 +201,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 	}
 }
 
-func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration) gs_service_permission.DurationAccessHandler {
-	return &durationAccessService{pool: pool, session: session, configuration: configuration}
+func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration,
+	messageService gs_ext_service_user.MessageService) gs_service_permission.DurationAccessHandler {
+	return &durationAccessService{pool: pool, session: session, configuration: configuration, messageService: messageService}
 }

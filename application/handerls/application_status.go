@@ -5,7 +5,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb/ext"
-	"konekko.me/gosion/application/repositories"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
@@ -48,10 +47,11 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 	})
 }
 
-func (svc *applicationStatusService) GetRepo() application_repositories.ApplicationRepo {
-	return application_repositories.ApplicationRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
+func (svc *applicationStatusService) GetRepo() *applicationRepo {
+	return &applicationRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
-func NewApplicationStatusServie() gs_nops_service_application.ApplicationStatusHandler {
-	return &applicationStatusService{}
+func NewApplicationStatusServie(session *mgo.Session,
+	pool *redis.Pool) gs_ext_service_application.ApplicationStatusHandler {
+	return &applicationStatusService{session: session, pool: pool}
 }

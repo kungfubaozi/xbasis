@@ -18,6 +18,6 @@ func (svc *safetyService) ForgetPassword(ctx context.Context, in *gs_service_use
 	})
 }
 
-func NewSafetyService() gs_service_user.SafetyHandler {
-	return &safetyService{}
+func NewSafetyService(session *mgo.Session) gs_service_user.SafetyHandler {
+	return &safetyService{session: session}
 }

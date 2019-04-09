@@ -3,6 +3,7 @@ package userhandlers
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"konekko.me/gosion/commons/dao"
 )
 
 type userRepo struct {
@@ -28,15 +29,15 @@ func (repo *userRepo) FindById(id string) (*userInfo, error) {
 }
 
 func (repo *userRepo) userCollection() *mgo.Collection {
-	return repo.session.DB("gosion").C("users_")
+	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.UserCollection)
 }
 
 func (repo *userRepo) contractCollection() *mgo.Collection {
-	return repo.session.DB("gosion").C("user_contract_")
+	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.UserContractCollection)
 }
 
 func (repo *userRepo) infoCollection() *mgo.Collection {
-	return repo.session.DB("gosion").C("user_info_")
+	return repo.session.DB(gs_commons_dao.DBName).C("user_info_")
 }
 
 func (repo *userRepo) Close() {

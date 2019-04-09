@@ -3,6 +3,8 @@ package microservice
 import (
 	"github.com/juju/ratelimit"
 	"github.com/micro/go-grpc"
+	"github.com/micro/go-micro/server"
+	"konekko.me/gosion/commons/wrapper"
 
 	//"github.com/micro/go-grpc"
 	"github.com/micro/go-micro"
@@ -27,9 +29,9 @@ func NewService(name string) micro.Service {
 		micro.WrapClient(r.NewClientWrapper(c, false)),
 	)
 
-	//s.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
-	//	return gs_commons_wrapper.AuthWrapper(s.Client(), handlerFunc)
-	//}))
+	s.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
+		return gs_commons_wrapper.AuthWrapper(handlerFunc)
+	}))
 
 	return s
 }

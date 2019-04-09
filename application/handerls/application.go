@@ -5,7 +5,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb"
-	"konekko.me/gosion/application/repositories"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -19,8 +18,8 @@ type applicationService struct {
 	pool    *redis.Pool
 }
 
-func (svc *applicationService) GetRepo() application_repositories.ApplicationRepo {
-	return application_repositories.ApplicationRepo{Session: svc.session.Clone(), Conn: svc.pool.Get()}
+func (svc *applicationService) GetRepo() *applicationRepo {
+	return &applicationRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
 //create new application if not exists(name)
@@ -44,16 +43,16 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 
 		appId := id.Short()
 
-		info := &application_repositories.AppInfo{
+		info := &appInfo{
 			Name:         in.Name,
 			CreateAt:     now,
 			Id:           appId,
 			CreateUserId: auth.User,
-			Settings: &application_repositories.AppSetting{
+			Settings: &appSetting{
 				Enabled:  gs_commons_constants.Enabled,
 				OpenMode: gs_commons_constants.OpenModeOfAllOrganization,
 			},
-			Clients: []*application_repositories.AppClient{
+			Clients: []*appClient{
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfAndroid,

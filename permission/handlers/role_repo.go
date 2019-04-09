@@ -21,14 +21,6 @@ func (repo *roleRepo) FindByName(structureId, name string) (*role, error) {
 	return &r, err
 }
 
-func (repo *roleRepo) Exists(appId, roleId string) (bool, error) {
-	return redis.Bool(repo.conn.Do("hexists", permissionutils.GetStructureRoleKey(appId), roleId))
-}
-
-func (repo *roleRepo) GetUserRoleMembers(appId, userId string) ([]interface{}, error) {
-	return redis.Values(repo.conn.Do("SMEMBERS", permissionutils.GetStructureUserRoleKey(appId, userId)))
-}
-
 func (repo *roleRepo) Remove(structureId, roleId string) error {
 	_, err := repo.conn.Do("hdel", permissionutils.GetStructureRoleKey(structureId), roleId)
 	if err != nil && err == redis.ErrNil {

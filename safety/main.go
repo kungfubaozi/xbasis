@@ -1,7 +1,7 @@
-package safety
+package main
 
-import "konekko.me/gosion/safety/cmd/safetysvc"
+import "konekko.me/gosion/safety/service"
 
 func main() {
-	safetysvc.StartService()
+	safetyservice.StartService()
 }

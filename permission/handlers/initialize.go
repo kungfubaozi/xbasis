@@ -21,7 +21,7 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 			defer functionRepo.Close()
 			groupRepo := groupRepo{session: session, id: id}
 			defer groupRepo.Close()
-			roleRepo := roleRepo{Session: session, id: id}
+			roleRepo := roleRepo{session: session, id: id}
 			defer roleRepo.Close()
 		}
 	}
