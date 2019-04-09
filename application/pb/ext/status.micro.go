@@ -65,7 +65,7 @@ func NewApplicationStatusService(name string, c client.Client) ApplicationStatus
 }
 
 func (c *applicationStatusService) GetAppClientStatus(ctx context.Context, in *GetAppClientStatusRequest, opts ...client.CallOption) (*GetAppClientStatusResponse, error) {
-	req := c.c.NewRequest(c.name, "ApplicationStatus.getAppClientStatus", in)
+	req := c.c.NewRequest(c.name, "ApplicationStatus.GetAppClientStatus", in)
 	out := new(GetAppClientStatusResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

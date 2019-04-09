@@ -58,7 +58,6 @@ func (repo *applicationRepo) Upsert(info *appInfo) error {
 }
 
 func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
-
 	var app appInfo
 	err := repo.collection().Find(bson.M{"clients": bson.M{"$elemMatch": bson.M{"id": clientId}}}).One(&app)
 

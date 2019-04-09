@@ -3,7 +3,6 @@ package gs_commons_wrapper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/micro/go-micro/metadata"
 	"konekko.me/gosion/commons/dto"
 	gserrors "konekko.me/gosion/commons/errstate"
@@ -28,7 +27,6 @@ type DurationAccessUser struct {
 type WrapperEvent func(auth *WrapperUser) *gs_commons_dto.State
 
 func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent) error {
-	fmt.Println("context to authorize")
 	s := reflect.ValueOf(out).Elem().FieldByName("State")
 	if !s.CanSet() {
 		return errors.New("err return type canSet")
@@ -50,7 +48,6 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 		}
 	}
 	if s.IsNil() {
-		fmt.Println("reddd")
 		s.Set(reflect.ValueOf(gserrors.ErrRequest))
 	}
 	return nil

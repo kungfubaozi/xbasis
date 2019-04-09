@@ -37,13 +37,29 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 		//return
 	}
 
-	watch(c, gs_commons_constants.GosionConfiguration, func(data []byte, version int32) bool {
+	back := func(b []byte) bool {
 		var config GosionConfiguration
-		err := msgpack.Unmarshal(data, &config)
+		err := msgpack.Unmarshal(b, &config)
 		if err != nil {
 			return false
 		}
+		fmt.Println("receiver new config")
 		event(&config)
 		return false
+	}
+
+	v, _, err := c.Get(gs_commons_constants.GosionConfiguration)
+	if err != nil {
+		fmt.Println("err", err)
+	} else {
+		if v != nil {
+			back(v)
+		} else {
+			fmt.Println("nothing")
+		}
+	}
+
+	watch(c, gs_commons_constants.GosionConfiguration, func(data []byte, version int32) bool {
+		return back(data)
 	})
 }

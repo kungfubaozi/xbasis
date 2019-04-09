@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
@@ -22,6 +23,20 @@ func (svc *blacklistService) GetRepo() blacklistRepo {
 func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.CheckRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
+		if len(in.Content) == 0 {
+			return nil
+		}
+
+		if in.Type == gs_commons_constants.BlacklistOfIP || in.Type == gs_commons_constants.BlacklistOfUserDevice {
+
+			repo := svc.GetRepo()
+			defer repo.Close()
+
+			if !repo.CacheExists(in.Type, in.Content) {
+				return errstate.Success
+			}
+
+		}
 		return nil
 	})
 }
@@ -63,5 +78,5 @@ func (svc *blacklistService) RemoveBlacklist(ctx context.Context, in *gs_service
 }
 
 func NewBlacklistService(session *mgo.Session, pool *redis.Pool) gs_service_safety.BlacklistHandler {
-	return &blacklistService{}
+	return &blacklistService{session: session, pool: pool}
 }

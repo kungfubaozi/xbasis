@@ -6,7 +6,7 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service ApplicationStatus {
 
-    rpc getAppClientStatus (GetAppClientStatusRequest) returns (GetAppClientStatusResponse);
+    rpc GetAppClientStatus (GetAppClientStatusRequest) returns (GetAppClientStatusResponse);
 
 }
 

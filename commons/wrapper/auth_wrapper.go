@@ -41,7 +41,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 		fmt.Println("verification clear")
 
 		//compressed volume
-		ctx = metadata.NewContext(context.Background(), map[string]string{
+		ctx = metadata.NewContext(ctx, map[string]string{
 			"Transport-User":       status.User,
 			"Transport-AppId":      status.AppId,
 			"Transport-ClientId":   status.ClientId,

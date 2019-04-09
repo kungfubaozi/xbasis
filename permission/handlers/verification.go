@@ -2,16 +2,15 @@ package permissionhandlers
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
-	"github.com/twinj/uuid"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/encrypt"
@@ -53,26 +52,26 @@ var openPermission = false
 //ip, userDevice blacklist verify
 //api exists and authType verify
 func (svc *verificationService) Check(ctx context.Context, in *gs_service_permission.HasPermissionRequest, out *gs_service_permission.HasPermissionResponse) error {
-	fmt.Println("verification testing")
-
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		fmt.Println("entry")
 		md, ok := metadata.FromContext(ctx)
-
+		svc.configuration = serviceconfiguration.Get()
 		if len(svc.configuration.CurrencySecretKey) == 0 {
-			fmt.Println("currency secret key not found")
 			return errstate.ErrAuthorization
 		}
 
 		if ok {
 			//side service contract
 			//prevent loop
-			traceId := md["transport-traceId"]
+
+			//fmt.Println("ctx", md)
+
+			traceId := md["transport-trace-id"]
 			if len(traceId) > 0 {
 				_, err := gs_commons_encrypt.AESDecrypt(traceId, []byte(svc.configuration.CurrencySecretKey))
 				if err != nil {
 					return nil
 				}
+				//fmt.Println("entry traceId is:", traceId)
 				return errstate.Success
 			}
 
@@ -97,16 +96,11 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				return nil
 			}
 
-			var wg sync.WaitGroup
-			wg.Add(3)
-
 			state := errstate.Success
 
-			id := gs_commons_generator.ID()
+			id := gs_commons_generator.NewIDG().String()
 
-			traceId = base64.StdEncoding.EncodeToString([]byte(id.Generate().Base64() + uuid.NewV4().String()))
-
-			traceId, err := gs_commons_encrypt.AESEncrypt([]byte(traceId), []byte(svc.configuration.CurrencySecretKey))
+			traceId, err := gs_commons_encrypt.AESEncrypt([]byte(id), []byte(svc.configuration.CurrencySecretKey))
 			if err != nil {
 				return nil
 			}
@@ -117,20 +111,24 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				}
 			}
 
-			ctx = metadata.NewContext(context.Background(), map[string]string{
-				"transport-traceId": traceId,
+			ctx = metadata.NewContext(ctx, map[string]string{
+				"transport-trace-id": traceId,
 			})
 
 			fmt.Println("traceId:", traceId)
 
 			conn := svc.pool.Get()
 
+			var wg sync.WaitGroup
+			wg.Add(3)
+
 			//blacklist(ip)
 			go func() {
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
 					&gs_service_safety.CheckRequest{
-						Type: gs_commons_constants.BlacklistOfIP,
+						Type:    gs_commons_constants.BlacklistOfIP,
+						Content: rh.ip,
 					})
 				if err != nil {
 					resp(errstate.ErrRequest)
@@ -144,7 +142,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
 					&gs_service_safety.CheckRequest{
-						Type: gs_commons_constants.BlacklistOfUserDevice,
+						Type:    gs_commons_constants.BlacklistOfUserDevice,
+						Content: rh.userDevice,
 					})
 				if err != nil {
 					resp(errstate.ErrRequest)
@@ -170,6 +169,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				appResp = s
 				if s != nil && s.State.Ok && len(s.AppId) > 0 {
 					//get current structure id
+					fmt.Println("check application structure")
 					get := func(t int64) (string, error) {
 						return redis.String(conn.Do("get",
 							permissionutils.GetTypeCurrentStructureKey(s.AppId, t)))
@@ -180,6 +180,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 						ccs.UserStructureId = v
 						v, err = get(permissionutils.TypeFunctionStructure)
 						if err != nil && len(v) > 0 {
+							fmt.Println("check application structure,-> clear")
 							ccs.FunctionStructureId = v
 						}
 					}
@@ -189,8 +190,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 			wg.Wait()
 
 			if !state.Ok {
-				out.State = state
-				return nil
+				fmt.Println("basic check failed:", state.Message)
+				return state
 			}
 
 			if appResp != nil && len(ccs.UserStructureId) > 0 && len(ccs.FunctionStructureId) > 0 {
@@ -363,9 +364,9 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 	})
 }
 
-func NewVerificationService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration,
+func NewVerificationService(pool *redis.Pool, session *mgo.Session,
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService, blacklistService gs_service_safety.BlacklistService,
 	extAuthService gs_ext_service_authentication.AuthService) gs_service_permission.VerificationHandler {
-	return &verificationService{pool: pool, session: session, configuration: configuration, extApplicationStatusService: extApplicationStatusService,
+	return &verificationService{pool: pool, session: session, extApplicationStatusService: extApplicationStatusService,
 		blacklistService: blacklistService, extAuthService: extAuthService}
 }

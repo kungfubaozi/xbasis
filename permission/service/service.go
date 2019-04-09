@@ -5,6 +5,7 @@ import (
 	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/microservice"
@@ -38,7 +39,7 @@ func StartService() {
 	go func() {
 		m := microservice.NewService(gs_commons_constants.ExtPermissionVerificationService, false)
 		err = gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
-			session, configuration, applicationclient.NewStatusClient(),
+			session, applicationclient.NewStatusClient(),
 			safetyclient.NewBlacklistClient(),
 			authenticationcli.NewAuthClient()))
 		fmt.Println("register verification error", err)
@@ -65,9 +66,7 @@ func StartService() {
 	}()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(func(config *gs_commons_config.GosionConfiguration) {
-			configuration = config
-		})
+		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	go func() {

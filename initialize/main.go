@@ -101,6 +101,7 @@ func main() {
 		CurrencySecretKey:                gs_commons_encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
 		RegisterType:                     1001 | 1002 | 1003,
 		LoginType:                        1001 | 1002 | 1003,
+		TokenSecretKey:                   gs_commons_encrypt.Md5(time.Now().String()),
 	}
 
 	b, err := msgpack.Marshal(initConfig)
@@ -113,17 +114,33 @@ func main() {
 	//set def configs
 	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, 0)
 	if err != nil {
-		panic(err)
+		fmt.Println("set init config err", err)
 	}
 
 	b, err = msgpack.Marshal(configuration)
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, 0)
+	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, 4)
 	if err != nil {
 		panic(err)
 	}
+	//
+	//v, _, err := c.Get(gs_commons_constants.GosionConfiguration)
+	//if err != nil {
+	//	fmt.Println("err", err)
+	//} else {
+	//	if v != nil {
+	//		var config gs_commons_config.GosionConfiguration
+	//		err := msgpack.Unmarshal(b, &config)
+	//		if err != nil {
+	//			panic(err)
+	//		}
+	//		fmt.Println("init config ok", config)
+	//	} else {
+	//		fmt.Println("nothing")
+	//	}
+	//}
 
 }
 
