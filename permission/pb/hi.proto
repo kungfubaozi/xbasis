@@ -1,17 +1,17 @@
 syntax = "proto3";
 
-package provide.gs.service.permission;
+package gs.service.permission;
 
 //import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 service Hi {
-    rpc SayHello (Request) returns (Response);
+    rpc SayHello (HiRequest) returns (HiResponse);
 }
 
-message Request {
+message HiRequest {
     string name = 1;
 }
 
-message Response {
+message HiResponse {
     string msg = 1;
 }

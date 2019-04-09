@@ -44,7 +44,7 @@ var _ server.Option
 
 type VerificationService interface {
 	// 是否有权限
-	Test(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*HasPermissionResponse, error)
+	Check(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*HasPermissionResponse, error)
 }
 
 type verificationService struct {
@@ -65,8 +65,8 @@ func NewVerificationService(name string, c client.Client) VerificationService {
 	}
 }
 
-func (c *verificationService) Test(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*HasPermissionResponse, error) {
-	req := c.c.NewRequest(c.name, "Verification.test", in)
+func (c *verificationService) Check(ctx context.Context, in *HasPermissionRequest, opts ...client.CallOption) (*HasPermissionResponse, error) {
+	req := c.c.NewRequest(c.name, "Verification.Check", in)
 	out := new(HasPermissionResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -79,12 +79,12 @@ func (c *verificationService) Test(ctx context.Context, in *HasPermissionRequest
 
 type VerificationHandler interface {
 	// 是否有权限
-	Test(context.Context, *HasPermissionRequest, *HasPermissionResponse) error
+	Check(context.Context, *HasPermissionRequest, *HasPermissionResponse) error
 }
 
 func RegisterVerificationHandler(s server.Server, hdlr VerificationHandler, opts ...server.HandlerOption) error {
 	type verification interface {
-		Test(ctx context.Context, in *HasPermissionRequest, out *HasPermissionResponse) error
+		Check(ctx context.Context, in *HasPermissionRequest, out *HasPermissionResponse) error
 	}
 	type Verification struct {
 		verification
@@ -97,6 +97,6 @@ type verificationHandler struct {
 	VerificationHandler
 }
 
-func (h *verificationHandler) Test(ctx context.Context, in *HasPermissionRequest, out *HasPermissionResponse) error {
-	return h.VerificationHandler.Test(ctx, in, out)
+func (h *verificationHandler) Check(ctx context.Context, in *HasPermissionRequest, out *HasPermissionResponse) error {
+	return h.VerificationHandler.Check(ctx, in, out)
 }

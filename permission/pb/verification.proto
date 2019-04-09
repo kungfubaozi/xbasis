@@ -8,7 +8,7 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 service Verification {
 
     //是否有权限
-    rpc test (HasPermissionRequest) returns (HasPermissionResponse);
+    rpc Check (HasPermissionRequest) returns (HasPermissionResponse);
 
 }
 

@@ -11,7 +11,6 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/b
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/verification.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/dat.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/structure.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/provide/hi.proto
 
 #user
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/update.proto

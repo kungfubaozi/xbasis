@@ -8,10 +8,6 @@ service Say {
     rpc Hello (Request) returns (Response);
 }
 
-service Hi {
-    rpc SayHello (Request) returns (Response);
-}
-
 message Request {
     string name = 1;
 }

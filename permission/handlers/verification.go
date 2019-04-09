@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
 	"github.com/twinj/uuid"
@@ -51,9 +52,18 @@ var openPermission = false
 //application verify
 //ip, userDevice blacklist verify
 //api exists and authType verify
-func (svc *verificationService) Test(ctx context.Context, in *gs_service_permission.HasPermissionRequest, out *gs_service_permission.HasPermissionResponse) error {
+func (svc *verificationService) Check(ctx context.Context, in *gs_service_permission.HasPermissionRequest, out *gs_service_permission.HasPermissionResponse) error {
+	fmt.Println("verification testing")
+
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		fmt.Println("entry")
 		md, ok := metadata.FromContext(ctx)
+
+		if len(svc.configuration.CurrencySecretKey) == 0 {
+			fmt.Println("currency secret key not found")
+			return errstate.ErrAuthorization
+		}
+
 		if ok {
 			//side service contract
 			//prevent loop
@@ -77,10 +87,13 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 				dat:           md["gs-duration-token"],
 			}
 
+			fmt.Println("request headers:", rh)
+
 			//check
-			if len(rh.authorization) == 0 || len(rh.userDevice) == 0 ||
+			if len(rh.userDevice) == 0 ||
 				len(rh.clientId) == 0 || len(rh.userAgent) == 0 || len(rh.ip) == 0 ||
 				len(rh.path) == 0 {
+				fmt.Println("check failed")
 				return nil
 			}
 
@@ -107,6 +120,8 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 			ctx = metadata.NewContext(context.Background(), map[string]string{
 				"transport-traceId": traceId,
 			})
+
+			fmt.Println("traceId:", traceId)
 
 			conn := svc.pool.Get()
 
@@ -344,7 +359,7 @@ func (svc *verificationService) Test(ctx context.Context, in *gs_service_permiss
 
 		}
 
-		return nil
+		return errstate.ErrRequest
 	})
 }
 

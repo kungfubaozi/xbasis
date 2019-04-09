@@ -38,7 +38,7 @@ func (g *generator) UUID() string {
 }
 
 func (g *generator) Short() string {
-	return uuid.New([]byte(g.Get()[:10])).String()
+	return uuid.New([]byte(g.Get())).String()[24:]
 }
 
 func (g *generator) Node() *snowflake.Node {

@@ -35,7 +35,7 @@ func StartService() {
 	configuration := &gs_commons_config.GosionConfiguration{}
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtUserService)
+		s := microservice.NewService(gs_commons_constants.ExtUserService, true)
 
 		gs_ext_service_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms))
 
@@ -45,7 +45,7 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.UserService)
+		s := microservice.NewService(gs_commons_constants.UserService, true)
 
 		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts))
 
@@ -61,7 +61,7 @@ func StartService() {
 	go func() {
 
 		//watch config change to init def data
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, userhandlers.Initialize(session))
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, userhandlers.Initialize(session.Clone()))
 
 	}()
 

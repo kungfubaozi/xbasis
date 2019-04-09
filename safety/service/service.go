@@ -29,7 +29,7 @@ func StartService() {
 	configuration := &gs_commons_config.GosionConfiguration{}
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.SafetyService)
+		s := microservice.NewService(gs_commons_constants.SafetyService, true)
 		s.Init()
 
 		gs_service_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, pool))
@@ -48,7 +48,7 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtSafetyService)
+		s := microservice.NewService(gs_commons_constants.ExtSafetyService, true)
 		s.Init()
 		gs_ext_service_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session))
 

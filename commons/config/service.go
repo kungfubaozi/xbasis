@@ -34,8 +34,10 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	_, err := c.Create(path, nil, 1, acl)
 	if err != nil {
 		//return
-		return
+		//return
 	}
+
+	fmt.Println("start watch:", serviceName)
 
 	watch(c, gs_commons_constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {
 		var config GosionInitializeConfig
@@ -81,7 +83,7 @@ func watch(c *zk.Conn, path string, event OnNodeDataChanged) {
 	if err != nil {
 		fmt.Printf("create: %+v\n", err)
 	}
-	fmt.Println("listen start")
+	fmt.Println("listen start:", path)
 	_, _, ch, err := c.GetW(path)
 	if err != nil {
 		panic(err)
@@ -95,7 +97,7 @@ func watch(c *zk.Conn, path string, event OnNodeDataChanged) {
 					fmt.Println("err", err)
 				} else {
 					if event(v, s.Version) {
-						return
+						//return
 					}
 				}
 			}

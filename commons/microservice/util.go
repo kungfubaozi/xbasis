@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func NewService(name string) micro.Service {
+func NewService(name string, init bool) micro.Service {
 	c := ratelimit.NewBucketWithRate(float64(500), int64(100))
 
 	cr := consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
@@ -29,9 +29,12 @@ func NewService(name string) micro.Service {
 		micro.WrapClient(r.NewClientWrapper(c, false)),
 	)
 
-	s.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
-		return gs_commons_wrapper.AuthWrapper(handlerFunc)
-	}))
+	if init {
+		s.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
+			return gs_commons_wrapper.AuthWrapper(s.Client(), handlerFunc)
+		}))
+
+	}
 
 	return s
 }

@@ -1,21 +1,22 @@
 package gs_commons_constants
 
 const (
-	PermissionService     = "gs.svc.permission"
-	MessageService        = "gs.svc.message"
-	ConnectionService     = "gs.svc.connection"
-	UserService           = "gs.svc.user"
-	ApplicationService    = "gs.svc.application"
-	SafetyService         = "gs.svc.safety"
-	AuthenticationService = "gs.svc.authentication"
+	PermissionService     = "gs.service.permission"
+	MessageService        = "gs.service.message"
+	ConnectionService     = "gs.service.connection"
+	UserService           = "gs.service.user"
+	ApplicationService    = "gs.service.application"
+	SafetyService         = "gs.service.safety"
+	AuthenticationService = "gs.service.authentication"
 )
 
 const (
-	ExtPermissionService     = "gs.ext.svc.permission"
-	ExtUserService           = "gs.ext.svc.user"
-	ExtSafetyService         = "gs.ext.svc.safety"
-	ExtApplicationService    = "gs.ext.svc.application"
-	ExtAuthenticationService = "gs.ext.svc.authentication"
+	ExtPermissionVerificationService = "gs.ext.svc.verification.test"
+	ExtPermissionService             = "gs.ext.svc.permission"
+	ExtUserService                   = "gs.ext.svc.user"
+	ExtSafetyService                 = "gs.ext.svc.safety"
+	ExtApplicationService            = "gs.ext.svc.application"
+	ExtAuthenticationService         = "gs.ext.svc.authentication"
 )
 
 const (

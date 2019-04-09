@@ -40,7 +40,7 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtApplicationService)
+		s := microservice.NewService(gs_commons_constants.ExtApplicationService, true)
 		s.Init()
 
 		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusServie(session, pool))
@@ -49,7 +49,7 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ApplicationService)
+		s := microservice.NewService(gs_commons_constants.ApplicationService, true)
 		s.Init()
 
 		gs_service_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, pool))

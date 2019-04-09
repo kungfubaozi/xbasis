@@ -36,7 +36,7 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtAuthenticationService)
+		s := microservice.NewService(gs_commons_constants.ExtAuthenticationService, true)
 		s.Init()
 
 		gs_ext_service_authentication.RegisterAuthHandler(s.Server(),

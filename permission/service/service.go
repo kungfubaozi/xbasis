@@ -1,6 +1,7 @@
 package permissionsvc
 
 import (
+	"fmt"
 	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
@@ -15,7 +16,7 @@ import (
 
 func StartService() {
 
-	m := microservice.NewService(gs_commons_constants.PermissionService)
+	errc := make(chan error, 2)
 
 	configuration := &gs_commons_config.GosionConfiguration{}
 
@@ -34,20 +35,34 @@ func StartService() {
 
 	mc := userclient.NewExtMessageClient()
 
-	gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us))
+	go func() {
+		m := microservice.NewService(gs_commons_constants.ExtPermissionVerificationService, false)
+		err = gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
+			session, configuration, applicationclient.NewStatusClient(),
+			safetyclient.NewBlacklistClient(),
+			authenticationcli.NewAuthClient()))
+		fmt.Println("register verification error", err)
 
-	gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc))
+		errc <- m.Run()
+	}()
 
-	gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(pool, session))
+	go func() {
 
-	gs_service_permission.RegisterGroupStructureHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
+		m := microservice.NewService(gs_commons_constants.PermissionService, true)
 
-	gs_service_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool))
+		gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us))
 
-	gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
-		session, configuration, applicationclient.NewStatusClient(),
-		safetyclient.NewBlacklistClient(),
-		authenticationcli.NewAuthClient()))
+		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc))
+
+		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(pool, session))
+
+		gs_service_permission.RegisterGroupStructureHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
+
+		gs_service_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool))
+
+		errc <- m.Run()
+
+	}()
 
 	go func() {
 		gs_commons_config.WatchGosionConfig(func(config *gs_commons_config.GosionConfiguration) {
@@ -56,10 +71,10 @@ func StartService() {
 	}()
 
 	go func() {
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session, pool))
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session.Clone(), pool))
 	}()
 
-	if err := m.Run(); err != nil {
+	if err := <-errc; err != nil {
 		panic(err)
 	}
 
