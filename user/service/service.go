@@ -1,8 +1,7 @@
 package usersvc
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/olivere/elastic"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
@@ -31,16 +30,10 @@ func StartService() {
 	}
 	defer ms.Close()
 
-	db, err := gorm.Open("mysql", "root:root123@(192.168.2.60:3306)/gs_index?charset=utf8&parseTime=True&loc=Local")
+	client, err := elastic.NewClient(elastic.SetURL("http://192.168.2.62:9200/"))
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
-
-	db.DB().SetMaxIdleConns(30)
-	db.DB().SetMaxOpenConns(35)
-
-	userhandlers.InitializeTables(db)
 
 	configuration := &gs_commons_config.GosionConfiguration{}
 
@@ -60,7 +53,7 @@ func StartService() {
 		ss := safetyclient.NewSecurityClient(s.Client())
 		ts := authenticationcli.NewTokenClient(s.Client())
 
-		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, db))
+		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client))
 
 		gs_service_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session))
 
@@ -74,7 +67,7 @@ func StartService() {
 	go func() {
 
 		//watch config change to init def data
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, userhandlers.Initialize(session.Clone(), db))
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.UserService, userhandlers.Initialize(session.Clone(), client))
 
 	}()
 

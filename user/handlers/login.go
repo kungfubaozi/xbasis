@@ -3,7 +3,7 @@ package userhandlers
 import (
 	"context"
 	"fmt"
-	"github.com/jinzhu/gorm"
+	"github.com/olivere/elastic"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/authentication/pb/ext"
@@ -20,11 +20,11 @@ type loginService struct {
 	session         *mgo.Session
 	securityService gs_ext_service_safety.SecurityService
 	tokenService    gs_ext_service_authentication.TokenService
-	db              *gorm.DB
+	client          *elastic.Client
 }
 
 func (svc *loginService) GetRepo() *userRepo {
-	return &userRepo{session: svc.session.Clone(), db: svc.db}
+	return &userRepo{session: svc.session.Clone(), elastic: svc.client}
 }
 
 //web client just support the root project, you need the login to root project and then route to the target client
@@ -132,6 +132,6 @@ func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.Ent
 }
 
 func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
-	tokenService gs_ext_service_authentication.TokenService, db *gorm.DB) gs_service_user.LoginHandler {
-	return &loginService{session: session, securityService: securityService, tokenService: tokenService, db: db}
+	tokenService gs_ext_service_authentication.TokenService, client *elastic.Client) gs_service_user.LoginHandler {
+	return &loginService{session: session, securityService: securityService, tokenService: tokenService, client: client}
 }

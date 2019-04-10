@@ -1,8 +1,10 @@
 package userhandlers
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/jinzhu/gorm"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/encrypt"
@@ -11,7 +13,7 @@ import (
 
 type userRepo struct {
 	session *mgo.Session
-	db      *gorm.DB
+	elastic *elastic.Client
 }
 
 func (repo *userRepo) FindById(id string) (*userInfo, error) {
@@ -22,34 +24,38 @@ func (repo *userRepo) FindById(id string) (*userInfo, error) {
 
 func (repo *userRepo) AddUser(user *userInfo) error {
 	index := &userIndex{TargetId: user.Id}
+
+	addIndex := func(index *userIndex, t int) error {
+		p, err := repo.elastic.Index().Index(fmt.Sprintf("%s_it_%d", typeUserIndex, t)).Type("v").BodyJson(index).Do(context.Background())
+		if err != nil {
+			return err
+		}
+		fmt.Println("create index id:", p.Id)
+		return nil
+	}
+
 	//insert sql index
 	if len(user.Email) > 0 {
-		index.Type = emailIndexType
 		index.Content = repo.index(user.Email)
-		index.Code = hashcode.Get(index.Content)
-		err := repo.db.Create(index)
-		if err.Error != nil {
-			return err.Error
+		err := addIndex(index, emailIndexType)
+		if err != nil {
+			return err
 		}
 	}
 
 	if len(user.Phone) > 0 {
-		index.Type = phoneIndexType
 		index.Content = repo.index(user.Phone)
-		index.Code = hashcode.Get(index.Content)
-		err := repo.db.Create(index)
-		if err.Error != nil {
-			return err.Error
+		err := addIndex(index, phoneIndexType)
+		if err != nil {
+			return err
 		}
 	}
 
 	if len(user.Account) > 0 {
-		index.Type = accountIndexType
 		index.Content = repo.index(user.Account)
-		index.Code = hashcode.Get(index.Content)
-		err := repo.db.Create(index)
-		if err.Error != nil {
-			return err.Error
+		err := addIndex(index, accountIndexType)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -68,12 +74,24 @@ func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
 
 func (repo *userRepo) FindIndexTable(t int, content string) (string, error) {
 	content = repo.index(content)
-	userIndex := &userIndex{Code: hashcode.Get(content), Type: t}
-	err := repo.db.Where(map[string]interface{}{"type": t, "content": content}).Find(userIndex)
-	if err.Error != nil {
-		return "", err.Error
+	userIndex := &userIndex{}
+
+	q := elastic.NewMatchQuery("content", content)
+
+	s, err := repo.elastic.Search(fmt.Sprintf("%s_it_%d", typeUserIndex, t)).Type("v").Query(q).Do(context.Background())
+	if err != nil {
+		return "", nil
 	}
-	return userIndex.TargetId, nil
+	fmt.Println("hits", s.Hits.TotalHits)
+	if s.Hits.TotalHits > 0 {
+		v := s.Hits.Hits[0]
+		err = json.Unmarshal(*v.Source, userIndex)
+		if err == nil {
+			return userIndex.TargetId, nil
+		}
+	}
+
+	return "", nil
 }
 
 func (repo *userRepo) index(c string) string {

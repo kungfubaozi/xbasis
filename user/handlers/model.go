@@ -1,9 +1,5 @@
 package userhandlers
 
-import (
-	"fmt"
-)
-
 const (
 	dbName = "gs_users"
 
@@ -15,9 +11,13 @@ const (
 )
 
 const (
-	emailIndexType   = 2
-	phoneIndexType   = 3
-	accountIndexType = 4
+	emailIndexType   = 2 << 3
+	phoneIndexType   = 3 << 9
+	accountIndexType = 4 << 5
+)
+
+const (
+	typeUserIndex = "gs_user_index"
 )
 
 type userInfo struct {
@@ -52,12 +52,6 @@ type userPersonInfo struct {
 }
 
 type userIndex struct {
-	Content  string `gorm:"index"`
-	TargetId string
-	Type     int
-	Code     int
-}
-
-func (u *userIndex) TableName() string {
-	return fmt.Sprintf("user_index_%d_%d", u.Type, u.Code)
+	Content  string `json:"content"`
+	TargetId string `json:"target_id"`
 }
