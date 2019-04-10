@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/constants/api"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/permission/utils"
 	"time"
@@ -19,11 +20,15 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 		}
 		if c == 0 {
 			id := gs_commons_generator.NewIDG()
-			structureRepo := structureRepo{session: session, conn: pool.Get()}
+			conn := pool.Get()
+			structureRepo := structureRepo{session: session, conn: conn}
 			defer structureRepo.Close()
 
+			functionStructureId := id.UUID()
+			userStructureId := id.UUID()
+
 			defStructure := &structure{
-				Id:           id.UUID(),
+				Id:           functionStructureId,
 				CreateUserId: config.UserId,
 				CreateAt:     time.Now().UnixNano(),
 				AppId:        config.AppId,
@@ -46,7 +51,7 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 			}
 
 			defStructure.Type = permissionutils.TypeUserStructure
-			defStructure.Id = id.UUID()
+			defStructure.Id = userStructureId
 			err = structureRepo.Add(defStructure)
 			if err != nil {
 				fmt.Println("init def user structure err.", err)
@@ -57,6 +62,40 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 			err = structureRepo.OpeningCache(defStructure.Id, defStructure.AppId, defStructure.Type)
 			if err != nil {
 				fmt.Println("open def user structure err.", err)
+				panic(err)
+			}
+
+			//add def functions
+
+			functionRepo := functionRepo{session: session, conn: conn}
+			defer functionRepo.Close()
+
+			userGroupId := id.UUID()
+			err = functionRepo.AddGroup(&functionGroup{
+				Id:           userGroupId,
+				Name:         "User",
+				CreateUserId: config.UserId,
+				CreateAt:     time.Now().UnixNano(),
+				StructureId:  functionStructureId,
+			})
+
+			if err != nil {
+				panic(err)
+			}
+
+			f := &function{
+				Name:         "LoginWithAccount",
+				Id:           id.UUID(),
+				CreateAt:     time.Now().UnixNano(),
+				CreateUserId: config.UserId,
+				BindGroupId:  userGroupId,
+				Api:          gosionapis.LoginWithAccount,
+				StructureId:  functionStructureId,
+				AuthTypes:    []int64{},
+			}
+
+			err = functionRepo.AddFunction(f)
+			if err != nil {
 				panic(err)
 			}
 

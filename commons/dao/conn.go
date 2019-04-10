@@ -11,8 +11,8 @@ func CreatePool(addr string) (*redis.Pool, error) {
 
 	pool := &redis.Pool{
 		MaxIdle:     10,
-		MaxActive:   20,
-		IdleTimeout: 360 * time.Second,
+		MaxActive:   10,
+		IdleTimeout: 180 * time.Second,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", addr)
 

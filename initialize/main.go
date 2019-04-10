@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/vmihailenco/msgpack"
+	"golang.org/x/crypto/bcrypt"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/encrypt"
@@ -79,15 +80,24 @@ func main() {
 
 	id := gs_commons_generator.NewIDG()
 
+	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+
+	secretKey := gs_commons_encrypt.Md5(time.Now().String())
+
 	initConfig := &gs_commons_config.GosionInitializeConfig{
 		AppId:       id.Short(),
 		AppName:     enterprise,
 		UserId:      id.Get(),
 		Desc:        desc,
 		Username:    username,
+		Phone:       phone,
 		Email:       email,
-		Password:    password,
+		Password:    string(b),
 		WebClientId: id.Short(),
+		SecretKey:   secretKey,
 	}
 
 	fmt.Println("init application def clientId(web) is:", initConfig.WebClientId)
@@ -101,10 +111,10 @@ func main() {
 		CurrencySecretKey:                gs_commons_encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
 		RegisterType:                     1001 | 1002 | 1003,
 		LoginType:                        1001 | 1002 | 1003,
-		TokenSecretKey:                   gs_commons_encrypt.Md5(time.Now().String()),
+		TokenSecretKey:                   secretKey,
 	}
 
-	b, err := msgpack.Marshal(initConfig)
+	b, err = msgpack.Marshal(initConfig)
 	if err != nil {
 		panic(err)
 	}

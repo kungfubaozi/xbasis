@@ -13,11 +13,13 @@ type GosionInitializeConfig struct {
 	UserId      string
 	AppId       string
 	WebClientId string
+	Phone       string
 	AppName     string
 	Desc        string
 	Username    string
 	Email       string
 	Password    string
+	SecretKey   string
 }
 
 type OnNodeDataChanged func(data []byte, version int32) bool
@@ -38,7 +40,7 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 
 	fmt.Println("start watch:", serviceName)
 
-	c.Delete(gs_commons_constants.ZKWatchInitializeConfigPath, 0)
+	//c.Delete(gs_commons_constants.ZKWatchInitializeConfigPath, 0)
 
 	watch(c, gs_commons_constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {
 		var config GosionInitializeConfig
@@ -48,9 +50,9 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 			return false
 		}
 		event(&config)
-		//c.Delete(path, 0)
+		c.Delete(path, 0)
 		//tryAgain(serviceName, c, 0)
-		return false //stop monitoring
+		return true //stop monitoring
 	})
 }
 
@@ -104,7 +106,7 @@ func watch(c *zk.Conn, path string, event OnNodeDataChanged) {
 					fmt.Println("err", err)
 				} else {
 					if event(v, s.Version) {
-						//return
+						return
 					}
 				}
 			}

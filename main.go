@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
 	"reflect"
 )
 
@@ -177,9 +176,7 @@ func main() {
 	//	}
 	//}
 
-	id := gs_commons_generator.NewIDG()
-
-	fmt.Println(id.Get())
+	fmt.Println(4 << 6)
 
 }
 

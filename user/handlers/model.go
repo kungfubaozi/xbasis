@@ -1,5 +1,9 @@
 package userhandlers
 
+import (
+	"fmt"
+)
+
 const (
 	dbName = "gs_users"
 
@@ -7,27 +11,25 @@ const (
 
 	userInfoCollection = "user_info"
 
-	userContractCollection = "user_contracts"
+	userOAuthCollection = "user_oauth"
+)
+
+const (
+	emailIndexType   = 2
+	phoneIndexType   = 3
+	accountIndexType = 4
 )
 
 type userInfo struct {
 	Id         string `bson:"_id"`
 	CreateAt   int64  `bson:"create_at"` //register time
-	CardId     string `bson:"card_id"`
-	Account    string `bson:"account"`
 	Password   string `bson:"password"`
 	PIN        int64  `bson:"pin"` //number
 	ModifyAt   int64  `bson:"modify_at"`
 	RegisterAt string `bson:"register_at"` //register at clientId
-}
-
-//The number of types should not be greater than 1
-type userContractInfo struct {
-	UserId   string `bson:"user_id"`
-	Contract string `bson:"contract"`
-	Type     int64  `bson:"type"`
-	CreateAt int64  `bson:"create_at"`
-	ModifyAt int64  `bson:"modify_at"`
+	Account    string `bson:"account"`
+	Email      string `bson:"email"`
+	Phone      string `bson:"phone"`
 }
 
 type userOAuth struct {
@@ -47,4 +49,15 @@ type userPersonInfo struct {
 	RealName string `bson:"real_name"`
 	Desc     string `bson:"desc"`
 	ModifyAt int64  `bson:"modify_at"`
+}
+
+type userIndex struct {
+	Content  string `gorm:"index"`
+	TargetId string
+	Type     int
+	Code     int
+}
+
+func (u *userIndex) TableName() string {
+	return fmt.Sprintf("user_index_%d_%d", u.Type, u.Code)
 }

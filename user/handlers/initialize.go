@@ -2,18 +2,14 @@ package userhandlers
 
 import (
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
 	"time"
 )
 
-func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
+func Initialize(session *mgo.Session, db *gorm.DB) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
-		b, err := bcrypt.GenerateFromPassword([]byte(config.Password), bcrypt.DefaultCost)
-		if err != nil {
-			panic(err)
-		}
 		coll := session.DB(dbName).C(userCollection)
 		c, err := coll.Count()
 		if err != nil {
@@ -22,17 +18,25 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 		fmt.Println("receiver initialize config.")
 		if c == 0 {
 			//insert user
+
+			userRepo := userRepo{session: session, db: db}
+			defer userRepo.Close()
+
 			u := &userInfo{
 				Id:         config.UserId,
 				CreateAt:   time.Now().UnixNano(),
 				Account:    config.Username,
-				Password:   string(b),
+				Password:   config.Password,
 				RegisterAt: config.WebClientId,
+				Phone:      config.Phone,
+				Email:      config.Email,
 			}
-			err = coll.Insert(u)
+			err = userRepo.AddUser(u)
 			if err != nil {
 				panic(err)
 			}
+
+			fmt.Println("user config initialize ok.")
 		}
 	}
 }

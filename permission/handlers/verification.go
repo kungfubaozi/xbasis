@@ -243,8 +243,10 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				repo := svc.GetRepo(conn)
 				defer repo.Close()
 
+				//fmt.Println("function structure id", ccs.FunctionStructureId)
 				a, err := repo.FindApiInCache(ccs.FunctionStructureId, rh.path)
 				if err != nil {
+					fmt.Println("invalid api", rh.path)
 					return nil
 				}
 

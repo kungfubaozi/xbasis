@@ -28,6 +28,6 @@ func GetTypeStructureKey(structureId string, t int64) string {
 	return fmt.Sprintf("a/s/t.%s-%d", structureId, t)
 }
 
-func GetTypeCurrentStructureKey(appId string, t int64) string {
-	return fmt.Sprintf("a/c/s/u.%s-%d", appId, t)
+func GetTypeCurrentStructureKey(structureId string, t int64) string {
+	return fmt.Sprintf("a/c/s/u.%s-%d", structureId, t)
 }

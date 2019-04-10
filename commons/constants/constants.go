@@ -98,3 +98,8 @@ const (
 	AccessToken  = 8 >> 10
 	RefreshToken = 9
 )
+
+const (
+	ContractTypeOfPhone = 5 << 2
+	ContractTypeOfEmail = 5 << 3
+)

@@ -18,7 +18,7 @@ func (repo *functionRepo) AddFunction(function *function) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.conn.Do("hmset", permissionutils.GetTypeStructureKey(function.StructureId,
+	_, err = repo.conn.Do("hset", permissionutils.GetTypeStructureKey(function.StructureId,
 		permissionutils.TypeFunctionStructure), function.Api, b)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 }
 
 func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, error) {
-	b, err := redis.Bytes(repo.conn.Do("hmget", permissionutils.GetTypeStructureKey(structureId,
+	b, err := redis.Bytes(repo.conn.Do("hget", permissionutils.GetTypeStructureKey(structureId,
 		permissionutils.TypeFunctionStructure),
 		api))
 	if err != nil {

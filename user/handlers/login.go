@@ -3,6 +3,7 @@ package userhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/authentication/pb/ext"
@@ -19,15 +20,15 @@ type loginService struct {
 	session         *mgo.Session
 	securityService gs_ext_service_safety.SecurityService
 	tokenService    gs_ext_service_authentication.TokenService
+	db              *gorm.DB
 }
 
 func (svc *loginService) GetRepo() *userRepo {
-	return &userRepo{session: svc.session.Clone()}
+	return &userRepo{session: svc.session.Clone(), db: svc.db}
 }
 
 //web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithAccountResponse) error {
-	fmt.Println("with account")
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Account) > 0 && len(in.Content) > 0 {
 			repo := svc.GetRepo()
@@ -39,22 +40,25 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				return errstate.ErrInvalidUsernameOrPassword
 			}
 
-			if gs_commons_regx.Phone(in.Account) || gs_commons_regx.Email(in.Account) {
-				i, err := repo.FindByContract(in.Account)
-				if err != nil {
-					return eiup()
-				}
-				info, err = repo.FindById(i.UserId)
-				if err != nil {
-					return eiup()
-				}
-			} else {
-				i, err := repo.FindByAccount(in.Account)
-				if err != nil {
-					return eiup()
-				}
-				info = i
+			t := accountIndexType
+
+			if gs_commons_regx.Phone(in.Account) {
+				t = phoneIndexType
+			} else if gs_commons_regx.Email(in.Account) {
+				t = emailIndexType
 			}
+
+			i, err := repo.FindIndexTable(t, in.Account)
+			if err != nil {
+				return eiup()
+			}
+			info, err = repo.FindById(i)
+			if err != nil {
+				return eiup()
+			}
+
+			fmt.Println("ok", info.Id)
+
 			if info != nil && len(info.Id) > 0 {
 				//check state
 				s, err := svc.securityService.Get(ctx, &gs_ext_service_safety.GetRequest{
@@ -128,6 +132,6 @@ func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.Ent
 }
 
 func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
-	tokenService gs_ext_service_authentication.TokenService) gs_service_user.LoginHandler {
-	return &loginService{session: session, securityService: securityService, tokenService: tokenService}
+	tokenService gs_ext_service_authentication.TokenService, db *gorm.DB) gs_service_user.LoginHandler {
+	return &loginService{session: session, securityService: securityService, tokenService: tokenService, db: db}
 }
