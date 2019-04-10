@@ -29,7 +29,7 @@ func (repo *groupRepo) Save(appId, userId, name string) error {
 }
 
 func (repo *groupRepo) collection() *mgo.Collection {
-	return repo.session.DB("gosion").C("user_groups")
+	return repo.session.DB(dbName).C(groupCollection)
 }
 
 func (repo *groupRepo) Close() {

@@ -40,7 +40,7 @@ func StartService() {
 		s.Init()
 
 		gs_ext_service_authentication.RegisterAuthHandler(s.Server(),
-			authenticationhandlers.NewAuthService(pool, configuration, safetyclient.NewSecurityClient(), conn))
+			authenticationhandlers.NewAuthService(pool, configuration, safetyclient.NewSecurityClient(s.Client()), conn))
 
 		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool))
 

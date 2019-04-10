@@ -5,7 +5,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/generator"
 	"time"
 )
@@ -13,7 +12,7 @@ import (
 func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
 		defer session.Close()
-		c := session.DB(gs_commons_dao.DBName).C(gs_commons_dao.ApplicationCollection)
+		c := session.DB(dbName).C(applicationCollection)
 		count, err := c.Count()
 		if err != nil {
 			return

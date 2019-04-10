@@ -7,8 +7,6 @@ import (
 	"github.com/micro/go-micro/metadata"
 	_ "github.com/micro/go-micro/registry"
 	_ "github.com/micro/go-micro/registry/consul"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/service"
 )
@@ -46,33 +44,33 @@ func (svc *sayService) Hello(ctx context.Context, request *gs_service_permission
 	return nil
 }
 
-func main1() {
-	errc := make(chan error, 2)
-
-	go func() {
-		//s := mircogrpc.NewService(micro.Registry(consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
-		//	registry.Secure(false))))
-		s1 := microservice.NewService(gs_commons_constants.PermissionService, false)
-		gs_service_permission.RegisterSayHandler(s1.Server(), &sayService{
-			gs_service_permission.NewHiService(gs_commons_constants.ExtPermissionVerificationService, s1.Client()),
-		})
-
-		errc <- s1.Run()
-
-	}()
-
-	go func() {
-		s2 := microservice.NewService(gs_commons_constants.ExtPermissionVerificationService, false)
-		gs_service_permission.RegisterHiHandler(s2.Server(), &hiService{})
-
-		errc <- s2.Run()
-	}()
-
-	fmt.Println(<-errc)
-
-	//permissionsvc.StartService()
-
-}
+//func main1() {
+//	errc := make(chan error, 2)
+//
+//	go func() {
+//		//s := mircogrpc.NewService(micro.Registry(consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
+//		//	registry.Secure(false))))
+//		s1 := microservice.NewService(gs_commons_constants.PermissionService, false)
+//		gs_service_permission.RegisterSayHandler(s1.Server(), &sayService{
+//			gs_service_permission.NewHiService(gs_commons_constants.ExtPermissionVerificationService, s1.Client()),
+//		})
+//
+//		errc <- s1.Run()
+//
+//	}()
+//
+//	go func() {
+//		s2 := microservice.NewService(gs_commons_constants.ExtPermissionVerificationService, false)
+//		gs_service_permission.RegisterHiHandler(s2.Server(), &hiService{})
+//
+//		errc <- s2.Run()
+//	}()
+//
+//	fmt.Println(<-errc)
+//
+//	//permissionsvc.StartService()
+//
+//}
 
 func main() {
 	permissionsvc.StartService()

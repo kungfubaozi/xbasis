@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"time"
 )
 
 func CreatePool(addr string) (*redis.Pool, error) {
 
 	pool := &redis.Pool{
-		MaxIdle: 20,
+		MaxIdle:     10,
+		MaxActive:   20,
+		IdleTimeout: 360 * time.Second,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", addr)
 

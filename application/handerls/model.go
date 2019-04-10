@@ -1,5 +1,11 @@
 package applicationhanderls
 
+const (
+	dbName = "gs_application"
+
+	applicationCollection = "applications"
+)
+
 type appInfo struct {
 	Id           string       `bson:"_id"`
 	Name         string       `bson:"name"`

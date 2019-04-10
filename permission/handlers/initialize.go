@@ -5,7 +5,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/permission/utils"
 	"time"
@@ -13,8 +12,8 @@ import (
 
 func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
-		db := session.DB(gs_commons_dao.DBName)
-		c, err := db.C(gs_commons_dao.StructureCollection).Count()
+		db := session.DB(dbName)
+		c, err := db.C(structureCollection).Count()
 		if err != nil {
 			return
 		}

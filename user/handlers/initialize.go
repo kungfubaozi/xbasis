@@ -5,7 +5,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/dao"
 	"time"
 )
 
@@ -15,7 +14,7 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 		if err != nil {
 			panic(err)
 		}
-		coll := session.DB(gs_commons_dao.DBName).C(gs_commons_dao.UserCollection)
+		coll := session.DB(dbName).C(userCollection)
 		c, err := coll.Count()
 		if err != nil {
 			panic(err)

@@ -4,7 +4,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/permission/utils"
 )
 
@@ -48,7 +47,7 @@ func (repo *structureRepo) OpeningCache(id, appId string, t int64) error {
 }
 
 func (repo *structureRepo) collection() *mgo.Collection {
-	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.StructureCollection)
+	return repo.session.DB(dbName).C(structureCollection)
 }
 
 func (repo *structureRepo) Close() {

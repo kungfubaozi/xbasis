@@ -31,16 +31,13 @@ func StartService() {
 		panic(err)
 	}
 
-	us := userclient.NewExtUserClient()
-
-	mc := userclient.NewExtMessageClient()
-
 	go func() {
-		m := microservice.NewService(gs_commons_constants.ExtPermissionVerificationService, false)
+		m := microservice.NewService(gs_commons_constants.ExtPermissionVerification, false)
+
 		gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
-			session, applicationclient.NewStatusClient(),
-			safetyclient.NewBlacklistClient(),
-			authenticationcli.NewAuthClient()))
+			session, applicationclient.NewStatusClient(m.Client()),
+			safetyclient.NewBlacklistClient(m.Client()),
+			authenticationcli.NewAuthClient(m.Client())))
 
 		errc <- m.Run()
 	}()
@@ -48,6 +45,10 @@ func StartService() {
 	go func() {
 
 		m := microservice.NewService(gs_commons_constants.PermissionService, true)
+
+		us := userclient.NewExtUserClient(m.Client())
+
+		mc := userclient.NewExtMessageClient(m.Client())
 
 		gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us))
 

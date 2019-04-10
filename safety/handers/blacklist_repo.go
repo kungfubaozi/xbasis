@@ -1,6 +1,7 @@
 package safetyhanders
 
 import (
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -49,14 +50,12 @@ func (repo *blacklistRepo) Remove(id string) error {
 }
 
 func (repo *blacklistRepo) CacheExists(bt int64, content string) bool {
-	_, err := redis.String(repo.conn.Do("hexists", "blacklist-"+strconv.FormatInt(bt, 10), content))
-	if err != nil && err == redis.ErrNil {
-		return false
-	}
+	e, err := redis.Bool(repo.conn.Do("hexists", "blacklist-"+strconv.FormatInt(bt, 10), content))
 	if err != nil {
+		fmt.Println("Err", err)
 		return true
 	}
-	return true
+	return e
 }
 
 func (repo *blacklistRepo) Close() {
@@ -65,5 +64,5 @@ func (repo *blacklistRepo) Close() {
 }
 
 func (repo *blacklistRepo) collection() *mgo.Collection {
-	return repo.session.DB("gosion").C("blacklist")
+	return repo.session.DB(dbName).C(blacklistCollection)
 }

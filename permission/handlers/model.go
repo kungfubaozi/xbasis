@@ -1,5 +1,19 @@
 package permissionhandlers
 
+const (
+	dbName = "gs_permission"
+
+	structureCollection = "structures"
+
+	roleCollection = "roles"
+
+	groupCollection = "groups"
+
+	functionCollection = "functions"
+
+	functionGroupCollection = "function_groups"
+)
+
 type cacheStructure struct {
 	UserStructureId     string
 	FunctionStructureId string

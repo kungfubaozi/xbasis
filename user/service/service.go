@@ -23,9 +23,6 @@ func StartService() {
 	}
 	defer session.Close()
 
-	ss := safetyclient.NewSecurityClient()
-	ts := authenticationcli.NewTokenClient()
-
 	ms, err := messagecli.NewClient()
 	if err != nil {
 		panic(err)
@@ -46,6 +43,9 @@ func StartService() {
 
 	go func() {
 		s := microservice.NewService(gs_commons_constants.UserService, true)
+
+		ss := safetyclient.NewSecurityClient(s.Client())
+		ts := authenticationcli.NewTokenClient(s.Client())
 
 		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts))
 

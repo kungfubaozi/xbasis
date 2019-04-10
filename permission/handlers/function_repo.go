@@ -5,7 +5,6 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/permission/utils"
 )
 
@@ -74,11 +73,11 @@ func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, er
 }
 
 func (repo *functionRepo) groupCollection() *mgo.Collection {
-	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.FunctionGroupCollection)
+	return repo.session.DB(dbName).C(functionGroupCollection)
 }
 
 func (repo *functionRepo) functionCollection() *mgo.Collection {
-	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.FunctionCollection)
+	return repo.session.DB(dbName).C(functionCollection)
 }
 
 func (repo *functionRepo) Close() {

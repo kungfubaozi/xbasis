@@ -28,9 +28,10 @@ var (
 	ErrAccessTokenExpired          = &gs_commons_dto.State{Ok: false, Code: 20022, Message: "err access token expired"}
 	ErrRefreshTokenExpired         = &gs_commons_dto.State{Ok: false, Code: 20023, Message: "err refresh token expired"}
 	ErrOperate                     = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err operate"}
-	ErrClientClosed                = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err client closed"}
-	ErrAccessTokenOrClient         = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err access token or client"}
-	ErrUserPermission              = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err permission"}
-	ErrAppStructureNotOpening      = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err app structure not opening"}
-	ErrInvalidStructure            = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err invalid structure"}
+	ErrClientClosed                = &gs_commons_dto.State{Ok: false, Code: 20025, Message: "err client closed"}
+	ErrAccessTokenOrClient         = &gs_commons_dto.State{Ok: false, Code: 20026, Message: "err access token or client"}
+	ErrUserPermission              = &gs_commons_dto.State{Ok: false, Code: 20027, Message: "err permission"}
+	ErrAppStructureNotOpening      = &gs_commons_dto.State{Ok: false, Code: 20028, Message: "err app structure not opening"}
+	ErrInvalidStructure            = &gs_commons_dto.State{Ok: false, Code: 20029, Message: "err invalid structure"}
+	ErrInvalidClientId             = &gs_commons_dto.State{Ok: false, Code: 20030, Message: "err invalid client"}
 )

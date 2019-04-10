@@ -49,7 +49,7 @@ func (repo *roleRepo) Save(name, structureId, userId string) error {
 }
 
 func (repo *roleRepo) collection() *mgo.Collection {
-	return repo.session.DB("gosion").C("user_roles")
+	return repo.session.DB(dbName).C(roleCollection)
 }
 
 func (repo *roleRepo) Close() {

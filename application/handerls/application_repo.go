@@ -5,7 +5,6 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/encrypt"
 )
 
@@ -65,7 +64,7 @@ func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
 }
 
 func (repo *applicationRepo) collection() *mgo.Collection {
-	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.ApplicationCollection)
+	return repo.session.DB(dbName).C(applicationCollection)
 }
 
 func (repo *applicationRepo) Close() {

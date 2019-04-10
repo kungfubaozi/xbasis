@@ -20,7 +20,7 @@ func NewService(name string, init bool) micro.Service {
 	cr := consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
 		registry.Secure(false))
 
-	cr.Watch()
+	//cr.Watch()
 
 	s := grpc.NewService(micro.Registry(cr),
 		micro.Name(name),

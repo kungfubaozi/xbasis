@@ -1,5 +1,11 @@
 package safetyhanders
 
+const (
+	dbName = "gs_safety"
+
+	blacklistCollection = "blacklists"
+)
+
 type blacklist struct {
 	Type         int64  `bson:"type"`
 	Content      string `bson:"content"`

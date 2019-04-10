@@ -21,6 +21,7 @@ import (
 	"konekko.me/gosion/permission/utils"
 	"konekko.me/gosion/safety/pb"
 	"sync"
+	"time"
 )
 
 type verificationService struct {
@@ -42,8 +43,8 @@ type requestHeaders struct {
 	dat           string
 }
 
-func (svc *verificationService) GetRepo() *functionRepo {
-	return &functionRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
+func (svc *verificationService) GetRepo(conn redis.Conn) *functionRepo {
+	return &functionRepo{session: svc.session.Clone(), conn: conn}
 }
 
 var openPermission = false
@@ -52,7 +53,21 @@ var openPermission = false
 //ip, userDevice blacklist verify
 //api exists and authType verify
 func (svc *verificationService) Check(ctx context.Context, in *gs_service_permission.HasPermissionRequest, out *gs_service_permission.HasPermissionResponse) error {
+	a := time.Now().UnixNano()
+	var wgc sync.WaitGroup
+	wgc.Add(1)
+	var wg sync.WaitGroup
+	var conn redis.Conn
+	go func() {
+		//Maybe it's a network problem. It takes a long time to connect, so start a collaboration to establish the connection.
+		defer wgc.Done()
+		conn = svc.pool.Get()
+	}()
+
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		fmt.Println("time.now-wrapper", (time.Now().UnixNano()-a)/1e6)
+
 		md, ok := metadata.FromContext(ctx)
 		svc.configuration = serviceconfiguration.Get()
 		if len(svc.configuration.CurrencySecretKey) == 0 {
@@ -60,6 +75,9 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 		}
 
 		if ok {
+
+			fmt.Println("time.now-wrapper-1", (time.Now().UnixNano()-a)/1e6)
+
 			//side service contract
 			//prevent loop
 
@@ -100,6 +118,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 			id := gs_commons_generator.NewIDG().String()
 
+			fmt.Println("time.now-2", (time.Now().UnixNano()-a)/1e6)
+
 			traceId, err := gs_commons_encrypt.AESEncrypt([]byte(id), []byte(svc.configuration.CurrencySecretKey))
 			if err != nil {
 				return nil
@@ -117,13 +137,16 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 			fmt.Println("traceId:", traceId)
 
-			conn := svc.pool.Get()
+			//conn := svc.pool.Get()
+			//var conn redis.Conn
 
-			var wg sync.WaitGroup
+			fmt.Println("time.now-3", (time.Now().UnixNano()-a)/1e6)
+
 			wg.Add(3)
 
 			//blacklist(ip)
 			go func() {
+				fmt.Println("time.func1-", (time.Now().UnixNano()-a)/1e6)
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
 					&gs_service_safety.CheckRequest{
@@ -131,14 +154,18 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 						Content: rh.ip,
 					})
 				if err != nil {
+					fmt.Println("err service", err)
 					resp(errstate.ErrRequest)
 					return
 				}
+				fmt.Println("ip clear", s.State)
 				resp(s.State)
+				fmt.Println("time.func1-", (time.Now().UnixNano()-a)/1e6)
 			}()
 
 			//blacklist(userDevice)
 			go func() {
+				fmt.Println("time.func-2", (time.Now().UnixNano()-a)/1e6)
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
 					&gs_service_safety.CheckRequest{
@@ -149,25 +176,30 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					resp(errstate.ErrRequest)
 					return
 				}
+				fmt.Println("userDevice clear", s.State)
 				resp(s.State)
+				fmt.Println("time.func-2", (time.Now().UnixNano()-a)/1e6)
 			}()
 
 			var appResp *gs_ext_service_application.GetAppClientStatusResponse
 			ccs := &cacheStructure{}
 
-			//application
+			////application
 			go func() {
 				defer wg.Done()
 				s, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 					ClientId: rh.clientId,
 				})
 				if err != nil {
+					fmt.Println("err")
 					resp(errstate.ErrRequest)
 					return
 				}
+				fmt.Println("app", s.State)
 				resp(s.State)
 				appResp = s
 				if s != nil && s.State.Ok && len(s.AppId) > 0 {
+					wgc.Wait()
 					//get current structure id
 					fmt.Println("check application structure")
 					get := func(t int64) (string, error) {
@@ -181,9 +213,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					}
 					if err == nil && len(v) > 0 {
 						ccs.UserStructureId = v
-						fmt.Println("UserStructureId", v)
 						v, err = get(permissionutils.TypeFunctionStructure)
-						if err != nil && len(v) > 0 {
+						if err == nil && len(v) > 0 {
 							fmt.Println("check application structure,-> clear")
 							ccs.FunctionStructureId = v
 						}
@@ -194,17 +225,22 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 			wg.Wait()
 
 			if !state.Ok {
+				fmt.Println("time.stop", (time.Now().UnixNano()-a)/1e6)
 				fmt.Println("basic check failed:", state.Message)
 				return state
 			}
 
+			fmt.Println("time.now", (time.Now().UnixNano()-a)/1e6)
+
 			if appResp != nil && len(ccs.UserStructureId) > 0 && len(ccs.FunctionStructureId) > 0 {
+
+				fmt.Println("entry check process")
 
 				if appResp.ClientEnabled != gs_commons_constants.Enabled {
 					return errstate.ErrClientClosed
 				}
 
-				repo := svc.GetRepo()
+				repo := svc.GetRepo(conn)
 				defer repo.Close()
 
 				a, err := repo.FindApiInCache(ccs.FunctionStructureId, rh.path)

@@ -27,6 +27,9 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 		}
 
 		a, err := repo.FindByClientId(in.ClientId)
+		if err != nil && err == mgo.ErrNotFound {
+			return errstate.ErrInvalidClientId
+		}
 		if err != nil {
 			fmt.Println("err", err)
 			return nil

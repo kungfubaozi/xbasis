@@ -1,5 +1,15 @@
 package userhandlers
 
+const (
+	dbName = "gs_users"
+
+	userCollection = "users"
+
+	userInfoCollection = "user_info"
+
+	userContractCollection = "user_contracts"
+)
+
 type userInfo struct {
 	Id         string `bson:"_id"`
 	CreateAt   int64  `bson:"create_at"` //register time
