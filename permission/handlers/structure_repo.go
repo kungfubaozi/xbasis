@@ -4,6 +4,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/permission/utils"
 )
 
@@ -17,7 +18,7 @@ func (repo *structureRepo) GetCurrent() (string, error) {
 }
 
 func (repo *structureRepo) Add(s *structure) error {
-	return nil
+	return repo.collection().Insert(s)
 }
 
 func (repo *structureRepo) FindCountByNameAndType(name string, t int64) (int, error) {
@@ -47,7 +48,7 @@ func (repo *structureRepo) OpeningCache(id, appId string, t int64) error {
 }
 
 func (repo *structureRepo) collection() *mgo.Collection {
-	return repo.session.DB("gosion").C("structure")
+	return repo.session.DB(gs_commons_dao.DBName).C(gs_commons_dao.StructureCollection)
 }
 
 func (repo *structureRepo) Close() {

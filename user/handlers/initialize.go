@@ -1,6 +1,7 @@
 package userhandlers
 
 import (
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
@@ -19,6 +20,7 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("receiver initialize config.")
 		if c == 0 {
 			//insert user
 			u := &userInfo{
@@ -26,7 +28,7 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 				CreateAt:   time.Now().UnixNano(),
 				Account:    config.Username,
 				Password:   string(b),
-				RegisterAt: config.AppId,
+				RegisterAt: config.WebClientId,
 			}
 			err = coll.Insert(u)
 			if err != nil {

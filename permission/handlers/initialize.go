@@ -7,23 +7,64 @@ import (
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/permission/utils"
+	"time"
 )
 
 func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
-		c, err := session.DB(gs_commons_dao.DBName).C("functions").Count()
+		db := session.DB(gs_commons_dao.DBName)
+		c, err := db.C(gs_commons_dao.StructureCollection).Count()
 		if err != nil {
-			fmt.Println("db err", err)
 			return
 		}
 		if c == 0 {
 			id := gs_commons_generator.NewIDG()
-			functionRepo := functionRepo{session: session, conn: pool.Get()}
-			defer functionRepo.Close()
-			groupRepo := groupRepo{session: session, id: id}
-			defer groupRepo.Close()
-			roleRepo := roleRepo{session: session, id: id}
-			defer roleRepo.Close()
+			structureRepo := structureRepo{session: session, conn: pool.Get()}
+			defer structureRepo.Close()
+
+			defStructure := &structure{
+				Id:           id.UUID(),
+				CreateUserId: config.UserId,
+				CreateAt:     time.Now().UnixNano(),
+				AppId:        config.AppId,
+				Opening:      true,
+				Name:         "ROOT",
+				Type:         permissionutils.TypeFunctionStructure,
+			}
+
+			//set current structure and open it
+			err := structureRepo.Add(defStructure)
+			if err != nil {
+				fmt.Println("init def function structure err.", err)
+				panic(err)
+			}
+
+			err = structureRepo.OpeningCache(defStructure.Id, defStructure.AppId, defStructure.Type)
+			if err != nil {
+				fmt.Println("open def function structure err.", err)
+				panic(err)
+			}
+
+			defStructure.Type = permissionutils.TypeUserStructure
+			defStructure.Id = id.UUID()
+			err = structureRepo.Add(defStructure)
+			if err != nil {
+				fmt.Println("init def user structure err.", err)
+				panic(err)
+			}
+
+			//open structure
+			err = structureRepo.OpeningCache(defStructure.Id, defStructure.AppId, defStructure.Type)
+			if err != nil {
+				fmt.Println("open def user structure err.", err)
+				panic(err)
+			}
+
+			fmt.Println("permission config init ok.")
+
+		} else {
+			fmt.Println("receiver init config, bug service already initialized.")
 		}
 	}
 }

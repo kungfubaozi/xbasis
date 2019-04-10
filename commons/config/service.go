@@ -32,12 +32,13 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	//one same service process
 	acl := zk.WorldACL(zk.PermAll)
 	_, err := c.Create(path, nil, 1, acl)
-	if err != nil {
-		//return
-		//return
+	if err != nil { //delete and recreate
+
 	}
 
 	fmt.Println("start watch:", serviceName)
+
+	c.Delete(gs_commons_constants.ZKWatchInitializeConfigPath, 0)
 
 	watch(c, gs_commons_constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {
 		var config GosionInitializeConfig
@@ -47,14 +48,20 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 			return false
 		}
 		event(&config)
-		c.Delete(path, 0)
-		tryAgain(serviceName, c, 0)
-		return true //stop monitoring
+		//c.Delete(path, 0)
+		//tryAgain(serviceName, c, 0)
+		return false //stop monitoring
 	})
 }
 
 func tryAgain(serviceName string, conn *zk.Conn, version int32) {
-	_, err := conn.Set(gs_commons_constants.ZKWatchInitializeVersionListenPath+"-"+serviceName, []byte("already"), version)
+	p := gs_commons_constants.ZKWatchInitializeVersionListenPath + "-" + serviceName
+	version = 0
+	_, s, err := conn.Get(p)
+	if err == nil {
+		version = s.Version + 1
+	}
+	_, err = conn.Set(p, []byte("already"), version)
 	if err != nil && err == zk.ErrBadVersion {
 		time.Sleep(100)
 		tryAgain(serviceName, conn, version+1)

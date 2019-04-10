@@ -11,5 +11,9 @@ const (
 
 	FunctionCollection = "functions_"
 
+	FunctionGroupCollection = "functions_group_"
+
 	BlacklistCollection = "blacklist_"
+
+	StructureCollection = "structure_"
 )

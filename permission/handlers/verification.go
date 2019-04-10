@@ -176,8 +176,12 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					}
 
 					v, err := get(permissionutils.TypeUserStructure)
+					if err != nil {
+						fmt.Println("err", err)
+					}
 					if err == nil && len(v) > 0 {
 						ccs.UserStructureId = v
+						fmt.Println("UserStructureId", v)
 						v, err = get(permissionutils.TypeFunctionStructure)
 						if err != nil && len(v) > 0 {
 							fmt.Println("check application structure,-> clear")

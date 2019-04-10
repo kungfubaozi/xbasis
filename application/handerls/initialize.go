@@ -7,6 +7,7 @@ import (
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/generator"
+	"time"
 )
 
 func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
@@ -21,10 +22,12 @@ func Initialize(session *mgo.Session) gs_commons_config.OnConfigNodeChanged {
 		if count == 0 {
 			id := gs_commons_generator.NewIDG()
 			info := &appInfo{
-				Name: config.AppName,
-				Desc: config.Desc,
-				Id:   id.Short(),
-				Main: 101,
+				Name:         config.AppName,
+				Desc:         config.Desc,
+				Id:           config.AppId,
+				CreateUserId: config.UserId,
+				CreateAt:     time.Now().UnixNano(),
+				Main:         101,
 				Settings: &appSetting{
 					Enabled:  gs_commons_constants.Enabled,
 					OpenMode: gs_commons_constants.OpenModeOfSelfOrganization,

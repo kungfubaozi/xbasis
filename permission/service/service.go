@@ -1,7 +1,6 @@
 package permissionsvc
 
 import (
-	"fmt"
 	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
@@ -38,11 +37,10 @@ func StartService() {
 
 	go func() {
 		m := microservice.NewService(gs_commons_constants.ExtPermissionVerificationService, false)
-		err = gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
+		gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
 			session, applicationclient.NewStatusClient(),
 			safetyclient.NewBlacklistClient(),
 			authenticationcli.NewAuthClient()))
-		fmt.Println("register verification error", err)
 
 		errc <- m.Run()
 	}()

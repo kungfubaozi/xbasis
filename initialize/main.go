@@ -112,16 +112,46 @@ func main() {
 	//once
 	c := gs_commons_config.NewConnect(config)
 	//set def configs
-	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, 0)
+	_, s, err := c.Get(gs_commons_constants.ZKWatchInitializeConfigPath)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("version", s.Version)
+	v := 0
+	if s.DataLength == 0 && s.Version == 0 {
+		v = 0
+		fmt.Println("r")
+	} else {
+		v = int(s.Version)
+	}
+
+	fmt.Println("version -", s.Version)
+
+	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, int32(v))
 	if err != nil {
 		fmt.Println("set init config err", err)
 	}
 
+	_, s, err = c.Get(gs_commons_constants.GosionConfiguration)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("version", s.Version)
+	v = 0
+	if s.DataLength == 0 && s.Version == 0 {
+		v = 0
+		fmt.Println("r")
+	} else {
+		v = int(s.Version)
+	}
+
+	fmt.Println("version -", s.Version)
 	b, err = msgpack.Marshal(configuration)
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, 4)
+	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, int32(v))
 	if err != nil {
 		panic(err)
 	}
