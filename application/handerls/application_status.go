@@ -3,28 +3,31 @@ package applicationhanderls
 import (
 	"context"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
+	"time"
 )
 
 type applicationStatusService struct {
-	session *mgo.Session
-	pool    *redis.Pool
+	//session *mgo.Session
+	//pool    *redis.Pool
+	*indexutils.Client
 }
 
 func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in *gs_ext_service_application.GetAppClientStatusRequest,
 	out *gs_ext_service_application.GetAppClientStatusResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		repo := svc.GetRepo()
-		defer repo.Close()
-
 		if len(in.ClientId) == 0 {
 			return errstate.ErrRequest
 		}
+		s := time.Now().UnixNano()
+
+		repo := svc.GetRepo()
+		defer repo.Close()
 
 		a, err := repo.FindByClientId(in.ClientId)
 		if err != nil && err == mgo.ErrNotFound {
@@ -37,12 +40,14 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 
 		for _, v := range a.Clients {
 			if v.Id == in.ClientId {
+				fmt.Println("ok, find")
 				out.State = errstate.Success
 				out.ClientPlatform = v.Platform
 				out.ClientEnabled = v.Enabled
 				out.AppId = a.Id
 				out.AppOpenMode = a.Settings.OpenMode
 				out.AppQuarantine = a.Settings.Quarantine
+				fmt.Println("time.now-wrapper", (time.Now().UnixNano()-s)/1e6)
 				return nil
 			}
 		}
@@ -53,10 +58,9 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 }
 
 func (svc *applicationStatusService) GetRepo() *applicationRepo {
-	return &applicationRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
+	return &applicationRepo{Client: svc.Client}
 }
 
-func NewApplicationStatusServie(session *mgo.Session,
-	pool *redis.Pool) gs_ext_service_application.ApplicationStatusHandler {
-	return &applicationStatusService{session: session, pool: pool}
+func NewApplicationStatusService(client *indexutils.Client) gs_ext_service_application.ApplicationStatusHandler {
+	return &applicationStatusService{Client: client}
 }

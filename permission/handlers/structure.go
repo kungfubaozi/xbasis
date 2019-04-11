@@ -2,11 +2,11 @@ package permissionhandlers
 
 import (
 	"context"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/utils"
@@ -15,7 +15,7 @@ import (
 
 type structureService struct {
 	session *mgo.Session
-	pool    *redis.Pool
+	*indexutils.Client
 }
 
 func (svc *structureService) CreateUserStructure(ctx context.Context, in *gs_service_permission.CreateRequest, out *gs_commons_dto.Status) error {
@@ -31,7 +31,7 @@ func (svc *structureService) CreateFunctionStructure(ctx context.Context, in *gs
 }
 
 func (svc *structureService) GetRepo() *structureRepo {
-	return &structureRepo{conn: svc.pool.Get(), session: svc.session.Clone()}
+	return &structureRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
 func (svc *structureService) Create(name, user, appId string, t int64) *gs_commons_dto.State {
@@ -97,6 +97,6 @@ func (svc *structureService) GetList(ctx context.Context, in *gs_service_permiss
 	})
 }
 
-func NewStructureService(session *mgo.Session, pool *redis.Pool) gs_service_permission.StructureHandler {
-	return &structureService{session: session, pool: pool}
+func NewStructureService(session *mgo.Session, client *indexutils.Client) gs_service_permission.StructureHandler {
+	return &structureService{session: session, Client: client}
 }

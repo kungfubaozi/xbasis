@@ -14,7 +14,7 @@ func (repo *tokenRepo) fix(userId string) string {
 }
 
 func (repo *tokenRepo) Get(userId, key string) ([]byte, error) {
-	return redis.Bytes(repo.conn.Do("hmget", repo.fix(userId), key))
+	return redis.Bytes(repo.conn.Do("hget", repo.fix(userId), key))
 }
 
 func (repo *tokenRepo) Remove(userId, key string) error {
@@ -23,7 +23,7 @@ func (repo *tokenRepo) Remove(userId, key string) error {
 }
 
 func (repo *tokenRepo) Add(userId, clientId, relation string, b []byte) error {
-	_, err := repo.conn.Do("hmset", repo.fix(userId), fmt.Sprintf("%s.%s", clientId, relation), b)
+	_, err := repo.conn.Do("hset", repo.fix(userId), fmt.Sprintf("%s.%s", clientId, relation), b)
 	return err
 }
 

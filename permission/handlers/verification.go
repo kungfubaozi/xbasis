@@ -16,6 +16,7 @@ import (
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/utils"
@@ -31,6 +32,7 @@ type verificationService struct {
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
 	blacklistService            gs_service_safety.BlacklistService
 	extAuthService              gs_ext_service_authentication.AuthService
+	*indexutils.Client
 }
 
 type requestHeaders struct {
@@ -43,8 +45,8 @@ type requestHeaders struct {
 	dat           string
 }
 
-func (svc *verificationService) GetRepo(conn redis.Conn) *functionRepo {
-	return &functionRepo{session: svc.session.Clone(), conn: conn}
+func (svc *verificationService) GetRepo() *functionRepo {
+	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
 var openPermission = false
@@ -54,15 +56,7 @@ var openPermission = false
 //api exists and authType verify
 func (svc *verificationService) Check(ctx context.Context, in *gs_service_permission.HasPermissionRequest, out *gs_service_permission.HasPermissionResponse) error {
 	a := time.Now().UnixNano()
-	var wgc sync.WaitGroup
-	wgc.Add(1)
 	var wg sync.WaitGroup
-	var conn redis.Conn
-	go func() {
-		//Maybe it's a network problem. It takes a long time to connect, so start a collaboration to establish the connection.
-		defer wgc.Done()
-		conn = svc.pool.Get()
-	}()
 
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
@@ -89,8 +83,17 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				if err != nil {
 					return nil
 				}
-				//fmt.Println("entry traceId is:", traceId)
-				return errstate.Success
+				fmt.Println("entry traceId is:", traceId)
+
+				out.ClientId = auth.ClientId
+				out.TraceId = traceId
+				out.Ip = auth.IP
+				out.UserDevice = auth.UserDevice
+				out.UserAgent = auth.UserAgent
+				out.User = auth.User
+				out.AppId = auth.AppId
+
+				return errstate.SuccessTraceCheck
 			}
 
 			//new request
@@ -141,6 +144,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 			//var conn redis.Conn
 
 			fmt.Println("time.now-3", (time.Now().UnixNano()-a)/1e6)
+
+			var conn redis.Conn
 
 			wg.Add(3)
 
@@ -199,26 +204,27 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				resp(s.State)
 				appResp = s
 				if s != nil && s.State.Ok && len(s.AppId) > 0 {
-					wgc.Wait()
-					//get current structure id
-					fmt.Println("check application structure")
-					get := func(t int64) (string, error) {
-						return redis.String(conn.Do("get",
-							permissionutils.GetTypeCurrentStructureKey(s.AppId, t)))
-					}
+					////conn := svc.pool.Get()
+					////get current structure id
+					//fmt.Println("check application structure")
+					//get := func(t int64) (string, error) {
+					//	return redis.String(conn.Do("get",
+					//		permissionutils.GetTypeCurrentStructureKey(s.AppId, t)))
+					//}
+					//
+					//v, err := get(permissionutils.TypeUserStructure)
+					//if err != nil {
+					//	fmt.Println("err", err)
+					//}
+					//if err == nil && len(v) > 0 {
+					//	ccs.UserStructureId = v
+					//	v, err = get(permissionutils.TypeFunctionStructure)
+					//	if err == nil && len(v) > 0 {
+					//		fmt.Println("check application structure,-> clear")
+					//		ccs.FunctionStructureId = v
+					//	}
+					//}
 
-					v, err := get(permissionutils.TypeUserStructure)
-					if err != nil {
-						fmt.Println("err", err)
-					}
-					if err == nil && len(v) > 0 {
-						ccs.UserStructureId = v
-						v, err = get(permissionutils.TypeFunctionStructure)
-						if err == nil && len(v) > 0 {
-							fmt.Println("check application structure,-> clear")
-							ccs.FunctionStructureId = v
-						}
-					}
 				}
 			}()
 
@@ -240,7 +246,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					return errstate.ErrClientClosed
 				}
 
-				repo := svc.GetRepo(conn)
+				repo := svc.GetRepo()
 				defer repo.Close()
 
 				//fmt.Println("function structure id", ccs.FunctionStructureId)
@@ -281,7 +287,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 							key := gs_commons_encrypt.SHA1(string(v) + rh.clientId)
 							dat.Key = key
-							b, err := redis.Bytes(conn.Do("hmget", key, a.Api))
+							b, err := redis.Bytes(conn.Do("hget", key, a.Api))
 							if err != nil && err == redis.ErrNil {
 								resp(errstate.ErrRequest)
 								return
@@ -349,7 +355,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
 									if roles[b] != "ok" {
 										//check role
-										_, err := conn.Do("hmget", permissionutils.GetStructureRoleKey(ccs.UserStructureId), b)
+										_, err := conn.Do("hget", permissionutils.GetStructureRoleKey(ccs.UserStructureId), b)
 										if err != nil && err == redis.ErrNil { //invalid role
 											//possibly due to the removal of roles
 											//remove role
@@ -397,6 +403,17 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					return nil
 				}
 
+				out.AppId = appResp.AppId
+				out.UserAgent = rh.userAgent
+				out.UserDevice = rh.userDevice
+				out.ClientId = rh.clientId
+				out.Ip = rh.ip
+				out.TraceId = traceId
+				if len(userId) == 0 {
+					userId = rh.ip
+				}
+				out.User = userId
+
 				return errstate.Success
 			}
 
@@ -408,7 +425,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 func NewVerificationService(pool *redis.Pool, session *mgo.Session,
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService, blacklistService gs_service_safety.BlacklistService,
-	extAuthService gs_ext_service_authentication.AuthService) gs_service_permission.VerificationHandler {
+	extAuthService gs_ext_service_authentication.AuthService, client *indexutils.Client) gs_service_permission.VerificationHandler {
 	return &verificationService{pool: pool, session: session, extApplicationStatusService: extApplicationStatusService,
-		blacklistService: blacklistService, extAuthService: extAuthService}
+		blacklistService: blacklistService, extAuthService: extAuthService, Client: client}
 }

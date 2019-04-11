@@ -4,6 +4,7 @@ import "konekko.me/gosion/commons/dto"
 
 var (
 	Success                        = &gs_commons_dto.State{Ok: true, Code: 0, Message: "success"}
+	SuccessTraceCheck              = &gs_commons_dto.State{Ok: true, Code: 1001, Message: "success"}
 	ErrRequest                     = &gs_commons_dto.State{Ok: false, Code: 20001, Message: "err request"}
 	ErrInvalidStateField           = &gs_commons_dto.State{Ok: false, Code: 20002, Message: "err return type, no found 'State' file"}
 	ErrRoleAlreadyExists           = &gs_commons_dto.State{Ok: false, Code: 20003, Message: "err role already exists"}

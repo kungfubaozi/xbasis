@@ -23,8 +23,8 @@ func (svc *blacklistService) GetRepo() blacklistRepo {
 func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.CheckRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(in.Content) == 0 {
-			return nil
+		if len(in.Content) > 0 {
+			return errstate.Success
 		}
 
 		if in.Type == gs_commons_constants.BlacklistOfIP || in.Type == gs_commons_constants.BlacklistOfUserDevice {

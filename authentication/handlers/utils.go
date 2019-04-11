@@ -1,6 +1,7 @@
 package authenticationhandlers
 
 import (
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -61,14 +62,19 @@ func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, us
 	}
 
 	if len(v) > 0 {
+		fmt.Println("size", len(v))
 		i := len(clientId)
 		for _, k := range v {
 			key := b2s(k.([]uint8))
+			fmt.Println("key", key)
 			if key[0:i] == clientId {
+				fmt.Println("check", clientId)
 				go offlineTarget(connectioncli, repo, userId, key, clientId)
 			}
 		}
 	}
+
+	fmt.Println("break")
 
 	return errstate.Success
 }

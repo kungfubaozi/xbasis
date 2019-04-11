@@ -7,8 +7,8 @@ const (
 )
 
 type blacklist struct {
-	Type         int64  `bson:"type"`
-	Content      string `bson:"content"`
-	CreateAt     int64  `bson:"create_at"`
-	CreateUserId string `bson:"create_user_id"`
+	Type         int64  `bson:"type" json:"type"`
+	Content      string `bson:"content" json:"content"`
+	CreateAt     int64  `bson:"create_at" json:"create_at"`
+	CreateUserId string `bson:"create_user_id" json:"create_user_id"`
 }

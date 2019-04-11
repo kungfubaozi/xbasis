@@ -5,7 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/authentication/pb/ext"
-	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -16,7 +16,6 @@ import (
 
 type authService struct {
 	pool               *redis.Pool
-	configuration      *gs_commons_config.GosionConfiguration
 	extSecurityService gs_ext_service_safety.SecurityService
 	connectioncli      connectioncli.ConnectionClient
 }
@@ -29,11 +28,13 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		//1.verify token
 
+		configuration := serviceconfiguration.Get()
+
 		if len(in.ClientId) == 0 || len(in.Token) == 0 {
 			return errstate.ErrRequest
 		}
 
-		claims, err := decodeToken(in.Token, svc.configuration.TokenSecretKey)
+		claims, err := decodeToken(in.Token, configuration.TokenSecretKey)
 		if err != nil {
 			return errstate.ErrAccessToken
 		}
@@ -77,7 +78,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 	})
 }
 
-func NewAuthService(pool *redis.Pool, configuration *gs_commons_config.GosionConfiguration,
-	extSecurityService gs_ext_service_safety.SecurityService, connectioncli connectioncli.ConnectionClient) gs_ext_service_authentication.AuthHandler {
-	return &authService{pool: pool, configuration: configuration, extSecurityService: extSecurityService, connectioncli: connectioncli}
+func NewAuthService(pool *redis.Pool, extSecurityService gs_ext_service_safety.SecurityService,
+	connectioncli connectioncli.ConnectionClient) gs_ext_service_authentication.AuthHandler {
+	return &authService{pool: pool, extSecurityService: extSecurityService, connectioncli: connectioncli}
 }

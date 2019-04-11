@@ -1,25 +1,19 @@
 package permissionhandlers
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"github.com/vmihailenco/msgpack"
+	"errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/permission/utils"
+	"konekko.me/gosion/commons/indexutils"
 )
 
 type functionRepo struct {
 	session *mgo.Session
-	conn    redis.Conn
+	*indexutils.Client
 }
 
 func (repo *functionRepo) AddFunction(function *function) error {
-	b, err := msgpack.Marshal(function)
-	if err != nil {
-		return err
-	}
-	_, err = repo.conn.Do("hset", permissionutils.GetTypeStructureKey(function.StructureId,
-		permissionutils.TypeFunctionStructure), function.Api, b)
+	_, err := repo.AddData("gs_permission_functions", function)
 	if err != nil {
 		return err
 	}
@@ -61,15 +55,18 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 }
 
 func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, error) {
-	b, err := redis.Bytes(repo.conn.Do("hget", permissionutils.GetTypeStructureKey(structureId,
-		permissionutils.TypeFunctionStructure),
-		api))
+	var function function
+	ok, err := repo.QueryFirst("gs_permission_functions", map[string]interface{}{
+		"api":          api,
+		"structure_id": structureId,
+	}, &function)
 	if err != nil {
 		return nil, err
 	}
-	var f function
-	err = msgpack.Unmarshal(b, &f)
-	return &f, err
+	if ok {
+		return &function, nil
+	}
+	return nil, errors.New("not found")
 }
 
 func (repo *functionRepo) groupCollection() *mgo.Collection {
@@ -81,6 +78,7 @@ func (repo *functionRepo) functionCollection() *mgo.Collection {
 }
 
 func (repo *functionRepo) Close() {
-	repo.conn.Close()
-	repo.session.Close()
+	if repo.session != nil {
+		repo.session.Close()
+	}
 }

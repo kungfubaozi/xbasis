@@ -4,6 +4,7 @@ import (
 	"konekko.me/gosion/authentication/handlers"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/microservice"
@@ -21,8 +22,6 @@ func StartService() {
 	}
 	defer pool.Close()
 
-	configuration := &gs_commons_config.GosionConfiguration{}
-
 	conn, err := connectioncli.NewClient()
 	if err != nil {
 		panic(err)
@@ -30,9 +29,7 @@ func StartService() {
 	defer conn.Close()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(func(config *gs_commons_config.GosionConfiguration) {
-			configuration = config
-		})
+		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	go func() {
@@ -40,9 +37,9 @@ func StartService() {
 		s.Init()
 
 		gs_ext_service_authentication.RegisterAuthHandler(s.Server(),
-			authenticationhandlers.NewAuthService(pool, configuration, safetyclient.NewSecurityClient(s.Client()), conn))
+			authenticationhandlers.NewAuthService(pool, safetyclient.NewSecurityClient(s.Client()), conn))
 
-		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool))
+		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn))
 
 		errc <- s.Run()
 

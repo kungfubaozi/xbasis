@@ -2,16 +2,16 @@ package permissionhandlers
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants/api"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/permission/utils"
 	"time"
 )
 
-func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConfigNodeChanged {
+func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
 		db := session.DB(dbName)
 		c, err := db.C(structureCollection).Count()
@@ -20,8 +20,7 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 		}
 		if c == 0 {
 			id := gs_commons_generator.NewIDG()
-			conn := pool.Get()
-			structureRepo := structureRepo{session: session, conn: conn}
+			structureRepo := structureRepo{session: session, Client: client}
 			defer structureRepo.Close()
 
 			functionStructureId := id.UUID()
@@ -67,7 +66,7 @@ func Initialize(session *mgo.Session, pool *redis.Pool) gs_commons_config.OnConf
 
 			//add def functions
 
-			functionRepo := functionRepo{session: session, conn: conn}
+			functionRepo := functionRepo{session: session, Client: client}
 			defer functionRepo.Close()
 
 			userGroupId := id.UUID()

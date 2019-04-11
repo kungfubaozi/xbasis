@@ -2,24 +2,24 @@ package permissionhandlers
 
 import (
 	"context"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"time"
 )
 
 type functionService struct {
-	pool    *redis.Pool
+	*indexutils.Client
 	session *mgo.Session
 }
 
 func (svc *functionService) GetRepo() *functionRepo {
-	return &functionRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
+	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
 func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
@@ -120,6 +120,6 @@ func (svc *functionService) RenameGroup(ctx context.Context, in *gs_service_perm
 	})
 }
 
-func NewFunctionService(pool *redis.Pool, session *mgo.Session) gs_service_permission.FunctionHandler {
-	return &functionService{pool: pool, session: session}
+func NewFunctionService(client *indexutils.Client, session *mgo.Session) gs_service_permission.FunctionHandler {
+	return &functionService{Client: client, session: session}
 }

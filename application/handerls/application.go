@@ -2,24 +2,24 @@ package applicationhanderls
 
 import (
 	"context"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"time"
 )
 
 type applicationService struct {
 	session *mgo.Session
-	pool    *redis.Pool
+	*indexutils.Client
 }
 
 func (svc *applicationService) GetRepo() *applicationRepo {
-	return &applicationRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
+	return &applicationRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
 //create new application if not exists(name)
@@ -81,7 +81,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			},
 		}
 
-		err := repo.Upsert(info)
+		err := repo.Add(info)
 		if err == nil {
 			return errstate.Success
 		}
@@ -179,6 +179,6 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 	})
 }
 
-func NewApplicationService(session *mgo.Session, pool *redis.Pool) gs_service_application.ApplicationHandler {
-	return &applicationService{session: session, pool: pool}
+func NewApplicationService(session *mgo.Session, client *indexutils.Client) gs_service_application.ApplicationHandler {
+	return &applicationService{session: session, Client: client}
 }

@@ -1,25 +1,22 @@
 package safetyhanders
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"time"
 )
 
 type blacklistRepo struct {
-	session *mgo.Session
-	conn    redis.Conn
+	session       *mgo.Session
+	elasticClient *elastic.Client
 }
 
 func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
-	_, err := repo.conn.Do("hmset", "blacklist-"+strconv.FormatInt(bt, 10), content, "denied")
-	if err != nil {
-		return err
-	}
-
 	b := &blacklist{
 		Type:         bt,
 		Content:      content,
@@ -27,26 +24,32 @@ func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
 		CreateUserId: userId,
 	}
 
-	return repo.collection().Insert(b)
+	v, err := repo.elasticClient.Index().Index("gs_safety_blacklist").Type("v").BodyJson(b).Do(context.Background())
+	if err != nil || v.Status == 0 {
+		return err
+	}
+
+	return nil
 }
 
 func (repo *blacklistRepo) Remove(id string) error {
-
-	var bl blacklist
-	err := repo.collection().Find(bson.M{"_id": id}).One(&bl)
+	q := elastic.NewMatchQuery("content", id)
+	v, err := repo.elasticClient.Search("gs_safety_blacklist").Type("v").Query(q).Do(context.Background())
 	if err != nil {
 		return err
 	}
-
-	_, err = repo.conn.Do("hdel", "blacklist-"+strconv.FormatInt(bl.Type, 10), bl.Content)
-
-	if err != nil && err == redis.ErrNil {
-		err = nil
+	if v.Hits.TotalHits > 0 {
+		d := v.Hits.Hits[0]
+		r, err := repo.elasticClient.Delete().Index("gs_safety_blacklist").Type("v").Id(d.Id).Do(context.Background())
+		if err != nil {
+			return err
+		}
+		if r.Status != 0 {
+			return errors.New("")
+		}
+		return nil
 	}
-	if err != nil {
-		return err
-	}
-	return repo.collection().Remove(bson.M{"_id": id})
+	return errors.New("not found")
 }
 
 func (repo *blacklistRepo) CacheExists(bt int64, content string) bool {
@@ -59,8 +62,9 @@ func (repo *blacklistRepo) CacheExists(bt int64, content string) bool {
 }
 
 func (repo *blacklistRepo) Close() {
-	repo.conn.Close()
-	repo.session.Close()
+	if repo.session != nil {
+		repo.session.Close()
+	}
 }
 
 func (repo *blacklistRepo) collection() *mgo.Collection {

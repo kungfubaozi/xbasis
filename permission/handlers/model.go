@@ -87,16 +87,16 @@ type functionGroup struct {
 }
 
 type function struct {
-	Id           string  `bson:"_id"`
-	Name         string  `bson:"name"`
-	Api          string  `bson:"api"`
-	Type         int64   `bson:"type"`
-	CreateUserId string  `bson:"create_user_id"`
-	CreateAt     int64   `bson:"create_at"`
-	BindGroupId  string  `bson:"bind_group_id"`
-	StructureId  string  `bson:"structure_id"`
-	AuthTypes    []int64 `bson:"auth_types"`
+	Id           string  `bson:"_id" json:"id"`
+	Name         string  `bson:"name" json:"name"`
+	Api          string  `bson:"api" json:"api"`
+	Type         int64   `bson:"type" json:"type"`
+	CreateUserId string  `bson:"create_user_id" json:"create_user_id"`
+	CreateAt     int64   `bson:"create_at" json:"create_at"`
+	BindGroupId  string  `bson:"bind_group_id" json:"bind_group_id"`
+	StructureId  string  `bson:"structure_id" json:"structure_id"`
+	AuthTypes    []int64 `bson:"auth_types" json:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenLife   int64   `bson:"val_token_life"` //def: 0 second (your value must >= 60s)
-	GrantPlatforms []int64 `bson:"grant_platforms"`
+	ValTokenLife   int64   `bson:"val_token_life" json:"val_token_life"` //def: 0 second (your value must >= 60s)
+	GrantPlatforms []int64 `bson:"grant_platforms" json:"grant_platforms"`
 }

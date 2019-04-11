@@ -1,15 +1,15 @@
 package permissionhandlers
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/permission/utils"
+	"konekko.me/gosion/commons/indexutils"
 )
 
 type structureRepo struct {
 	session *mgo.Session
-	conn    redis.Conn
+	*indexutils.Client
 }
 
 func (repo *structureRepo) GetCurrent() (string, error) {
@@ -42,8 +42,9 @@ func (repo *structureRepo) Opening(id string, t int64, opening bool) error {
 }
 
 func (repo *structureRepo) OpeningCache(id, appId string, t int64) error {
-	_, err := repo.conn.Do("set", permissionutils.GetTypeCurrentStructureKey(appId, t), id)
-	return err
+	//_, err := repo.conn.Do("set", permissionutils.GetTypeCurrentStructureKey(appId, t), id)
+	//return err
+	panic(errors.New(""))
 }
 
 func (repo *structureRepo) collection() *mgo.Collection {
@@ -51,6 +52,7 @@ func (repo *structureRepo) collection() *mgo.Collection {
 }
 
 func (repo *structureRepo) Close() {
-	repo.session.Close()
-	repo.conn.Close()
+	if repo.session != nil {
+		repo.session.Close()
+	}
 }

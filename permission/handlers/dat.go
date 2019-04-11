@@ -9,6 +9,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/user/pb/ext"
@@ -18,14 +19,15 @@ import (
 )
 
 type durationAccessService struct {
-	pool           *redis.Pool
-	session        *mgo.Session
+	pool    *redis.Pool
+	session *mgo.Session
+	*indexutils.Client
 	configuration  *gs_commons_config.GosionConfiguration
 	messageService gs_ext_service_user.MessageService
 }
 
 func (svc *durationAccessService) GetRepo() functionRepo {
-	return functionRepo{conn: svc.pool.Get(), session: svc.session.Clone()}
+	return functionRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
 type sendToUserFunc func(to, code string) *gs_commons_dto.State
@@ -87,7 +89,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		if err != nil {
 			return err
 		}
-		_, err = conn.Do("hmset", hkey, api.Api, b)
+		_, err = conn.Do("hset", hkey, api.Api, b)
 		if err != nil {
 			return err
 		}
@@ -133,7 +135,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		out.State = toUser(to, strconv.FormatInt(dat.Code, 10))
 	}
 
-	b, err := redis.Bytes(conn.Do("hmget", hkey, api.Api))
+	b, err := redis.Bytes(conn.Do("hget", hkey, api.Api))
 	if err != nil && err == redis.ErrNil {
 		if code > 0 {
 			out.State = errstate.ErrDurationAccess
@@ -202,6 +204,6 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 }
 
 func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration,
-	messageService gs_ext_service_user.MessageService) gs_service_permission.DurationAccessHandler {
-	return &durationAccessService{pool: pool, session: session, configuration: configuration, messageService: messageService}
+	messageService gs_ext_service_user.MessageService, client *indexutils.Client) gs_service_permission.DurationAccessHandler {
+	return &durationAccessService{pool: pool, Client: client, session: session, configuration: configuration, messageService: messageService}
 }

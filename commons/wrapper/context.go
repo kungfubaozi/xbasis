@@ -26,6 +26,18 @@ type DurationAccessUser struct {
 
 type WrapperEvent func(auth *WrapperUser) *gs_commons_dto.State
 
+func GetData(md metadata.Metadata) *WrapperUser {
+	auth := &WrapperUser{}
+	auth.User = md["transport-user"]
+	auth.AppId = md["transport-app-id"]
+	auth.ClientId = md["transport-client-id"]
+	auth.IP = md["transport-ip"]
+	auth.TraceId = md["transport-trace-id"]
+	auth.UserAgent = md["transport-user-agent"]
+	auth.UserDevice = md["transport-user-device"]
+	return auth
+}
+
 func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent) error {
 	s := reflect.ValueOf(out).Elem().FieldByName("State")
 	if !s.CanSet() {
@@ -34,17 +46,14 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 
 	md, ok := metadata.FromContext(ctx)
 	if ok {
-		auth := &WrapperUser{}
-		auth.User = md["Transport-User"]
-		auth.AppId = md["Transport-AppId"]
-		auth.ClientId = md["Transport-ClientId"]
-		auth.IP = md["Transport-Ip"]
-		auth.TraceId = md["transport-traceId"]
-		auth.UserAgent = md["Transport-UserAgent"]
-		auth.UserDevice = md["Transport-UserDevice"]
+		auth := GetData(md)
+
+		//fmt.Println("the verification ctx is:", auth)
+
 		v := event(auth)
 		if v != nil {
 			s.Set(reflect.ValueOf(v))
+			return nil
 		}
 	}
 	if s.IsNil() {

@@ -38,18 +38,21 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			return set(rsp, status.State)
 		}
 
-		fmt.Println("verification clear")
+		//fmt.Println("verification clear data is", status)
 
-		//compressed volume
-		ctx = metadata.NewContext(ctx, map[string]string{
-			"Transport-User":       status.User,
-			"Transport-AppId":      status.AppId,
-			"Transport-ClientId":   status.ClientId,
-			"transport-traceId":    status.TraceId,
-			"Transport-Ip":         status.Ip,
-			"Transport-UserDevice": status.UserDevice,
-			"Transport-UserAgent":  status.UserAgent,
-		})
+		if status.State.Ok {
+
+			//compressed volume
+			ctx = metadata.NewContext(ctx, map[string]string{
+				"transport-user":        status.User,
+				"transport-app-id":      status.AppId,
+				"transport-client-id":   status.ClientId,
+				"transport-trace-id":    status.TraceId,
+				"transport-ip":          status.Ip,
+				"transport-user-device": status.UserDevice,
+				"transport-user-agent":  status.UserAgent,
+			})
+		}
 
 		return fn(ctx, req, rsp)
 	}

@@ -7,14 +7,6 @@ import (
 	"konekko.me/gosion/safety/pb/ext"
 )
 
-//func client() micro.Service {
-//	s := micro.NewService(micro.Registry(consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
-//		registry.Secure(false))))
-//
-//	s.Init()
-//	return s
-//}
-
 func NewSecurityClient(client client.Client) gs_ext_service_safety.SecurityService {
 	return gs_ext_service_safety.NewSecurityService(gs_commons_constants.ExtSafetyService, client)
 }

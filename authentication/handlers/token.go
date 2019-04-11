@@ -2,10 +2,11 @@ package authenticationhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/authentication/pb/ext"
-	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -17,7 +18,6 @@ import (
 
 type tokenService struct {
 	pool          *redis.Pool
-	configuration *gs_commons_config.GosionConfiguration
 	connectioncli connectioncli.ConnectionClient
 }
 
@@ -28,9 +28,19 @@ func (svc *tokenService) GetRepo() *tokenRepo {
 func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authentication.GenerateRequest, out *gs_ext_service_authentication.GenerateResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
+		if len(auth.ClientId) <= 10 {
+			return nil
+		}
+
 		repo := svc.GetRepo()
 		defer repo.Close()
 
+		configuration := serviceconfiguration.Get()
+
+		fmt.Println("size check", auth)
+		fmt.Println("clientId", auth.ClientId)
+
+		fmt.Println("entry data", in.Auth)
 		//line check
 		if s := sizeCheck(svc.connectioncli, repo, in.Auth.UserId, in.Auth.ClientId); !s.Ok {
 			return s
@@ -70,17 +80,22 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			return errstate.ErrSystem
 		}
 
+		fmt.Println("break", in.Auth.ClientId)
+
 		err = repo.Add(in.Auth.UserId, in.Auth.ClientId, relationId, b)
 		if err != nil {
+			fmt.Println("err", err)
 			return errstate.ErrSystem
 		}
 
-		refreshToken, err := encodeToken(svc.configuration.TokenSecretKey, time.Hour*24*7, refresh)
+		fmt.Println("added")
+
+		refreshToken, err := encodeToken(configuration.TokenSecretKey, time.Hour*24*7, refresh)
 		if err != nil {
 			return errstate.ErrSystem
 		}
 
-		accessToken, err := encodeToken(svc.configuration.TokenSecretKey, time.Minute*10, access)
+		accessToken, err := encodeToken(configuration.TokenSecretKey, time.Minute*10, access)
 		if err != nil {
 			return errstate.ErrSystem
 		}
@@ -96,6 +111,6 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 	})
 }
 
-func NewTokenService(pool *redis.Pool) gs_ext_service_authentication.TokenHandler {
-	return &tokenService{pool: pool}
+func NewTokenService(pool *redis.Pool, connectioncli connectioncli.ConnectionClient) gs_ext_service_authentication.TokenHandler {
+	return &tokenService{pool: pool, connectioncli: connectioncli}
 }

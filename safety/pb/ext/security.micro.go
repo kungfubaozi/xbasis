@@ -65,7 +65,7 @@ func NewSecurityService(name string, c client.Client) SecurityService {
 }
 
 func (c *securityService) Get(ctx context.Context, in *GetRequest, opts ...client.CallOption) (*GetResponse, error) {
-	req := c.c.NewRequest(c.name, "Security.get", in)
+	req := c.c.NewRequest(c.name, "Security.Get", in)
 	out := new(GetResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

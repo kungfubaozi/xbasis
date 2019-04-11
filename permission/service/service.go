@@ -7,6 +7,7 @@ import (
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/permission/handlers"
 	"konekko.me/gosion/permission/pb"
@@ -31,13 +32,18 @@ func StartService() {
 		panic(err)
 	}
 
+	client, err := indexutils.NewClient("http://192.168.2.62:9200/")
+	if err != nil {
+		panic(err)
+	}
+
 	go func() {
 		m := microservice.NewService(gs_commons_constants.ExtPermissionVerification, false)
 
 		gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
 			session, applicationclient.NewStatusClient(m.Client()),
 			safetyclient.NewBlacklistClient(m.Client()),
-			authenticationcli.NewAuthClient(m.Client())))
+			authenticationcli.NewAuthClient(m.Client()), client))
 
 		errc <- m.Run()
 	}()
@@ -52,9 +58,9 @@ func StartService() {
 
 		gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us))
 
-		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc))
+		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc, client))
 
-		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(pool, session))
+		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session))
 
 		gs_service_permission.RegisterGroupStructureHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
 
@@ -69,7 +75,7 @@ func StartService() {
 	}()
 
 	go func() {
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session.Clone(), pool))
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session.Clone(), client))
 	}()
 
 	if err := <-errc; err != nil {

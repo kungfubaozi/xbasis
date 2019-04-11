@@ -7,14 +7,14 @@ const (
 )
 
 type appInfo struct {
-	Id           string       `bson:"_id"`
-	Name         string       `bson:"name"`
-	Desc         string       `bson:"desc"`
-	CreateUserId string       `bson:"create_user_id"`
-	CreateAt     int64        `bson:"create_at"`
-	Settings     *appSetting  `bson:"settings"`
-	Clients      []*appClient `bson:"clients"`
-	Main         int64        `bson:"main"` //main application, provider sso, permission, user and so more
+	Id           string       `bson:"_id" json:"id"`
+	Name         string       `bson:"name" json:"name"`
+	Desc         string       `bson:"desc" json:"desc"`
+	CreateUserId string       `bson:"create_user_id" json:"create_user_id"`
+	CreateAt     int64        `bson:"create_at" json:"create_at"`
+	Settings     *appSetting  `bson:"settings" json:"settings"`
+	Clients      []*appClient `bson:"clients" json:"clients"`
+	Main         int64        `bson:"main" json:"main"` //main application, provider sso, permission, user and so more
 }
 
 type appSetting struct {

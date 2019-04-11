@@ -59,13 +59,19 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 
 			fmt.Println("ok", info.Id)
 
+			if len(info.Id) > 0 {
+				return nil
+			}
+
 			if info != nil && len(info.Id) > 0 {
 				//check state
+
 				s, err := svc.securityService.Get(ctx, &gs_ext_service_safety.GetRequest{
 					UserId: info.Id,
 				})
 
 				if err != nil {
+					fmt.Println("err", err)
 					return nil
 				}
 
@@ -78,15 +84,17 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				}
 
 				//check password
-				err = bcrypt.CompareHashAndPassword([]byte(in.Content), []byte(info.Password))
+				err = bcrypt.CompareHashAndPassword([]byte(info.Password), []byte(in.Content))
 				if err != nil {
 					return eiup()
 				}
 
+				fmt.Println("login clientId", auth.ClientId)
+
 				//generate token
 				s1, err := svc.tokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
 					Auth: &gs_commons_dto.Authorize{
-						ClientId:  in.ClientId,
+						ClientId:  auth.ClientId,
 						UserId:    info.Id,
 						Ip:        auth.IP,
 						Device:    auth.UserDevice,
