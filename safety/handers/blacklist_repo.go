@@ -1,19 +1,16 @@
 package safetyhanders
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
-	"strconv"
+	"gopkg.in/mgo.v2/bson"
+	"konekko.me/gosion/commons/encrypt"
+	"konekko.me/gosion/commons/indexutils"
 	"time"
 )
 
 type blacklistRepo struct {
-	session       *mgo.Session
-	elasticClient *elastic.Client
+	session *mgo.Session
+	*indexutils.Client
 }
 
 func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
@@ -24,41 +21,37 @@ func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
 		CreateUserId: userId,
 	}
 
-	v, err := repo.elasticClient.Index().Index("gs_safety_blacklist").Type("v").BodyJson(b).Do(context.Background())
-	if err != nil || v.Status == 0 {
+	b.Content = encrypt.SHA1(b.Content)
+	id, err := repo.AddData("gs_safety_blacklist", b)
+	if err != nil {
 		return err
 	}
+	if len(id) > 0 {
+		return repo.collection().Insert(b)
+	}
 
-	return nil
+	return indexutils.ErrNotFound
 }
 
 func (repo *blacklistRepo) Remove(id string) error {
-	q := elastic.NewMatchQuery("content", id)
-	v, err := repo.elasticClient.Search("gs_safety_blacklist").Type("v").Query(q).Do(context.Background())
+
+	ok, err := repo.Delete("gs_safety_blacklist", map[string]interface{}{"content": encrypt.SHA1(id)})
 	if err != nil {
 		return err
 	}
-	if v.Hits.TotalHits > 0 {
-		d := v.Hits.Hits[0]
-		r, err := repo.elasticClient.Delete().Index("gs_safety_blacklist").Type("v").Id(d.Id).Do(context.Background())
-		if err != nil {
-			return err
-		}
-		if r.Status != 0 {
-			return errors.New("")
-		}
-		return nil
+	if ok {
+		return repo.collection().Remove(bson.M{"content": id})
 	}
-	return errors.New("not found")
+	return indexutils.ErrNotFound
 }
 
-func (repo *blacklistRepo) CacheExists(bt int64, content string) bool {
-	e, err := redis.Bool(repo.conn.Do("hexists", "blacklist-"+strconv.FormatInt(bt, 10), content))
+func (repo *blacklistRepo) Exists(bt int64, content string) bool {
+	var b blacklist
+	ok, err := repo.QueryFirst("gs_safety_blacklist", map[string]interface{}{"type": bt, "content": content}, &b)
 	if err != nil {
-		fmt.Println("Err", err)
-		return true
+		return false
 	}
-	return e
+	return !ok
 }
 
 func (repo *blacklistRepo) Close() {

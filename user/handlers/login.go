@@ -3,13 +3,13 @@ package userhandlers
 import (
 	"context"
 	"fmt"
-	"github.com/olivere/elastic"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/safety/pb/ext"
@@ -20,11 +20,11 @@ type loginService struct {
 	session         *mgo.Session
 	securityService gs_ext_service_safety.SecurityService
 	tokenService    gs_ext_service_authentication.TokenService
-	client          *elastic.Client
+	*indexutils.Client
 }
 
 func (svc *loginService) GetRepo() *userRepo {
-	return &userRepo{session: svc.session.Clone(), elastic: svc.client}
+	return &userRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
 //web client just support the root project, you need the login to root project and then route to the target client
@@ -34,25 +34,28 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			repo := svc.GetRepo()
 			defer repo.Close()
 
-			var info *userInfo
+			var info *userModel
 
 			eiup := func() *gs_commons_dto.State {
 				return errstate.ErrInvalidUsernameOrPassword
 			}
 
-			t := accountIndexType
+			var id string
+			var err error
 
 			if gs_commons_regx.Phone(in.Account) {
-				t = phoneIndexType
+				id, err = repo.FindIndexTable("phone", in.Account)
 			} else if gs_commons_regx.Email(in.Account) {
-				t = emailIndexType
+				id, err = repo.FindIndexTable("email", in.Account)
+			} else {
+				id, err = repo.FindIndexTable("account", in.Account)
 			}
 
-			i, err := repo.FindIndexTable(t, in.Account)
-			if err != nil {
-				return eiup()
+			if err != nil || len(id) == 0 {
+				return nil
 			}
-			info, err = repo.FindById(i)
+
+			info, err = repo.FindById(id)
 			if err != nil {
 				return eiup()
 			}
@@ -140,6 +143,6 @@ func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.Ent
 }
 
 func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
-	tokenService gs_ext_service_authentication.TokenService, client *elastic.Client) gs_service_user.LoginHandler {
-	return &loginService{session: session, securityService: securityService, tokenService: tokenService, client: client}
+	tokenService gs_ext_service_authentication.TokenService, client *indexutils.Client) gs_service_user.LoginHandler {
+	return &loginService{session: session, securityService: securityService, tokenService: tokenService, Client: client}
 }

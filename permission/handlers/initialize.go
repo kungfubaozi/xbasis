@@ -43,29 +43,16 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 				panic(err)
 			}
 
-			err = structureRepo.OpeningCache(defStructure.Id, defStructure.AppId, defStructure.Type)
-			if err != nil {
-				fmt.Println("open def function structure err.", err)
-				panic(err)
-			}
-
 			defStructure.Type = permissionutils.TypeUserStructure
 			defStructure.Id = userStructureId
+			defStructure.SID = ""
 			err = structureRepo.Add(defStructure)
 			if err != nil {
 				fmt.Println("init def user structure err.", err)
 				panic(err)
 			}
 
-			//open structure
-			err = structureRepo.OpeningCache(defStructure.Id, defStructure.AppId, defStructure.Type)
-			if err != nil {
-				fmt.Println("open def user structure err.", err)
-				panic(err)
-			}
-
 			//add def functions
-
 			functionRepo := functionRepo{session: session, Client: client}
 			defer functionRepo.Close()
 

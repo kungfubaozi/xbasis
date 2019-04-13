@@ -1,67 +1,38 @@
 package userhandlers
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/hashcode"
+	"konekko.me/gosion/commons/indexutils"
 )
 
 type userRepo struct {
 	session *mgo.Session
-	elastic *elastic.Client
+	*indexutils.Client
 }
 
-func (repo *userRepo) FindById(id string) (*userInfo, error) {
-	info := &userInfo{}
+func (repo *userRepo) FindById(id string) (*userModel, error) {
+	info := &userModel{}
 	err := repo.userCollection(id).Find(bson.M{"_id": id}).One(info)
 	return info, err
 }
 
-func (repo *userRepo) AddUser(user *userInfo) error {
-	index := &userIndex{TargetId: user.Id}
+func (repo *userRepo) AddUser(user *userModel) error {
 
-	addIndex := func(index *userIndex, t int) error {
-		p, err := repo.elastic.Index().Index(fmt.Sprintf("%s_it_%d", typeUserIndex, t)).Type("v").BodyJson(index).Do(context.Background())
-		if err != nil {
-			return err
-		}
-		fmt.Println("create index id:", p.Id)
+	id, err := repo.AddData(typeUserIndex, user.Index())
+	if err != nil {
 		return nil
 	}
 
-	//insert sql index
-	if len(user.Email) > 0 {
-		index.Content = repo.index(user.Email)
-		err := addIndex(index, emailIndexType)
-		if err != nil {
-			return err
-		}
+	if len(id) > 0 {
+		user.SID = id
+		return repo.userCollection(user.Id).Insert(user)
 	}
 
-	if len(user.Phone) > 0 {
-		index.Content = repo.index(user.Phone)
-		err := addIndex(index, phoneIndexType)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(user.Account) > 0 {
-		index.Content = repo.index(user.Account)
-		err := addIndex(index, accountIndexType)
-		if err != nil {
-			return err
-		}
-	}
-
-	//add collection
-
-	return repo.userCollection(user.Id).Insert(user)
+	return indexutils.ErrNotFound
 }
 
 func (repo *userRepo) userCollection(userId string) *mgo.Collection {
@@ -72,30 +43,22 @@ func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
 	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userOAuthCollection, hashcode.Get(openId)))
 }
 
-func (repo *userRepo) FindIndexTable(t int, content string) (string, error) {
+func (repo *userRepo) FindIndexTable(key string, content string) (string, error) {
 	content = repo.index(content)
-	userIndex := &userIndex{}
+	userIndex := &userModelIndex{}
 
-	q := elastic.NewMatchQuery("content", content)
-
-	s, err := repo.elastic.Search(fmt.Sprintf("%s_it_%d", typeUserIndex, t)).Type("v").Query(q).Do(context.Background())
+	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{"key": content}, &userIndex)
 	if err != nil {
 		return "", nil
 	}
-	fmt.Println("hits", s.Hits.TotalHits)
-	if s.Hits.TotalHits > 0 {
-		v := s.Hits.Hits[0]
-		err = json.Unmarshal(*v.Source, userIndex)
-		if err == nil {
-			return userIndex.TargetId, nil
-		}
+	if ok {
+		return userIndex.UserId, nil
 	}
-
-	return "", nil
+	return "", indexutils.ErrNotFound
 }
 
 func (repo *userRepo) index(c string) string {
-	return gs_commons_encrypt.SHA1(c)
+	return encrypt.SHA1(c)
 }
 
 func (repo *userRepo) infoCollection(userId string) *mgo.Collection {

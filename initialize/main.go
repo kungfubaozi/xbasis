@@ -85,7 +85,7 @@ func main() {
 		panic(err)
 	}
 
-	secretKey := gs_commons_encrypt.Md5(time.Now().String())
+	secretKey := encrypt.Md5(time.Now().String())
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
 		AppId:       id.Short(),
@@ -108,7 +108,7 @@ func main() {
 		EmailVerificationCodeExpiredTime: 10 * 60 * 1000,
 		PhoneVerificationCodeExpiredTime: 10 * 60 * 1000,
 		LoginIntervalToStartLock:         30 * 24 * 60 * 60 * 1000,
-		CurrencySecretKey:                gs_commons_encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
+		CurrencySecretKey:                encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
 		RegisterType:                     1001 | 1002 | 1003,
 		LoginType:                        1001 | 1002 | 1003,
 		TokenSecretKey:                   secretKey,

@@ -23,7 +23,7 @@ func (repo *applicationRepo) findAppInfo(key, value string) (*appInfo, error) {
 	fmt.Println("find app info")
 
 	var info appInfo
-	ok, err := repo.QueryFirst("gs_application_index", map[string]interface{}{key: value}, &info)
+	ok, err := repo.QueryFirst("gs_applications", map[string]interface{}{key: value}, &info)
 	if err != nil {
 		return nil, err
 	}
@@ -46,16 +46,15 @@ func (repo *applicationRepo) ApplicationExists(name string) bool {
 }
 
 func (repo *applicationRepo) Add(info *appInfo) error {
-	err := repo.collection().Insert(info)
+	id, err := repo.AddData("gs_applications", info)
 	if err != nil {
 		return err
 	}
-
-	_, err = repo.AddData("gs_application_index", info)
-	if err != nil {
-		return err
+	if len(id) > 0 {
+		info.SID = id
+		return repo.collection().Insert(info)
 	}
-	return nil
+	return indexutils.ErrNotFound
 }
 
 func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {

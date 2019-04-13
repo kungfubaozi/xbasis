@@ -2,13 +2,13 @@ package userhandlers
 
 import (
 	"fmt"
-	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/indexutils"
 	"time"
 )
 
-func Initialize(session *mgo.Session, client *elastic.Client) gs_commons_config.OnConfigNodeChanged {
+func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
 		coll := session.DB(dbName).C(userCollection)
 		c, err := coll.Count()
@@ -19,10 +19,10 @@ func Initialize(session *mgo.Session, client *elastic.Client) gs_commons_config.
 		if c == 0 {
 			//insert user
 
-			userRepo := userRepo{session: session, elastic: client}
+			userRepo := userRepo{session: session, Client: client}
 			defer userRepo.Close()
 
-			u := &userInfo{
+			u := &userModel{
 				Id:         config.UserId,
 				CreateAt:   time.Now().UnixNano(),
 				Account:    config.Username,

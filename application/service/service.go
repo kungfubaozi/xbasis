@@ -35,7 +35,7 @@ func StartService() {
 
 	go func() {
 		gs_commons_config.WatchInitializeConfig(gs_commons_constants.ApplicationService,
-			applicationhanderls.Initialize(session.Clone()))
+			applicationhanderls.Initialize(session.Clone(), client))
 	}()
 
 	go func() {

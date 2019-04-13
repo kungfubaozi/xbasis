@@ -20,6 +20,8 @@ type GosionInitializeConfig struct {
 	Email       string
 	Password    string
 	SecretKey   string
+	UserS       string
+	FuncS       string
 }
 
 type OnNodeDataChanged func(data []byte, version int32) bool
@@ -29,7 +31,7 @@ type OnConfigNodeChanged func(config *GosionInitializeConfig)
 func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	c := NewConnect("192.168.2.57:2181")
 
-	path := "/_gosion.init.locking-" + gs_commons_encrypt.SHA1(serviceName)
+	path := "/_gosion.init.locking-" + encrypt.SHA1(serviceName)
 
 	//one same service process
 	acl := zk.WorldACL(zk.PermAll)

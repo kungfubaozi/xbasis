@@ -3,7 +3,7 @@ package applicationhanderls
 import (
 	"context"
 	"fmt"
-	"gopkg.in/mgo.v2"
+	"github.com/garyburd/redigo/redis"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -14,7 +14,7 @@ import (
 
 type applicationStatusService struct {
 	//session *mgo.Session
-	//pool    *redis.Pool
+	pool *redis.Pool
 	*indexutils.Client
 }
 
@@ -30,12 +30,8 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 		defer repo.Close()
 
 		a, err := repo.FindByClientId(in.ClientId)
-		if err != nil && err == mgo.ErrNotFound {
-			return errstate.ErrInvalidClientId
-		}
 		if err != nil {
-			fmt.Println("err", err)
-			return nil
+			return errstate.ErrInvalidClientId
 		}
 
 		for _, v := range a.Clients {
@@ -47,6 +43,8 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 				out.AppId = a.Id
 				out.AppOpenMode = a.Settings.OpenMode
 				out.AppQuarantine = a.Settings.Quarantine
+				out.UserStructure = a.UserS.Id
+				out.FunctionStructure = a.FunctionS.Id
 				fmt.Println("time.now-wrapper", (time.Now().UnixNano()-s)/1e6)
 				return nil
 			}

@@ -21,4 +21,6 @@ message GetAppClientStatusResponse {
     int64 appQuarantine = 4;
     int64 clientPlatform = 5;
     int64 clientEnabled = 6;
+    string userStructure = 7;
+    string functionStructure = 8;
 }

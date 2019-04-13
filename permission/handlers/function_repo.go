@@ -13,11 +13,15 @@ type functionRepo struct {
 }
 
 func (repo *functionRepo) AddFunction(function *function) error {
-	_, err := repo.AddData("gs_permission_functions", function)
+	id, err := repo.AddData("gs_permission_functions", function)
 	if err != nil {
 		return err
 	}
-	return repo.functionCollection().Insert(function)
+	if len(id) > 0 {
+		function.SID = id
+		return repo.functionCollection().Insert(function)
+	}
+	return indexutils.ErrNotFound
 }
 
 func (repo *functionRepo) AddGroup(group *functionGroup) error {

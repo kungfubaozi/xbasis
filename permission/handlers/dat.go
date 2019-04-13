@@ -38,7 +38,7 @@ func (svc *durationAccessService) Datp(ctx context.Context, in *gs_service_permi
 		if len(in.To) == 0 || len(in.Path) == 0 {
 			return nil
 		}
-		hkey := gs_commons_encrypt.SHA1(auth.IP + auth.ClientId)
+		hkey := encrypt.SHA1(auth.IP + auth.ClientId)
 		svc.dat(auth.IP, out, in.Path, in.To, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
 			return svc.sendTo(ctx, to, code, 1)
 		})
@@ -52,7 +52,7 @@ func (svc *durationAccessService) Datu(ctx context.Context, in *gs_service_permi
 		if len(in.Path) == 0 {
 			return nil
 		}
-		hkey := gs_commons_encrypt.SHA1(auth.User + auth.ClientId)
+		hkey := encrypt.SHA1(auth.User + auth.ClientId)
 		svc.dat(auth.User, out, in.Path, auth.User, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
 			return svc.sendTo(ctx, to, code, 2)
 		})
@@ -173,7 +173,7 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 			out.State = errstate.ErrDurationAccessExpired
 			return
 		}
-		et, err := gs_commons_encrypt.AESEncrypt([]byte(user), []byte(svc.configuration.CurrencySecretKey))
+		et, err := encrypt.AESEncrypt([]byte(user), []byte(svc.configuration.CurrencySecretKey))
 		if err != nil {
 			out.State = errstate.ErrSystem
 			return

@@ -2,22 +2,22 @@ package safetyhanders
 
 import (
 	"context"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/safety/pb"
 )
 
 type blacklistService struct {
 	session *mgo.Session
-	pool    *redis.Pool
+	*indexutils.Client
 }
 
 func (svc *blacklistService) GetRepo() blacklistRepo {
-	return blacklistRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
+	return blacklistRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
 func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.CheckRequest, out *gs_commons_dto.Status) error {
@@ -32,7 +32,7 @@ func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.Ch
 			repo := svc.GetRepo()
 			defer repo.Close()
 
-			if !repo.CacheExists(in.Type, in.Content) {
+			if !repo.Exists(in.Type, in.Content) {
 				return errstate.Success
 			}
 
@@ -47,7 +47,7 @@ func (svc *blacklistService) AddBlacklist(ctx context.Context, in *gs_service_sa
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		if repo.CacheExists(in.Type, in.Content) {
+		if repo.Exists(in.Type, in.Content) {
 
 			err := repo.Save(in.Type, in.Content, auth.User)
 			if err != nil {
@@ -77,6 +77,6 @@ func (svc *blacklistService) RemoveBlacklist(ctx context.Context, in *gs_service
 	})
 }
 
-func NewBlacklistService(session *mgo.Session, pool *redis.Pool) gs_service_safety.BlacklistHandler {
-	return &blacklistService{session: session, pool: pool}
+func NewBlacklistService(session *mgo.Session, client *indexutils.Client) gs_service_safety.BlacklistHandler {
+	return &blacklistService{session: session, Client: client}
 }

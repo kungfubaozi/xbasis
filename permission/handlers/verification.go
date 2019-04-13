@@ -79,7 +79,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 			traceId := md["transport-trace-id"]
 			if len(traceId) > 0 {
-				_, err := gs_commons_encrypt.AESDecrypt(traceId, []byte(svc.configuration.CurrencySecretKey))
+				_, err := encrypt.AESDecrypt(traceId, []byte(svc.configuration.CurrencySecretKey))
 				if err != nil {
 					return nil
 				}
@@ -123,7 +123,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 			fmt.Println("time.now-2", (time.Now().UnixNano()-a)/1e6)
 
-			traceId, err := gs_commons_encrypt.AESEncrypt([]byte(id), []byte(svc.configuration.CurrencySecretKey))
+			traceId, err := encrypt.AESEncrypt([]byte(id), []byte(svc.configuration.CurrencySecretKey))
 			if err != nil {
 				return nil
 			}
@@ -187,7 +187,6 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 			}()
 
 			var appResp *gs_ext_service_application.GetAppClientStatusResponse
-			ccs := &cacheStructure{}
 
 			////application
 			go func() {
@@ -203,29 +202,6 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				fmt.Println("app", s.State)
 				resp(s.State)
 				appResp = s
-				if s != nil && s.State.Ok && len(s.AppId) > 0 {
-					////conn := svc.pool.Get()
-					////get current structure id
-					//fmt.Println("check application structure")
-					//get := func(t int64) (string, error) {
-					//	return redis.String(conn.Do("get",
-					//		permissionutils.GetTypeCurrentStructureKey(s.AppId, t)))
-					//}
-					//
-					//v, err := get(permissionutils.TypeUserStructure)
-					//if err != nil {
-					//	fmt.Println("err", err)
-					//}
-					//if err == nil && len(v) > 0 {
-					//	ccs.UserStructureId = v
-					//	v, err = get(permissionutils.TypeFunctionStructure)
-					//	if err == nil && len(v) > 0 {
-					//		fmt.Println("check application structure,-> clear")
-					//		ccs.FunctionStructureId = v
-					//	}
-					//}
-
-				}
 			}()
 
 			wg.Wait()
@@ -238,7 +214,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 			fmt.Println("time.now", (time.Now().UnixNano()-a)/1e6)
 
-			if appResp != nil && len(ccs.UserStructureId) > 0 && len(ccs.FunctionStructureId) > 0 {
+			if appResp != nil && len(appResp.UserStructure) > 0 && len(appResp.FunctionStructure) > 0 {
 
 				fmt.Println("entry check process")
 
@@ -250,7 +226,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				defer repo.Close()
 
 				//fmt.Println("function structure id", ccs.FunctionStructureId)
-				a, err := repo.FindApiInCache(ccs.FunctionStructureId, rh.path)
+				a, err := repo.FindApiInCache(appResp.FunctionStructure, rh.path)
 				if err != nil {
 					fmt.Println("invalid api", rh.path)
 					return nil
@@ -279,13 +255,13 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 								return
 							}
 
-							v, err := gs_commons_encrypt.AESDecrypt(rh.dat, []byte(svc.configuration.CurrencySecretKey))
+							v, err := encrypt.AESDecrypt(rh.dat, []byte(svc.configuration.CurrencySecretKey))
 							if err != nil {
 								resp(errstate.ErrNotFoundDurationAccessToken)
 								return
 							}
 
-							key := gs_commons_encrypt.SHA1(string(v) + rh.clientId)
+							key := encrypt.SHA1(string(v) + rh.clientId)
 							dat.Key = key
 							b, err := redis.Bytes(conn.Do("hget", key, a.Api))
 							if err != nil && err == redis.ErrNil {
@@ -331,8 +307,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 							var userRoles, functionRoles []interface{}
 							var swg sync.WaitGroup
 							swg.Add(2)
-							urk := permissionutils.GetStructureUserRoleKey(ccs.UserStructureId, status.Content)
-							frk := permissionutils.GetStructureFunctionRoleKey(ccs.UserStructureId, a.Id)
+							urk := permissionutils.GetStructureUserRoleKey(appResp.UserStructure, status.Content)
+							frk := permissionutils.GetStructureFunctionRoleKey(appResp.UserStructure, a.Id)
 							go func() {
 								defer swg.Done()
 								userRoles, err = redis.Values(conn.Do("SMEMBERS", urk))
@@ -355,7 +331,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
 									if roles[b] != "ok" {
 										//check role
-										_, err := conn.Do("hget", permissionutils.GetStructureRoleKey(ccs.UserStructureId), b)
+										_, err := conn.Do("hget", permissionutils.GetStructureRoleKey(appResp.UserStructure), b)
 										if err != nil && err == redis.ErrNil { //invalid role
 											//possibly due to the removal of roles
 											//remove role

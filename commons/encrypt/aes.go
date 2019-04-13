@@ -1,4 +1,4 @@
-package gs_commons_encrypt
+package encrypt
 
 import (
 	"bytes"

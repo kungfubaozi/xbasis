@@ -72,16 +72,9 @@ func (svc *structureService) Enabled(ctx context.Context, in *gs_service_permiss
 
 			s, err := repo.FindById(in.StructureId)
 			if err == nil && len(s.Id) > 0 {
-				err = repo.Opening(s.Id, s.Type, in.Opening)
+				err = repo.Opening(s.AppId, s.Id, s.SID, in.Opening)
 				if err == nil {
-					//update cache
-					if !in.Opening {
-						s.Id = ""
-					}
-					err = repo.OpeningCache(s.Id, s.AppId, s.Type)
-					if err == nil {
-						return errstate.Success
-					}
+					return errstate.Success
 				}
 			}
 

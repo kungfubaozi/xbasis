@@ -1,7 +1,6 @@
 package permissionhandlers
 
 import (
-	"errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/indexutils"
@@ -17,7 +16,15 @@ func (repo *structureRepo) GetCurrent() (string, error) {
 }
 
 func (repo *structureRepo) Add(s *structure) error {
-	return repo.collection().Insert(s)
+	id, err := repo.AddData("gs_permission_structure", s)
+	if err != nil {
+		return err
+	}
+	if len(id) > 0 {
+		s.SID = id
+		return repo.collection().Insert(s)
+	}
+	return indexutils.ErrNotFound
 }
 
 func (repo *structureRepo) FindCountByNameAndType(name string, t int64) (int, error) {
@@ -30,21 +37,23 @@ func (repo *structureRepo) FindById(id string) (*structure, error) {
 	return s, err
 }
 
-func (repo *structureRepo) Opening(id string, t int64, opening bool) error {
-	if opening {
-		//close all
-		err := repo.collection().Update(bson.M{"type": t}, bson.M{"$set": bson.M{"opening": false}})
-		if err != nil {
-			return err
-		}
+func (repo *structureRepo) Opening(appId, structureId, sid string, opening bool) error {
+	ok, err := repo.Update("gs_permission_structure", sid, map[string]interface{}{"opening": opening})
+	if err != nil {
+		return err
 	}
-	return repo.collection().Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"opening": opening}})
+	if ok {
+		return repo.collection().Update(bson.M{"_id": structureId}, bson.M{"$set": bson.M{"opening": opening}})
+	}
+	return indexutils.ErrNotFound
 }
 
-func (repo *structureRepo) OpeningCache(id, appId string, t int64) error {
-	//_, err := repo.conn.Do("set", permissionutils.GetTypeCurrentStructureKey(appId, t), id)
-	//return err
-	panic(errors.New(""))
+func (repo *structureRepo) setUserStructureConfig(appId, structureId string) {
+
+}
+
+func (repo *structureRepo) setFunctionStructureConfig(appId, structureId string) {
+
 }
 
 func (repo *structureRepo) collection() *mgo.Collection {

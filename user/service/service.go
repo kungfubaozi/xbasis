@@ -1,11 +1,11 @@
 package usersvc
 
 import (
-	"github.com/olivere/elastic"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/message/cmd/messagecli"
 	"konekko.me/gosion/safety/client"
@@ -30,7 +30,7 @@ func StartService() {
 	}
 	defer ms.Close()
 
-	client, err := elastic.NewClient(elastic.SetURL("http://192.168.2.62:9200/"))
+	client, err := indexutils.NewClient("http://192.168.2.62:9200/")
 	if err != nil {
 		panic(err)
 	}
