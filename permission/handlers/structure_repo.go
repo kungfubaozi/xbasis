@@ -16,7 +16,7 @@ func (repo *structureRepo) GetCurrent() (string, error) {
 }
 
 func (repo *structureRepo) Add(s *structure) error {
-	id, err := repo.AddData("gs_permission_structure", s)
+	id, err := repo.AddData("gs_structures", s)
 	if err != nil {
 		return err
 	}
