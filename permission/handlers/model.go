@@ -37,7 +37,6 @@ type structure struct {
 	CreateAt     int64  `bson:"create_at" json:"create_at"`
 	CreateUserId string `bson:"create_user_id" json:"create_user_id"`
 	AppId        string `bson:"app_id" json:"app_id"`
-	Opening      bool   `bson:"opening" json:"opening"`
 	Name         string `bson:"name" json:"name"`
 	Type         int64  `bson:"type" json:"type"` //user or function structure
 }

@@ -53,7 +53,6 @@ func (svc *structureService) Create(name, user, appId string, t int64) *gs_commo
 			CreateUserId: user,
 			AppId:        appId,
 			Type:         t,
-			Opening:      false,
 		})
 		if err == nil {
 			return errstate.Success
@@ -61,27 +60,6 @@ func (svc *structureService) Create(name, user, appId string, t int64) *gs_commo
 	}
 
 	return nil
-}
-
-func (svc *structureService) Enabled(ctx context.Context, in *gs_service_permission.EnabledRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-
-		if len(in.StructureId) > 0 {
-			repo := svc.GetRepo()
-			defer repo.Close()
-
-			s, err := repo.FindById(in.StructureId)
-			if err == nil && len(s.Id) > 0 {
-				err = repo.Opening(s.AppId, s.Id, s.SID, in.Opening)
-				if err == nil {
-					return errstate.Success
-				}
-			}
-
-		}
-
-		return nil
-	})
 }
 
 func (svc *structureService) GetList(ctx context.Context, in *gs_service_permission.GetListRequest, out *gs_service_permission.GetListResponse) error {

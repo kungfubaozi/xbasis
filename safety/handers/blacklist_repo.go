@@ -34,7 +34,6 @@ func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
 }
 
 func (repo *blacklistRepo) Remove(id string) error {
-
 	ok, err := repo.Delete("gs_safety_blacklist", map[string]interface{}{"content": encrypt.SHA1(id)})
 	if err != nil {
 		return err
@@ -46,12 +45,11 @@ func (repo *blacklistRepo) Remove(id string) error {
 }
 
 func (repo *blacklistRepo) Exists(bt int64, content string) bool {
-	var b blacklist
-	ok, err := repo.QueryFirst("gs_safety_blacklist", map[string]interface{}{"type": bt, "content": content}, &b)
+	count, err := repo.Count("gs_safety_blacklist", map[string]interface{}{"type": bt, "content": content})
 	if err != nil {
 		return false
 	}
-	return !ok
+	return count != 0
 }
 
 func (repo *blacklistRepo) Close() {

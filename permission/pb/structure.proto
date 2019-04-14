@@ -10,8 +10,6 @@ service Structure {
 
     rpc CreateFunctionStructure (CreateRequest) returns (gs.commons.dto.Status);
 
-    rpc Enabled (EnabledRequest) returns (gs.commons.dto.Status);
-
     rpc GetList (GetListRequest) returns (GetListResponse);
 
 }

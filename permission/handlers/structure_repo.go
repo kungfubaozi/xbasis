@@ -37,17 +37,6 @@ func (repo *structureRepo) FindById(id string) (*structure, error) {
 	return s, err
 }
 
-func (repo *structureRepo) Opening(appId, structureId, sid string, opening bool) error {
-	ok, err := repo.Update("gs_permission_structure", sid, map[string]interface{}{"opening": opening})
-	if err != nil {
-		return err
-	}
-	if ok {
-		return repo.collection().Update(bson.M{"_id": structureId}, bson.M{"$set": bson.M{"opening": opening}})
-	}
-	return indexutils.ErrNotFound
-}
-
 func (repo *structureRepo) setUserStructureConfig(appId, structureId string) {
 
 }

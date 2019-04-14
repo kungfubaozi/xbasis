@@ -61,11 +61,7 @@ func (cli *Client) Delete(index string, kvs map[string]interface{}) (bool, error
 }
 
 func (cli *Client) _queryFirst(index string, kvs map[string]interface{}) (bool, []*elastic.SearchHit, error) {
-	b := elastic.NewBoolQuery()
-	for k, v := range kvs {
-		b.Must(elastic.NewMatchQuery(k, v))
-	}
-	v, err := cli.client.Search(index).Type("v").Query(b).Do(context.Background())
+	v, err := cli.client.Search(index).Type("v").Query(cli._buildQuery(kvs)).Do(context.Background())
 	if err != nil {
 		return false, nil, err
 	}
@@ -84,6 +80,22 @@ func (cli *Client) Update(index, id string, values map[string]interface{}) (bool
 		return true, nil
 	}
 	return false, ErrNotFound
+}
+
+func (cli *Client) Count(index string, kvs map[string]interface{}) (int64, error) {
+	a, err := cli.client.Count(index).Type("v").Query(cli._buildQuery(kvs)).Do(context.Background())
+	if err != nil {
+		return 0, err
+	}
+	return a, nil
+}
+
+func (cli *Client) _buildQuery(kvs map[string]interface{}) elastic.Query {
+	b := elastic.NewBoolQuery()
+	for k, v := range kvs {
+		b.Must(elastic.NewMatchQuery(k, v))
+	}
+	return b
 }
 
 func NewClient(url string) (*Client, error) {

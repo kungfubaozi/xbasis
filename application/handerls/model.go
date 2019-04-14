@@ -26,6 +26,7 @@ type appSetting struct {
 	OpenMode    int64  `bson:"open_mode" json:"open_mode"`         //open mode
 	RedirectURL string `bson:"redirect_url" json:"redirect_url"`
 	Quarantine  int64  `bson:"quarantine" json:"quarantine"` //create local self database
+	MustSync    string `bson:"must_sync" json:"must_sync"`
 }
 
 type appClient struct {

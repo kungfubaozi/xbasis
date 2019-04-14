@@ -23,15 +23,14 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 			structureRepo := structureRepo{session: session, Client: client}
 			defer structureRepo.Close()
 
-			functionStructureId := id.UUID()
-			userStructureId := id.UUID()
+			functionStructureId := config.FuncS
+			userStructureId := config.UserS
 
 			defStructure := &structure{
 				Id:           functionStructureId,
 				CreateUserId: config.UserId,
 				CreateAt:     time.Now().UnixNano(),
 				AppId:        config.AppId,
-				Opening:      true,
 				Name:         "ROOT",
 				Type:         permissionutils.TypeFunctionStructure,
 			}

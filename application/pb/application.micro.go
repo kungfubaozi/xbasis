@@ -8,6 +8,7 @@ It is generated from these files:
 	application/pb/application.proto
 
 It has these top-level messages:
+	EnabledRequest
 	FindRequest
 	ListResponse
 	SimpleApplicationResponse
@@ -56,6 +57,7 @@ type ApplicationService interface {
 	FindByAppId(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*SimpleApplicationResponse, error)
 	FindByClientId(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*SimpleApplicationResponse, error)
 	List(ctx context.Context, in *FindRequest, opts ...client.CallOption) (*ListResponse, error)
+	Enabled(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type applicationService struct {
@@ -136,6 +138,16 @@ func (c *applicationService) List(ctx context.Context, in *FindRequest, opts ...
 	return out, nil
 }
 
+func (c *applicationService) Enabled(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Application.Enabled", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Application service
 
 type ApplicationHandler interface {
@@ -145,6 +157,7 @@ type ApplicationHandler interface {
 	FindByAppId(context.Context, *FindRequest, *SimpleApplicationResponse) error
 	FindByClientId(context.Context, *FindRequest, *SimpleApplicationResponse) error
 	List(context.Context, *FindRequest, *ListResponse) error
+	Enabled(context.Context, *EnabledRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterApplicationHandler(s server.Server, hdlr ApplicationHandler, opts ...server.HandlerOption) error {
@@ -155,6 +168,7 @@ func RegisterApplicationHandler(s server.Server, hdlr ApplicationHandler, opts .
 		FindByAppId(ctx context.Context, in *FindRequest, out *SimpleApplicationResponse) error
 		FindByClientId(ctx context.Context, in *FindRequest, out *SimpleApplicationResponse) error
 		List(ctx context.Context, in *FindRequest, out *ListResponse) error
+		Enabled(ctx context.Context, in *EnabledRequest, out *gs_commons_dto.Status) error
 	}
 	type Application struct {
 		application
@@ -189,4 +203,8 @@ func (h *applicationHandler) FindByClientId(ctx context.Context, in *FindRequest
 
 func (h *applicationHandler) List(ctx context.Context, in *FindRequest, out *ListResponse) error {
 	return h.ApplicationHandler.List(ctx, in, out)
+}
+
+func (h *applicationHandler) Enabled(ctx context.Context, in *EnabledRequest, out *gs_commons_dto.Status) error {
+	return h.ApplicationHandler.Enabled(ctx, in, out)
 }

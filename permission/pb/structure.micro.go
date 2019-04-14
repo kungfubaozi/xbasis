@@ -49,7 +49,6 @@ var _ server.Option
 type StructureService interface {
 	CreateUserStructure(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	CreateFunctionStructure(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Enabled(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error)
 }
 
@@ -91,16 +90,6 @@ func (c *structureService) CreateFunctionStructure(ctx context.Context, in *Crea
 	return out, nil
 }
 
-func (c *structureService) Enabled(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Structure.Enabled", in)
-	out := new(gs_commons_dto.Status)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *structureService) GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error) {
 	req := c.c.NewRequest(c.name, "Structure.GetList", in)
 	out := new(GetListResponse)
@@ -116,7 +105,6 @@ func (c *structureService) GetList(ctx context.Context, in *GetListRequest, opts
 type StructureHandler interface {
 	CreateUserStructure(context.Context, *CreateRequest, *gs_commons_dto.Status) error
 	CreateFunctionStructure(context.Context, *CreateRequest, *gs_commons_dto.Status) error
-	Enabled(context.Context, *EnabledRequest, *gs_commons_dto.Status) error
 	GetList(context.Context, *GetListRequest, *GetListResponse) error
 }
 
@@ -124,7 +112,6 @@ func RegisterStructureHandler(s server.Server, hdlr StructureHandler, opts ...se
 	type structure interface {
 		CreateUserStructure(ctx context.Context, in *CreateRequest, out *gs_commons_dto.Status) error
 		CreateFunctionStructure(ctx context.Context, in *CreateRequest, out *gs_commons_dto.Status) error
-		Enabled(ctx context.Context, in *EnabledRequest, out *gs_commons_dto.Status) error
 		GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error
 	}
 	type Structure struct {
@@ -144,10 +131,6 @@ func (h *structureHandler) CreateUserStructure(ctx context.Context, in *CreateRe
 
 func (h *structureHandler) CreateFunctionStructure(ctx context.Context, in *CreateRequest, out *gs_commons_dto.Status) error {
 	return h.StructureHandler.CreateFunctionStructure(ctx, in, out)
-}
-
-func (h *structureHandler) Enabled(ctx context.Context, in *EnabledRequest, out *gs_commons_dto.Status) error {
-	return h.StructureHandler.Enabled(ctx, in, out)
 }
 
 func (h *structureHandler) GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error {

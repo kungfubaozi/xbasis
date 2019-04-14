@@ -19,6 +19,13 @@ service Application {
 
     rpc List (FindRequest) returns (ListResponse);
 
+    rpc Enabled (EnabledRequest) returns (gs.commons.dto.Status);
+
+}
+
+message EnabledRequest {
+    string appId = 1;
+    bool enabled = 2;
 }
 
 message FindRequest {

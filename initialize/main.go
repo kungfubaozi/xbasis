@@ -98,6 +98,8 @@ func main() {
 		Password:    string(b),
 		WebClientId: id.Short(),
 		SecretKey:   secretKey,
+		FuncS:       id.UUID(),
+		UserS:       id.UUID(),
 	}
 
 	fmt.Println("init application def clientId(web) is:", initConfig.WebClientId)
