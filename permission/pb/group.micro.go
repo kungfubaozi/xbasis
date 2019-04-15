@@ -41,38 +41,38 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for GroupStructure service
+// Client API for UserGroup service
 
-type GroupStructureService interface {
+type UserGroupService interface {
 	LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	AddUserToGroup(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	MoveUserToGroup(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	AddUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
-type groupStructureService struct {
+type userGroupService struct {
 	c    client.Client
 	name string
 }
 
-func NewGroupStructureService(name string, c client.Client) GroupStructureService {
+func NewUserGroupService(name string, c client.Client) UserGroupService {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
 		name = "gs.service.permission"
 	}
-	return &groupStructureService{
+	return &userGroupService{
 		c:    c,
 		name: name,
 	}
 }
 
-func (c *groupStructureService) LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.linkTo", in)
+func (c *userGroupService) LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.LinkTo", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -81,8 +81,8 @@ func (c *groupStructureService) LinkTo(ctx context.Context, in *SimpleGroup, opt
 	return out, nil
 }
 
-func (c *groupStructureService) Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.unlink", in)
+func (c *userGroupService) Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.Unlink", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -91,8 +91,8 @@ func (c *groupStructureService) Unlink(ctx context.Context, in *SimpleGroup, opt
 	return out, nil
 }
 
-func (c *groupStructureService) Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.add", in)
+func (c *userGroupService) Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.Add", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -101,8 +101,8 @@ func (c *groupStructureService) Add(ctx context.Context, in *SimpleGroup, opts .
 	return out, nil
 }
 
-func (c *groupStructureService) Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.remove", in)
+func (c *userGroupService) Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.Remove", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -111,8 +111,8 @@ func (c *groupStructureService) Remove(ctx context.Context, in *SimpleGroup, opt
 	return out, nil
 }
 
-func (c *groupStructureService) Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.rename", in)
+func (c *userGroupService) Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.Rename", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -121,8 +121,8 @@ func (c *groupStructureService) Rename(ctx context.Context, in *SimpleGroup, opt
 	return out, nil
 }
 
-func (c *groupStructureService) AddUserToGroup(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.addUserToGroup", in)
+func (c *userGroupService) AddUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.AddUser", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -131,8 +131,8 @@ func (c *groupStructureService) AddUserToGroup(ctx context.Context, in *SimpleUs
 	return out, nil
 }
 
-func (c *groupStructureService) MoveUserToGroup(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "GroupStructure.moveUserToGroup", in)
+func (c *userGroupService) MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.MoveUser", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -141,63 +141,63 @@ func (c *groupStructureService) MoveUserToGroup(ctx context.Context, in *SimpleU
 	return out, nil
 }
 
-// Server API for GroupStructure service
+// Server API for UserGroup service
 
-type GroupStructureHandler interface {
+type UserGroupHandler interface {
 	LinkTo(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	Unlink(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	Add(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	Remove(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	Rename(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	AddUserToGroup(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
-	MoveUserToGroup(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
+	AddUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
+	MoveUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
 }
 
-func RegisterGroupStructureHandler(s server.Server, hdlr GroupStructureHandler, opts ...server.HandlerOption) error {
-	type groupStructure interface {
+func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...server.HandlerOption) error {
+	type userGroup interface {
 		LinkTo(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		Unlink(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		Add(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		Remove(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		AddUserToGroup(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
-		MoveUserToGroup(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
+		AddUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
+		MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
 	}
-	type GroupStructure struct {
-		groupStructure
+	type UserGroup struct {
+		userGroup
 	}
-	h := &groupStructureHandler{hdlr}
-	return s.Handle(s.NewHandler(&GroupStructure{h}, opts...))
+	h := &userGroupHandler{hdlr}
+	return s.Handle(s.NewHandler(&UserGroup{h}, opts...))
 }
 
-type groupStructureHandler struct {
-	GroupStructureHandler
+type userGroupHandler struct {
+	UserGroupHandler
 }
 
-func (h *groupStructureHandler) LinkTo(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.LinkTo(ctx, in, out)
+func (h *userGroupHandler) LinkTo(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.LinkTo(ctx, in, out)
 }
 
-func (h *groupStructureHandler) Unlink(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.Unlink(ctx, in, out)
+func (h *userGroupHandler) Unlink(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.Unlink(ctx, in, out)
 }
 
-func (h *groupStructureHandler) Add(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.Add(ctx, in, out)
+func (h *userGroupHandler) Add(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.Add(ctx, in, out)
 }
 
-func (h *groupStructureHandler) Remove(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.Remove(ctx, in, out)
+func (h *userGroupHandler) Remove(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.Remove(ctx, in, out)
 }
 
-func (h *groupStructureHandler) Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.Rename(ctx, in, out)
+func (h *userGroupHandler) Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.Rename(ctx, in, out)
 }
 
-func (h *groupStructureHandler) AddUserToGroup(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.AddUserToGroup(ctx, in, out)
+func (h *userGroupHandler) AddUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.AddUser(ctx, in, out)
 }
 
-func (h *groupStructureHandler) MoveUserToGroup(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
-	return h.GroupStructureHandler.MoveUserToGroup(ctx, in, out)
+func (h *userGroupHandler) MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
+	return h.UserGroupHandler.MoveUser(ctx, in, out)
 }

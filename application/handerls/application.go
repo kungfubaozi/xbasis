@@ -179,7 +179,7 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 	})
 }
 
-func (svc *applicationService) Enabled(context.Context, *gs_service_application.EnabledRequest, *gs_commons_dto.Status) error {
+func (svc *applicationService) Switch(context.Context, *gs_service_application.SwitchRequest, *gs_commons_dto.Status) error {
 	panic("implement me")
 }
 

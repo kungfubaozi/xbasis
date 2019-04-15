@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
 	"github.com/vmihailenco/msgpack"
@@ -19,7 +20,6 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/utils"
 	"konekko.me/gosion/safety/pb"
 	"sync"
 	"time"
@@ -48,8 +48,6 @@ type requestHeaders struct {
 func (svc *verificationService) GetRepo() *functionRepo {
 	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
 }
-
-var openPermission = false
 
 //application verify
 //ip, userDevice blacklist verify
@@ -83,7 +81,6 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				if err != nil {
 					return nil
 				}
-				fmt.Println("entry traceId is:", traceId)
 
 				out.ClientId = auth.ClientId
 				out.TraceId = traceId
@@ -195,11 +192,9 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					ClientId: rh.clientId,
 				})
 				if err != nil {
-					fmt.Println("err")
 					resp(errstate.ErrRequest)
 					return
 				}
-				fmt.Println("app", s.State)
 				resp(s.State)
 				appResp = s
 			}()
@@ -226,15 +221,17 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				defer repo.Close()
 
 				//fmt.Println("function structure id", ccs.FunctionStructureId)
-				a, err := repo.FindApiInCache(appResp.FunctionStructure, rh.path)
+				f, err := repo.SimplifiedLookupApi(appResp.FunctionStructure, rh.path)
 				if err != nil {
 					fmt.Println("invalid api", rh.path)
 					return nil
 				}
 
+				spew.Dump(f)
+
 				//grant platform
-				if a.GrantPlatforms != nil && len(a.GrantPlatforms) > 0 {
-					for _, v := range a.GrantPlatforms {
+				if f.GrantPlatforms != nil && len(f.GrantPlatforms) > 0 {
+					for _, v := range f.GrantPlatforms {
 						if v == appResp.ClientPlatform {
 							return errstate.ErrRequest
 						}
@@ -243,8 +240,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 				dat := &durationAccess{}
 				userId := ""
-				wg.Add(len(a.AuthTypes))
-				for _, v := range a.AuthTypes {
+				wg.Add(len(f.AuthTypes))
+				for _, v := range f.AuthTypes {
 					go func() {
 						defer wg.Done()
 						switch v {
@@ -263,7 +260,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 							key := encrypt.SHA1(string(v) + rh.clientId)
 							dat.Key = key
-							b, err := redis.Bytes(conn.Do("hget", key, a.Api))
+							b, err := redis.Bytes(conn.Do("hget", key, f.Id))
 							if err != nil && err == redis.ErrNil {
 								resp(errstate.ErrRequest)
 								return
@@ -286,73 +283,86 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							//1.check token
-							status, err := svc.extAuthService.Verify(ctx, &gs_ext_service_authentication.VerifyRequest{
-								Token:    rh.authorization,
-								ClientId: rh.clientId,
+
+							fmt.Println("time.now 1-0", (time.Now().UnixNano()-a)/1e6)
+
+							ac := metadata.NewContext(context.Background(), map[string]string{
+								"transport-user-agent":  rh.userAgent,
+								"transport-app-id":      appResp.AppId,
+								"transport-ip":          rh.ip,
+								"transport-client-id":   rh.clientId,
+								"transport-trace-id":    traceId,
+								"transport-user-device": rh.userDevice,
+							})
+
+							fmt.Println("ac")
+
+							status, err := svc.extAuthService.Verify(ac, &gs_ext_service_authentication.VerifyRequest{
+								Token:         rh.authorization,
+								ClientId:      rh.clientId,
+								FunctionRoles: f.Roles,
+								Funcs:         appResp.FunctionStructure,
 							})
 							if err != nil {
 								resp(errstate.ErrSystem)
 								return
 							}
-							if !status.State.Ok {
-								resp(status.State)
-								return
-							}
-							if !openPermission {
-								resp(errstate.Success)
-								return
-							}
-							//2.check user roles
-							//appId.userId
-							var userRoles, functionRoles []interface{}
-							var swg sync.WaitGroup
-							swg.Add(2)
-							urk := permissionutils.GetStructureUserRoleKey(appResp.UserStructure, status.Content)
-							frk := permissionutils.GetStructureFunctionRoleKey(appResp.UserStructure, a.Id)
-							go func() {
-								defer swg.Done()
-								userRoles, err = redis.Values(conn.Do("SMEMBERS", urk))
-							}()
-							go func() {
-								defer swg.Done()
-								functionRoles, err = redis.Values(conn.Do("SMEMBERS", frk))
-							}()
-							swg.Wait()
-							if userRoles != nil && functionRoles != nil && len(userRoles) > 0 && len(functionRoles) > 0 {
-								roles := make(map[string]string)
-								ok := false
-								for _, v := range userRoles {
-									b := string(v.([]byte))
-									roles[b] = "ok"
-								}
-								for _, v := range functionRoles {
-									b := string(v.([]byte))
-									//The current design is to delete the role only by deleting the corresponding data,
-									//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
-									if roles[b] != "ok" {
-										//check role
-										_, err := conn.Do("hget", permissionutils.GetStructureRoleKey(appResp.UserStructure), b)
-										if err != nil && err == redis.ErrNil { //invalid role
-											//possibly due to the removal of roles
-											//remove role
-											conn.Do("srem", urk, b)
-											conn.Do("srem", frk, b)
-											break
-										}
-										ok = true
-									}
-								}
-								if ok {
-									resp(errstate.Success)
-									return
-								} else {
-									resp(errstate.ErrUserPermission)
-									return
-								}
-							} else {
-								resp(errstate.ErrRequest)
-								return
-							}
+
+							resp(status.State)
+							////if !openPermission {
+							////	resp(errstate.Success)
+							////	return
+							////}
+							////2.check user roles
+							//var userRoles []interface{}
+							//
+							//fmt.Println("time.now 1-2", (time.Now().UnixNano()-a)/1e6)
+							//
+							////get user require roles
+							//var userroles map[string]interface{}
+							//ok, err := svc.Client.QueryFirst("gs_user_ort", map[string]interface{}{"link_structure_roles.structure_id": appResp.FunctionStructure, "user_id": status.Content}, &userroles, "link_structure_roles.roles")
+							//if err != nil || !ok {
+							//	fmt.Println(err)
+							//	spew.Dump(userroles)
+							//	resp(errstate.ErrRequest)
+							//	return
+							//}
+							//
+							//fmt.Println("time.now 1-3", (time.Now().UnixNano()-a)/1e6)
+							//
+							//userRoles = userroles["link_structure_roles"].([]interface{})[0].(map[string]interface{})["roles"].([]interface{})
+							//
+							//fmt.Println("time.now 1-4", (time.Now().UnixNano()-a)/1e6)
+							//
+							////appId.userId
+							//if userRoles != nil && f.Roles != nil && len(userRoles) > 0 && len(f.Roles) > 0 {
+							//	fmt.Println("entry check roles")
+							//	roles := make(map[string]string)
+							//	ok := false
+							//	for _, v := range userRoles {
+							//		b := v.(string)
+							//		roles[b] = "ok"
+							//	}
+							//	for _, v := range f.Roles {
+							//		//The current design is to delete the role only by deleting the corresponding data,
+							//		//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
+							//		if roles[v] == "ok" {
+							//			//check role
+							//			ok = true
+							//			break
+							//		}
+							//	}
+							//	if ok {
+							//		resp(errstate.Success)
+							//		return
+							//	} else {
+							//		resp(errstate.ErrUserPermission)
+							//		return
+							//	}
+							//} else {
+							//	resp(errstate.ErrUserPermission)
+							//	return
+							//}
 							break
 						case gs_commons_constants.AuthTypeOfFace:
 							break
@@ -389,6 +399,10 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 					userId = rh.ip
 				}
 				out.User = userId
+
+				spew.Dump(out)
+
+				fmt.Println("check process success.")
 
 				return errstate.Success
 			}

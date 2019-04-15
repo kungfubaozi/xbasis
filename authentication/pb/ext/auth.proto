@@ -14,5 +14,6 @@ service Auth {
 message VerifyRequest {
     string token = 1;
     string clientId = 2;
+    repeated string functionRoles = 3;
+    string funcs = 4;
 }
-

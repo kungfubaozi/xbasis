@@ -167,22 +167,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//
-	//v, _, err := c.Get(gs_commons_constants.GosionConfiguration)
-	//if err != nil {
-	//	fmt.Println("err", err)
-	//} else {
-	//	if v != nil {
-	//		var config gs_commons_config.GosionConfiguration
-	//		err := msgpack.Unmarshal(b, &config)
-	//		if err != nil {
-	//			panic(err)
-	//		}
-	//		fmt.Println("init config ok", config)
-	//	} else {
-	//		fmt.Println("nothing")
-	//	}
-	//}
 
 }
 

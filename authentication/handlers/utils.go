@@ -69,7 +69,7 @@ func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, us
 			fmt.Println("key", key)
 			if key[0:i] == clientId {
 				fmt.Println("check", clientId)
-				go offlineTarget(connectioncli, repo, userId, key, clientId)
+				offlineTarget(connectioncli, repo, userId, key, clientId)
 			}
 		}
 	}

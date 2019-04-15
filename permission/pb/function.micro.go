@@ -71,7 +71,7 @@ func NewFunctionService(name string, c client.Client) FunctionService {
 }
 
 func (c *functionService) Add(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Function.add", in)
+	req := c.c.NewRequest(c.name, "Function.Add", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *functionService) Add(ctx context.Context, in *FunctionRequest, opts ...
 }
 
 func (c *functionService) Rename(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Function.rename", in)
+	req := c.c.NewRequest(c.name, "Function.Rename", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -91,7 +91,7 @@ func (c *functionService) Rename(ctx context.Context, in *FunctionRequest, opts 
 }
 
 func (c *functionService) Move(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Function.move", in)
+	req := c.c.NewRequest(c.name, "Function.Move", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -101,7 +101,7 @@ func (c *functionService) Move(ctx context.Context, in *FunctionRequest, opts ..
 }
 
 func (c *functionService) AddGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Function.addGroup", in)
+	req := c.c.NewRequest(c.name, "Function.AddGroup", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -111,7 +111,7 @@ func (c *functionService) AddGroup(ctx context.Context, in *FunctionGroupRequest
 }
 
 func (c *functionService) MoveGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Function.moveGroup", in)
+	req := c.c.NewRequest(c.name, "Function.MoveGroup", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -121,7 +121,7 @@ func (c *functionService) MoveGroup(ctx context.Context, in *FunctionGroupReques
 }
 
 func (c *functionService) RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Function.renameGroup", in)
+	req := c.c.NewRequest(c.name, "Function.RenameGroup", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

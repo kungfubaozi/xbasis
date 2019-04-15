@@ -67,7 +67,7 @@ func NewRoleService(name string, c client.Client) RoleService {
 }
 
 func (c *roleService) Add(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Role.add", in)
+	req := c.c.NewRequest(c.name, "Role.Add", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -77,7 +77,7 @@ func (c *roleService) Add(ctx context.Context, in *RoleRequest, opts ...client.C
 }
 
 func (c *roleService) Remove(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Role.remove", in)
+	req := c.c.NewRequest(c.name, "Role.Remove", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *roleService) Remove(ctx context.Context, in *RoleRequest, opts ...clien
 }
 
 func (c *roleService) Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Role.rename", in)
+	req := c.c.NewRequest(c.name, "Role.Rename", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

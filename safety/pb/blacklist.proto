@@ -6,9 +6,9 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Blacklist {
 
-    rpc AddBlacklist (AddRequest) returns (gs.commons.dto.Status);
+    rpc Add (AddRequest) returns (gs.commons.dto.Status);
 
-    rpc RemoveBlacklist (RemoveBlacklistRequest) returns (gs.commons.dto.Status);
+    rpc Remove (RemoveRequest) returns (gs.commons.dto.Status);
 
     rpc Check(CheckRequest) returns (gs.commons.dto.Status);
 }
@@ -18,7 +18,7 @@ message CheckRequest {
     string content = 2;
 }
 
-message RemoveBlacklistRequest {
+message RemoveRequest {
     string id = 1;
 }
 

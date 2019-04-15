@@ -6,9 +6,9 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Locking {
 
-    rpc lock (LockRequest) returns (gs.commons.dto.Status);
+    rpc Lock (LockRequest) returns (gs.commons.dto.Status);
 
-    rpc unlock (UnlockRequest) returns (gs.commons.dto.Status);
+    rpc Unlock (UnlockRequest) returns (gs.commons.dto.Status);
 
 }
 

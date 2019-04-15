@@ -62,7 +62,7 @@ func StartService() {
 
 		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session))
 
-		gs_service_permission.RegisterGroupStructureHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
+		gs_service_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
 
 		gs_service_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool))
 

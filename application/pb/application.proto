@@ -19,11 +19,11 @@ service Application {
 
     rpc List (FindRequest) returns (ListResponse);
 
-    rpc Enabled (EnabledRequest) returns (gs.commons.dto.Status);
+    rpc Switch (SwitchRequest) returns (gs.commons.dto.Status);
 
 }
 
-message EnabledRequest {
+message SwitchRequest {
     string appId = 1;
     bool enabled = 2;
 }

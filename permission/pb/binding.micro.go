@@ -68,7 +68,7 @@ func NewBindingService(name string, c client.Client) BindingService {
 }
 
 func (c *bindingService) UserRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Binding.userRole", in)
+	req := c.c.NewRequest(c.name, "Binding.UserRole", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -78,7 +78,7 @@ func (c *bindingService) UserRole(ctx context.Context, in *BindingRoleRequest, o
 }
 
 func (c *bindingService) FunctionRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Binding.functionRole", in)
+	req := c.c.NewRequest(c.name, "Binding.FunctionRole", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -88,7 +88,7 @@ func (c *bindingService) FunctionRole(ctx context.Context, in *BindingRoleReques
 }
 
 func (c *bindingService) UnbindUserRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Binding.unbindUserRole", in)
+	req := c.c.NewRequest(c.name, "Binding.UnbindUserRole", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *bindingService) UnbindUserRole(ctx context.Context, in *BindingRoleRequ
 }
 
 func (c *bindingService) UnbindFunctionRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Binding.unbindFunctionRole", in)
+	req := c.c.NewRequest(c.name, "Binding.UnbindFunctionRole", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

@@ -9,7 +9,7 @@ It is generated from these files:
 
 It has these top-level messages:
 	CheckRequest
-	RemoveBlacklistRequest
+	RemoveRequest
 	AddRequest
 */
 package gs_service_safety
@@ -45,8 +45,8 @@ var _ server.Option
 // Client API for Blacklist service
 
 type BlacklistService interface {
-	AddBlacklist(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
@@ -68,8 +68,8 @@ func NewBlacklistService(name string, c client.Client) BlacklistService {
 	}
 }
 
-func (c *blacklistService) AddBlacklist(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Blacklist.AddBlacklist", in)
+func (c *blacklistService) Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Blacklist.Add", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -78,8 +78,8 @@ func (c *blacklistService) AddBlacklist(ctx context.Context, in *AddRequest, opt
 	return out, nil
 }
 
-func (c *blacklistService) RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Blacklist.RemoveBlacklist", in)
+func (c *blacklistService) Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Blacklist.Remove", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -101,15 +101,15 @@ func (c *blacklistService) Check(ctx context.Context, in *CheckRequest, opts ...
 // Server API for Blacklist service
 
 type BlacklistHandler interface {
-	AddBlacklist(context.Context, *AddRequest, *gs_commons_dto.Status) error
-	RemoveBlacklist(context.Context, *RemoveBlacklistRequest, *gs_commons_dto.Status) error
+	Add(context.Context, *AddRequest, *gs_commons_dto.Status) error
+	Remove(context.Context, *RemoveRequest, *gs_commons_dto.Status) error
 	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterBlacklistHandler(s server.Server, hdlr BlacklistHandler, opts ...server.HandlerOption) error {
 	type blacklist interface {
-		AddBlacklist(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error
-		RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, out *gs_commons_dto.Status) error
+		Add(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error
+		Remove(ctx context.Context, in *RemoveRequest, out *gs_commons_dto.Status) error
 		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
 	}
 	type Blacklist struct {
@@ -123,12 +123,12 @@ type blacklistHandler struct {
 	BlacklistHandler
 }
 
-func (h *blacklistHandler) AddBlacklist(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error {
-	return h.BlacklistHandler.AddBlacklist(ctx, in, out)
+func (h *blacklistHandler) Add(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error {
+	return h.BlacklistHandler.Add(ctx, in, out)
 }
 
-func (h *blacklistHandler) RemoveBlacklist(ctx context.Context, in *RemoveBlacklistRequest, out *gs_commons_dto.Status) error {
-	return h.BlacklistHandler.RemoveBlacklist(ctx, in, out)
+func (h *blacklistHandler) Remove(ctx context.Context, in *RemoveRequest, out *gs_commons_dto.Status) error {
+	return h.BlacklistHandler.Remove(ctx, in, out)
 }
 
 func (h *blacklistHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {

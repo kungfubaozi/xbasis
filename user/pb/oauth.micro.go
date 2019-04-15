@@ -45,9 +45,7 @@ var _ server.Option
 // Client API for OAuth service
 
 type OAuthService interface {
-	LoginWithWechat(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error)
-	LoginWithQQ(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error)
-	LoginWithDingTalk(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error)
+	Login(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error)
 	BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
@@ -69,28 +67,8 @@ func NewOAuthService(name string, c client.Client) OAuthService {
 	}
 }
 
-func (c *oAuthService) LoginWithWechat(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error) {
-	req := c.c.NewRequest(c.name, "OAuth.LoginWithWechat", in)
-	out := new(OAuthLoginResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *oAuthService) LoginWithQQ(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error) {
-	req := c.c.NewRequest(c.name, "OAuth.LoginWithQQ", in)
-	out := new(OAuthLoginResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *oAuthService) LoginWithDingTalk(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error) {
-	req := c.c.NewRequest(c.name, "OAuth.LoginWithDingTalk", in)
+func (c *oAuthService) Login(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error) {
+	req := c.c.NewRequest(c.name, "OAuth.Login", in)
 	out := new(OAuthLoginResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -112,17 +90,13 @@ func (c *oAuthService) BindOAuth(ctx context.Context, in *BindOAuthRequest, opts
 // Server API for OAuth service
 
 type OAuthHandler interface {
-	LoginWithWechat(context.Context, *OAuthLoginRequest, *OAuthLoginResponse) error
-	LoginWithQQ(context.Context, *OAuthLoginRequest, *OAuthLoginResponse) error
-	LoginWithDingTalk(context.Context, *OAuthLoginRequest, *OAuthLoginResponse) error
+	Login(context.Context, *OAuthLoginRequest, *OAuthLoginResponse) error
 	BindOAuth(context.Context, *BindOAuthRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterOAuthHandler(s server.Server, hdlr OAuthHandler, opts ...server.HandlerOption) error {
 	type oAuth interface {
-		LoginWithWechat(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error
-		LoginWithQQ(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error
-		LoginWithDingTalk(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error
+		Login(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error
 		BindOAuth(ctx context.Context, in *BindOAuthRequest, out *gs_commons_dto.Status) error
 	}
 	type OAuth struct {
@@ -136,16 +110,8 @@ type oAuthHandler struct {
 	OAuthHandler
 }
 
-func (h *oAuthHandler) LoginWithWechat(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error {
-	return h.OAuthHandler.LoginWithWechat(ctx, in, out)
-}
-
-func (h *oAuthHandler) LoginWithQQ(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error {
-	return h.OAuthHandler.LoginWithQQ(ctx, in, out)
-}
-
-func (h *oAuthHandler) LoginWithDingTalk(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error {
-	return h.OAuthHandler.LoginWithDingTalk(ctx, in, out)
+func (h *oAuthHandler) Login(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error {
+	return h.OAuthHandler.Login(ctx, in, out)
 }
 
 func (h *oAuthHandler) BindOAuth(ctx context.Context, in *BindOAuthRequest, out *gs_commons_dto.Status) error {

@@ -5,7 +5,7 @@ const (
 	MessageService        = "gs.svc.message"
 	ConnectionService     = "gs.svc.connection"
 	UserService           = "gs.svc.user"
-	ApplicationService    = "gs.svc.application"
+	ApplicationService    = "gs.svc.apps"
 	SafetyService         = "gs.svc.safety"
 	AuthenticationService = "gs.svc.authentication"
 )

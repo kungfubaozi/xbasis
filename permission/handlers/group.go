@@ -70,13 +70,13 @@ func (svc *groupService) Rename(ctx context.Context, in *gs_service_permission.S
 }
 
 //User cannot be in the same group under the same application
-func (svc *groupService) AddUserToGroup(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
+func (svc *groupService) AddUser(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *groupService) MoveUserToGroup(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
+func (svc *groupService) MoveUser(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
@@ -89,6 +89,6 @@ func (svc *groupService) Remove(ctx context.Context, in *gs_service_permission.S
 	})
 }
 
-func NewGroupService(pool *redis.Pool, session *mgo.Session) gs_service_permission.GroupStructureHandler {
+func NewGroupService(pool *redis.Pool, session *mgo.Session) gs_service_permission.UserGroupHandler {
 	return &groupService{pool: pool, session: session}
 }

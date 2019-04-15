@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
-	"konekko.me/gosion/permission/utils"
 )
 
 type blacklist struct {
@@ -51,15 +52,17 @@ func main() {
 	//}
 
 	ab := elastic.NewBoolQuery()
-	ab.Must(elastic.NewTermQuery("app_id", "5a6d5a6d5979"), elastic.NewTermQuery("opening", true),
-		elastic.NewTermsQuery("type", permissionutils.TypeFunctionStructure, permissionutils.TypeUserStructure))
-	s := elastic.NewConstantScoreQuery(ab)
+	ab.Must(elastic.NewTermQuery("app_id", "5268597a5534"))
 
-	r, err := client.Search("gs_permission_structure").Type("v").Query(s).StoredField("id").Do(context.Background())
+	r, err := client.Search("gs_structures").Type("v").Query(ab).FetchSourceContext(elastic.NewFetchSourceContext(true).Include("id")).Do(context.Background())
 	if err == nil && r.Hits.TotalHits == 2 {
-
-		fmt.Println("1", r.Hits.Hits[0].Fields["id"])
-		fmt.Println("2", r.Hits.Hits[1])
+		var m map[string]interface{}
+		err := json.Unmarshal(*r.Hits.Hits[0].Source, &m)
+		if err != nil {
+			panic(err)
+		}
+		spew.Dump(m)
+		fmt.Println("id", m["id"])
 	} else {
 		fmt.Println(err)
 	}

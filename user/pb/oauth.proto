@@ -6,11 +6,7 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service OAuth {
 
-    rpc LoginWithWechat (OAuthLoginRequest) returns (OAuthLoginResponse);
-
-    rpc LoginWithQQ (OAuthLoginRequest) returns (OAuthLoginResponse);
-
-    rpc LoginWithDingTalk (OAuthLoginRequest) returns (OAuthLoginResponse);
+    rpc Login (OAuthLoginRequest) returns (OAuthLoginResponse);
 
     rpc bindOAuth (BindOAuthRequest) returns (gs.commons.dto.Status);
 }

@@ -67,7 +67,7 @@ func NewLockingService(name string, c client.Client) LockingService {
 }
 
 func (c *lockingService) Lock(ctx context.Context, in *LockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Locking.lock", in)
+	req := c.c.NewRequest(c.name, "Locking.Lock", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -77,7 +77,7 @@ func (c *lockingService) Lock(ctx context.Context, in *LockRequest, opts ...clie
 }
 
 func (c *lockingService) Unlock(ctx context.Context, in *UnlockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Locking.unlock", in)
+	req := c.c.NewRequest(c.name, "Locking.Unlock", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

@@ -6,13 +6,13 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Binding {
 
-    rpc userRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc UserRole (BindingRoleRequest) returns (gs.commons.dto.Status);
 
-    rpc functionRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc FunctionRole (BindingRoleRequest) returns (gs.commons.dto.Status);
 
-    rpc unbindUserRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc UnbindUserRole (BindingRoleRequest) returns (gs.commons.dto.Status);
 
-    rpc unbindFunctionRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc UnbindFunctionRole (BindingRoleRequest) returns (gs.commons.dto.Status);
 }
 
 message BindingRoleRequest {

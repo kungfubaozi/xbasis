@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Message {
+
+    rpc SendMessage (SendRequest) returns (gs.commons.dto.Status);
+
+}
+
+message SendRequest {
+    string to = 1;
+    int64 type = 2;
+    string code = 3;
+    int64 messageType = 4;
+}

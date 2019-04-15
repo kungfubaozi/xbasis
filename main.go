@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"reflect"
@@ -176,7 +177,14 @@ func main() {
 	//	}
 	//}
 
-	fmt.Println(4 << 6)
+	//fmt.Println(4 << 6)
+
+	fmt.Println("valCode", gs_commons_constants.AuthTypeOfValcode)
+	fmt.Println("miniCode", gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm)
+	fmt.Println("miniUser", gs_commons_constants.AuthTypeOfMiniProgramUserConfirm)
+	fmt.Println("mobile", gs_commons_constants.AuthTypeOfMobileConfirm)
+	fmt.Println("face", gs_commons_constants.AuthTypeOfFace)
+	fmt.Println("token", gs_commons_constants.AuthTypeOfToken)
 
 }
 

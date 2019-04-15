@@ -41,16 +41,7 @@ type structure struct {
 	Type         int64  `bson:"type" json:"type"` //user or function structure
 }
 
-type structureState struct {
-	AppId             string `json:"app_id"`
-	FunctionStructure string `json:"function_structure"`
-	UserStructure     string `json:"user_structure"`
-	LastUpdateAt      int64  `json:"last_update_at"`
-	LastUpdateBy      string `json:"last_update_by"`
-}
-
 type userOrientate struct {
-	Id                  string                `bson:"_id" json:"id"`
 	CreateAt            int64                 `bson:"create_at" json:"create_at"`
 	UserId              string                `bson:"user_id" json:"user_id"`
 	LinkStructureRoles  []*linkStructureRole  `bson:"link_structure_roles" json:"link_structure_roles"`
@@ -97,7 +88,7 @@ type functionGroup struct {
 type function struct {
 	Id           string  `bson:"_id" json:"id"`
 	SID          string  `bson:"sid" json:"sid"`
-	Name         string  `bson:"name" json:"name"`
+	Name         string  `bson:"name" json:"name" es:"not_analyzed"`
 	Api          string  `bson:"api" json:"api"`
 	Type         int64   `bson:"type" json:"type"`
 	CreateUserId string  `bson:"create_user_id" json:"create_user_id"`
@@ -106,6 +97,15 @@ type function struct {
 	StructureId  string  `bson:"structure_id" json:"structure_id"`
 	AuthTypes    []int64 `bson:"auth_types" json:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenLife   int64   `bson:"val_token_life" json:"val_token_life"` //def: 0 second (your value must >= 60s)
-	GrantPlatforms []int64 `bson:"grant_platforms" json:"grant_platforms"`
+	ValTokenLife   int64    `bson:"val_token_life" json:"val_token_life"` //def: 0 second (your value must >= 60s)
+	GrantPlatforms []int64  `bson:"grant_platforms" json:"grant_platforms"`
+	Roles          []string `json:"roles" bson:"roles"`
+}
+
+type simplifiedFunction struct {
+	Id             string   `json:"id"`
+	AuthTypes      []int64  `json:"auth_types"`
+	ValTokenLife   int64    `json:"val_token_life"` //def: 0 second (your value must >= 60s)
+	GrantPlatforms []int64  `json:"grant_platforms"`
+	Roles          []string `json:"roles" bson:"roles"`
 }

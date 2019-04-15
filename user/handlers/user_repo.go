@@ -47,7 +47,7 @@ func (repo *userRepo) FindIndexTable(key string, content string) (string, error)
 	content = repo.index(content)
 	userIndex := &userModelIndex{}
 
-	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{"key": content}, &userIndex)
+	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content}, &userIndex)
 	if err != nil {
 		return "", nil
 	}

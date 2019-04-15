@@ -2,7 +2,6 @@ package authenticationhandlers
 
 import (
 	"context"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/authentication/pb/ext"
@@ -37,10 +36,6 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 
 		configuration := serviceconfiguration.Get()
 
-		fmt.Println("size check", auth)
-		fmt.Println("clientId", auth.ClientId)
-
-		fmt.Println("entry data", in.Auth)
 		//line check
 		if s := sizeCheck(svc.connectioncli, repo, in.Auth.UserId, in.Auth.ClientId); !s.Ok {
 			return s
@@ -73,6 +68,8 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			UserId:    in.Auth.UserId,
 			Device:    in.Auth.Device,
 			UserAgent: in.Auth.UserAgent,
+			ClientId:  in.Auth.ClientId,
+			Ip:        in.Auth.Ip,
 		}
 
 		b, err := msgpack.Marshal(ui)
@@ -80,15 +77,10 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			return errstate.ErrSystem
 		}
 
-		fmt.Println("break", in.Auth.ClientId)
-
 		err = repo.Add(in.Auth.UserId, in.Auth.ClientId, relationId, b)
 		if err != nil {
-			fmt.Println("err", err)
 			return errstate.ErrSystem
 		}
-
-		fmt.Println("added")
 
 		refreshToken, err := encodeToken(configuration.TokenSecretKey, time.Hour*24*7, refresh)
 		if err != nil {

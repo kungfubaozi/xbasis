@@ -7,11 +7,11 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 //角色
 service Role {
 
-    rpc add(RoleRequest) returns (gs.commons.dto.Status);
+    rpc Add(RoleRequest) returns (gs.commons.dto.Status);
 
-    rpc remove(RoleRequest) returns (gs.commons.dto.Status);
+    rpc Remove(RoleRequest) returns (gs.commons.dto.Status);
 
-    rpc rename(RoleRequest) returns (gs.commons.dto.Status);
+    rpc Rename(RoleRequest) returns (gs.commons.dto.Status);
 
 }
 

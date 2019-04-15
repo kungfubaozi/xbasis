@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/application/pb"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
@@ -14,19 +15,20 @@ import (
 )
 
 type structureService struct {
-	session *mgo.Session
+	session            *mgo.Session
+	applicationService gs_service_application.ApplicationService
 	*indexutils.Client
 }
 
 func (svc *structureService) CreateUserStructure(ctx context.Context, in *gs_service_permission.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return svc.Create(in.Name, auth.User, in.AppId, permissionutils.TypeUserStructure)
+		return svc.Create(ctx, in.Name, auth.User, in.AppId, permissionutils.TypeUserStructure)
 	})
 }
 
 func (svc *structureService) CreateFunctionStructure(ctx context.Context, in *gs_service_permission.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return svc.Create(in.Name, auth.User, in.AppId, permissionutils.TypeFunctionStructure)
+		return svc.Create(ctx, in.Name, auth.User, in.AppId, permissionutils.TypeFunctionStructure)
 	})
 }
 
@@ -34,7 +36,7 @@ func (svc *structureService) GetRepo() *structureRepo {
 	return &structureRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
-func (svc *structureService) Create(name, user, appId string, t int64) *gs_commons_dto.State {
+func (svc *structureService) Create(ctx context.Context, name, user, appId string, t int64) *gs_commons_dto.State {
 	if len(name) == 0 {
 		return nil
 	}

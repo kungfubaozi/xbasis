@@ -5,21 +5,21 @@ package gs.service.permission;
 import "konekko.me/gosion/commons/dto/commons.proto";
 
 //组结构
-service GroupStructure {
+service UserGroup {
 
-    rpc linkTo (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc LinkTo (SimpleGroup) returns (gs.commons.dto.Status);
 
-    rpc unlink (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Unlink (SimpleGroup) returns (gs.commons.dto.Status);
 
-    rpc add (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Add (SimpleGroup) returns (gs.commons.dto.Status);
 
-    rpc remove (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Remove (SimpleGroup) returns (gs.commons.dto.Status);
 
-    rpc rename (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Rename (SimpleGroup) returns (gs.commons.dto.Status);
 
-    rpc addUserToGroup (SimpleUserNode) returns (gs.commons.dto.Status);
+    rpc AddUser (SimpleUserNode) returns (gs.commons.dto.Status);
 
-    rpc moveUserToGroup (SimpleUserNode) returns (gs.commons.dto.Status);
+    rpc MoveUser (SimpleUserNode) returns (gs.commons.dto.Status);
 
 }
 

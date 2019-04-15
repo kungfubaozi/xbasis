@@ -7,17 +7,17 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 //功能
 service Function {
 
-    rpc add (FunctionRequest) returns (gs.commons.dto.Status);
+    rpc Add (FunctionRequest) returns (gs.commons.dto.Status);
 
-    rpc rename (FunctionRequest) returns (gs.commons.dto.Status);
+    rpc Rename (FunctionRequest) returns (gs.commons.dto.Status);
 
-    rpc move (FunctionRequest) returns (gs.commons.dto.Status);
+    rpc Move (FunctionRequest) returns (gs.commons.dto.Status);
 
-    rpc addGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+    rpc AddGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
 
-    rpc moveGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+    rpc MoveGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
 
-    rpc renameGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+    rpc RenameGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
 
 
 }

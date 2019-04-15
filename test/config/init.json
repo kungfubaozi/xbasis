@@ -1,0 +1,521 @@
+{
+  "version": 1.0,
+  "desc": "main structure functions",
+  "roles": [
+    "Administrator",
+    "AppManage"
+  ],
+  "api": [
+    {
+      "group_name": "User",
+      "prefix": "/user",
+      "functions": [
+        {
+          "api": "/login/withAccount",
+          "name": "LoginWithAccount"
+        },
+        {
+          "api": "/login/withValidateCode",
+          "name": "LoginWithValidateCode",
+          "auth_type": [
+            352
+          ]
+        },
+        {
+          "api": "/login/withQRCode",
+          "name": "LoginWithQRCode"
+        },
+        {
+          "api": "/register/new",
+          "name": "Register",
+          "auth_type": [
+            352
+          ]
+        },
+        {
+          "api": "/update/username",
+          "name": "UpdateUsername",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/realName",
+          "name": "UpdateRealName",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/phone",
+          "name": "UpdatePhone",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/userIcon",
+          "name": "UpdateIcon",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/email",
+          "name": "UpdateEmail",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/password",
+          "name": "UpdatePassword",
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/oauth/bindOAuth",
+          "name": "BindOAuth",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/user/oauth/login",
+          "name": "OAuthLogin",
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/invite/user",
+          "name": "InviteUser",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/grant/yes",
+          "name": "AuthorizationConfirmation",
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "Permission",
+      "prefix": "/permission",
+      "functions": [
+        {
+          "api": "/binding/userRole",
+          "name": "BindUserRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/binding/functionRole",
+          "name": "BindFunctionRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/binding/unbindFunctionRole",
+          "name": "UnbindFunctionRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/binding/unbindUserRole",
+          "name": "UnbindUserRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/add",
+          "name": "AddFunction",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/rename",
+          "name": "RenameFunction",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/move",
+          "name": "MoveFunction",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/addGroup",
+          "name": "AddFunctionGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/moveGroup",
+          "name": "MoveFunctionGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/RenameGroup",
+          "name": "RenameFunctionGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/linkTo",
+          "name": "LinkToUserGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/unlink",
+          "name": "UnlinkUserGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/add",
+          "name": "AddUserGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/remove",
+          "name": "RemoveUserGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/addUser",
+          "name": "AddUserToGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/moveUser",
+          "name": "MoveUserFromGroup",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/structure/createUserStructure",
+          "name": "CreateUserStructure",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/structure/createFunctionStructure",
+          "name": "CreateFunctionStructure",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/structure/getList",
+          "name": "GetStructureList",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "Authentication",
+      "prefix": "/authentication",
+      "functions": [
+        {
+          "api": "/router/push",
+          "name": "AppPush",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/router/refresh",
+          "name": "TokenRefresh",
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/router/logout",
+          "name": "Logout",
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "Safety",
+      "prefix": "/safety",
+      "functions": [
+        {
+          "api": "/blacklist/add",
+          "name": "AddBlacklist",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/blacklist/remove",
+          "name": "RemoveBlacklist",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/blacklist/check",
+          "name": "CheckBlacklist",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/locking/lock",
+          "name": "LockUser",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/locking/unlock",
+          "name": "LockUser",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/frozen/request",
+          "name": "Frozen",
+          "auth_type": [
+            352
+          ]
+        },
+        {
+          "api": "/frozen/unblock",
+          "name": "Unblock",
+          "auth_type": [
+            352
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "Application",
+      "prefix": "/apps",
+      "functions": [
+        {
+          "api": "/application/enabledClient",
+          "name": "EnabledClient",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/application/create",
+          "name": "CreateApp",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/application/remove",
+          "name": "RemoveApp",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/application/changeName",
+          "name": "ChangeName",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/application/findByAppId",
+          "name": "FindByAppId",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/application/findByClientId",
+          "name": "FindByClientId",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/application/list",
+          "name": "List",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/application/switch",
+          "name": "Switch",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632,
+            352
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -46,7 +46,7 @@ type userPersonInfo struct {
 }
 
 type userModel struct {
-	Id         string         `bson:"id"`
+	Id         string         `bson:"_id"`
 	SID        string         `bson:"sid"`
 	CreateAt   int64          `bson:"create_at"`
 	Account    string         `bson:"account"`

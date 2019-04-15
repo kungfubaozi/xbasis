@@ -60,14 +60,14 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				return eiup()
 			}
 
-			fmt.Println("ok", info.Id)
-
-			if len(info.Id) > 0 {
+			if len(info.Id) == 0 {
 				return nil
 			}
 
 			if info != nil && len(info.Id) > 0 {
 				//check state
+
+				fmt.Println("entry")
 
 				s, err := svc.securityService.Get(ctx, &gs_ext_service_safety.GetRequest{
 					UserId: info.Id,

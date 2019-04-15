@@ -19,6 +19,7 @@ func (cli *Client) GetElasticClient() *elastic.Client {
 
 func (cli *Client) AddData(index string, v interface{}) (string, error) {
 	s, err := cli.client.Index().Index(index).Type("v").BodyJson(v).Do(context.Background())
+
 	if err != nil {
 		return "", err
 	}
@@ -28,8 +29,8 @@ func (cli *Client) AddData(index string, v interface{}) (string, error) {
 	return "", nil
 }
 
-func (cli *Client) QueryFirst(index string, kvs map[string]interface{}, result interface{}) (bool, error) {
-	ok, v, err := cli._queryFirst(index, kvs)
+func (cli *Client) QueryFirst(index string, kvs map[string]interface{}, result interface{}, includes ...string) (bool, error) {
+	ok, v, err := cli._queryFirst(index, kvs, includes...)
 	if err != nil {
 		return false, err
 	}
@@ -44,7 +45,7 @@ func (cli *Client) QueryFirst(index string, kvs map[string]interface{}, result i
 }
 
 func (cli *Client) Delete(index string, kvs map[string]interface{}) (bool, error) {
-	ok, v, err := cli._queryFirst(index, kvs)
+	ok, v, err := cli._queryFirst(index, kvs, nil...)
 	if err != nil {
 		return false, err
 	}
@@ -60,11 +61,33 @@ func (cli *Client) Delete(index string, kvs map[string]interface{}) (bool, error
 	return false, nil
 }
 
-func (cli *Client) _queryFirst(index string, kvs map[string]interface{}) (bool, []*elastic.SearchHit, error) {
-	v, err := cli.client.Search(index).Type("v").Query(cli._buildQuery(kvs)).Do(context.Background())
+func (cli *Client) _queryFirst(index string, kvs map[string]interface{}, includes ...string) (bool, []*elastic.SearchHit, error) {
+
+	query := cli._buildQuery(kvs)
+
+	e := cli.client.Search(index).Type("v").Query(query)
+	if includes != nil && len(includes) > 0 {
+		e.FetchSourceContext(elastic.NewFetchSourceContext(true).Include(includes...))
+	}
+	//src, err := query.Source()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//data, err := json.MarshalIndent(src, "", "  ")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println("query", string(data))
+
+	v, err := e.Do(context.Background())
 	if err != nil {
 		return false, nil, err
 	}
+
+	//fmt.Println("hits", v.Hits.TotalHits)
+	//
+	//spew.Dump(v.Hits)
+
 	if v.Hits.TotalHits > 0 {
 		return true, v.Hits.Hits, nil
 	}
@@ -93,7 +116,7 @@ func (cli *Client) Count(index string, kvs map[string]interface{}) (int64, error
 func (cli *Client) _buildQuery(kvs map[string]interface{}) elastic.Query {
 	b := elastic.NewBoolQuery()
 	for k, v := range kvs {
-		b.Must(elastic.NewMatchQuery(k, v))
+		b.Must(elastic.NewMatchPhraseQuery(k, v))
 	}
 	return b
 }

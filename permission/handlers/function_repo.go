@@ -73,6 +73,19 @@ func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, er
 	return nil, errors.New("not found")
 }
 
+func (repo *functionRepo) SimplifiedLookupApi(structureId, api string) (*simplifiedFunction, error) {
+	var sf simplifiedFunction
+
+	ok, err := repo.QueryFirst("gs_functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf, "id", "roles", "auth_types", "grant_platforms")
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		return &sf, nil
+	}
+	return nil, indexutils.ErrNotFound
+}
+
 func (repo *functionRepo) groupCollection() *mgo.Collection {
 	return repo.session.DB(dbName).C(functionGroupCollection)
 }

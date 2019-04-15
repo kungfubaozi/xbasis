@@ -4,11 +4,10 @@ package gs.service.user;
 
 import "konekko.me/gosion/commons/dto/commons.proto";
 
-service ApplicationGrant {
+service Grant {
 
-    rpc grant (GrantRequest) returns (gs.commons.dto.Status);
+    rpc Yes (GrantRequest) returns (gs.commons.dto.Status);
 
-    rpc status (StatusRequest) returns (gs.commons.dto.Status);
 }
 
 message StatusRequest {
