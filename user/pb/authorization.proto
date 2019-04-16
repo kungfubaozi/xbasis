@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package gs.service.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Authorization {
+
+    rpc Sync (SyncRequest) returns (gs.commons.dto.Status);
+
+}
+
+message SyncRequest {
+
+}

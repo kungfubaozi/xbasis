@@ -1,7 +1,10 @@
 package authenticationsvc
 
 import (
+	"konekko.me/gosion/application/client"
+	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/authentication/handlers"
+	"konekko.me/gosion/authentication/pb"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
@@ -49,6 +52,16 @@ func StartService() {
 
 		errc <- s.Run()
 
+	}()
+
+	go func() {
+		s := microservice.NewService(gs_commons_constants.AuthenticationService, true)
+		s.Init()
+
+		gs_service_authentication.RegisterRouterHandler(s.Server(), authenticationhandlers.NewRouteService(client, pool, applicationclient.NewStatusClient(s.Client()),
+			applicationclient.NewSyncClient(s.Client()), authenticationcli.NewTokenClient(s.Client()), conn))
+
+		errc <- s.Run()
 	}()
 
 	if err := <-errc; err != nil {

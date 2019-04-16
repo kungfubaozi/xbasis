@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"konekko.me/gosion/application/pb/ext"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
@@ -32,16 +33,23 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 
 		for _, v := range a.Clients {
 			if v.Id == in.ClientId {
+
+				if v.Platform == gs_commons_constants.PlatformOfWeb {
+					if in.Redirect == a.Settings.RedirectURL {
+						out.CanRedirect = true
+					}
+				}
+
 				out.State = errstate.Success
 				out.ClientPlatform = v.Platform
 				out.ClientEnabled = v.Enabled
 				out.AppId = a.Id
-				out.AppOpenMode = a.Settings.OpenMode
 				out.AppQuarantine = a.Settings.Quarantine
 				out.UserStructure = a.UserS.Id
 				out.FunctionStructure = a.FunctionS.Id
 				out.Mustsync = a.Settings.MustSync
 				out.Main = a.Main == 101
+
 				return nil
 			}
 		}

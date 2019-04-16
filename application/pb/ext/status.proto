@@ -12,17 +12,18 @@ service ApplicationStatus {
 
 message GetAppClientStatusRequest {
     string clientId = 1;
+    string redirect = 2;
 }
 
 message GetAppClientStatusResponse {
     gs.commons.dto.State state = 1;
     string appId = 2;
-    int64 appOpenMode = 3;
-    int64 appQuarantine = 4;
-    int64 clientPlatform = 5;
-    int64 clientEnabled = 6;
-    string userStructure = 7;
-    string functionStructure = 8;
-    bool mustsync = 9;
-    bool main = 10;
+    int64 appQuarantine = 3;
+    int64 clientPlatform = 4;
+    int64 clientEnabled = 5;
+    string userStructure = 6;
+    string functionStructure = 7;
+    bool mustsync = 8;
+    bool main = 9;
+    bool canRedirect = 10;
 }

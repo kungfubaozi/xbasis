@@ -16,6 +16,7 @@ message VerifyRequest {
     string clientId = 2;
     repeated string functionRoles = 3;
     string funcs = 4;
+    int64 access = 5;
 }
 
 message VerifyResponse {
@@ -23,4 +24,6 @@ message VerifyResponse {
     string clientId = 2;
     int64 clientPlatform = 3;
     gs.commons.dto.State state = 4;
+    string appId = 5;
+    string relation = 6;
 }

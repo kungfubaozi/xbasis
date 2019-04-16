@@ -99,8 +99,8 @@ const (
 )
 
 const (
-	AccessToken  = 8 >> 10
-	RefreshToken = 9
+	AccessToken  int64 = 8 >> 10
+	RefreshToken int64 = 9 >> 9
 )
 
 const (

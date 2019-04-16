@@ -33,4 +33,6 @@ message TokenInfo {
     string userId = 1;
     string clientId = 2;
     int64 platform = 3;
+    string relation = 4;
+    string appId = 5;
 }

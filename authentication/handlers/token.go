@@ -37,19 +37,20 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 		configuration := serviceconfiguration.Get()
 
 		//line check
-		if s := sizeCheck(svc.connectioncli, repo, in.Auth.UserId, in.Auth.ClientId); !s.Ok {
+		if s := offlineUser(svc.connectioncli, repo, in.Auth.UserId, in.Auth.ClientId); !s.Ok {
 			return s
 		}
 
-		id := gs_commons_generator.NewIDG()
-
-		relationId := id.Get()
+		if len(in.RelationId) <= 30 {
+			id := gs_commons_generator.NewIDG()
+			in.RelationId = id.Get()
+		}
 
 		refresh := &simpleUserToken{
 			UserId:   in.Auth.UserId,
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
-			Relation: relationId,
+			Relation: in.RelationId,
 			Type:     gs_commons_constants.RefreshToken,
 		}
 
@@ -57,14 +58,14 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			UserId:   in.Auth.UserId,
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
-			Relation: relationId,
+			Relation: in.RelationId,
 			Type:     gs_commons_constants.AccessToken,
 		}
 
 		ui := &userAuthorizeInfo{
 			AppId:     in.Auth.AppId,
 			Platform:  in.Auth.Platform,
-			Relation:  relationId,
+			Relation:  in.RelationId,
 			UserId:    in.Auth.UserId,
 			Device:    in.Auth.Device,
 			UserAgent: in.Auth.UserAgent,
@@ -77,7 +78,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			return errstate.ErrSystem
 		}
 
-		err = repo.Add(in.Auth.UserId, in.Auth.ClientId, relationId, b)
+		err = repo.Add(in.Auth.UserId, in.Auth.ClientId, in.RelationId, b)
 		if err != nil {
 			return errstate.ErrSystem
 		}

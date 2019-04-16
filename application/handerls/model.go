@@ -23,7 +23,6 @@ type appInfo struct {
 type appSetting struct {
 	Enabled     int64  `bson:"enabled" json:"enabled"`
 	SyncUserURL string `bson:"sync_user_url" json:"sync_user_url"` //sync new user to your application database
-	OpenMode    int64  `bson:"open_mode" json:"open_mode"`         //open mode
 	RedirectURL string `bson:"redirect_url" json:"redirect_url"`
 	Quarantine  int64  `bson:"quarantine" json:"quarantine"` //create local self database
 	MustSync    bool   `bson:"must_sync" json:"must_sync"`

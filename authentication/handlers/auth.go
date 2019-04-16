@@ -2,8 +2,6 @@ package authenticationhandlers
 
 import (
 	"context"
-	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/authentication/pb/ext"
@@ -16,7 +14,6 @@ import (
 	"konekko.me/gosion/connection/cmd/connectioncli"
 	"konekko.me/gosion/safety/pb/ext"
 	"sync"
-	"time"
 )
 
 type authService struct {
@@ -35,9 +32,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		//1.verify token
 
 		var wg sync.WaitGroup
-		wg.Add(2)
-
-		s := time.Now().UnixNano()
+		wg.Add(3)
 
 		configuration := serviceconfiguration.Get()
 
@@ -72,9 +67,6 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		go func() {
 			defer wg.Done()
 
-			st := time.Now().UnixNano()
-			fmt.Println("a-1", (time.Now().UnixNano()-st)/1e6)
-
 			repo := svc.GetRepo()
 			defer repo.Close()
 
@@ -84,15 +76,11 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				return
 			}
 
-			fmt.Println("a-2", (time.Now().UnixNano()-st)/1e6)
-
 			err = msgpack.Unmarshal(b, &uai)
 			if err != nil {
 				resp(errstate.ErrSystem)
 				return
 			}
-
-			fmt.Println("a-3", (time.Now().UnixNano()-st)/1e6)
 
 			//check
 			if claims.Token.UserId != uai.UserId || claims.Token.ClientId != uai.ClientId ||
@@ -103,25 +91,20 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				return
 			}
 
-			fmt.Println("a-4", (time.Now().UnixNano()-st)/1e6)
-
-			s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{UserId: uai.UserId})
-			if err != nil {
-				resp(errstate.ErrSystem)
-				return
-			}
-
-			fmt.Println("a-5", (time.Now().UnixNano()-st)/1e6)
-
-			resp(s.State)
-
 		}()
 
 		go func() {
 			defer wg.Done()
+			s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{UserId: claims.Token.UserId})
+			if err != nil {
+				resp(errstate.ErrSystem)
+				return
+			}
+			resp(s.State)
+		}()
 
-			st := time.Now().UnixNano()
-			fmt.Println("s-1", (time.Now().UnixNano()-st)/1e6)
+		go func() {
+			defer wg.Done()
 
 			var userRoles []interface{}
 
@@ -135,18 +118,10 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				return
 			}
 
-			spew.Dump(userroles)
-			spew.Dump(in)
-
-			fmt.Println("s-2", (time.Now().UnixNano()-st)/1e6)
-
 			userRoles = userroles["link_structure_roles"].([]interface{})[0].(map[string]interface{})["roles"].([]interface{})
 
 			if userRoles != nil && len(userRoles) > 0 && len(in.FunctionRoles) > 0 {
 
-				fmt.Println("s-3", (time.Now().UnixNano()-st)/1e6)
-
-				fmt.Println("entry check roles")
 				roles := make(map[string]string)
 				ok := false
 				for _, v := range userRoles {
@@ -160,8 +135,6 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 					}
 				}
 
-				fmt.Println("s-4", (time.Now().UnixNano()-st)/1e6)
-
 				if ok {
 					resp(errstate.Success)
 					return
@@ -171,15 +144,11 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				}
 			}
 
-			fmt.Println("s-e", (time.Now().UnixNano()-st)/1e6)
-
 			resp(errstate.ErrUserPermission)
 			return
 		}()
 
 		wg.Wait()
-
-		fmt.Println("finished", (time.Now().UnixNano()-s)/1e6)
 
 		if state.Ok {
 			if len(uai.UserId) == 0 {
@@ -189,6 +158,8 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 			out.UserId = claims.Token.UserId
 			out.ClientPlatform = uai.Platform
 			out.ClientId = uai.ClientId
+			out.AppId = claims.Token.AppId
+			out.Relation = claims.Token.Relation
 			return nil
 		}
 

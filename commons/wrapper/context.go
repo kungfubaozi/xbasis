@@ -27,6 +27,8 @@ type WrapperUserToken struct {
 	ClientId       string
 	ClientPlatform int64
 	AppId          string
+	Relation       string
+	UserId         string
 }
 
 type DurationAccessUser struct {
@@ -52,6 +54,8 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	wut := &WrapperUserToken{
 		ClientId: md["transport-token-client-id"],
 		AppId:    md["transport-token-app-id"],
+		Relation: md["transport-token-relation"],
+		UserId:   md["transport-token-user-id"],
 	}
 	a, err = strconv.ParseInt(md["transport-token-client-platform"], 10, 64)
 	if err == nil {

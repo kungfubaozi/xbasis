@@ -39,4 +39,5 @@ var (
 	ErrRoutePlatform               = &gs_commons_dto.State{Ok: false, Code: 20032, Message: "err route platform"}
 	ErrRouteNotMainClient          = &gs_commons_dto.State{Ok: false, Code: 20033, Message: "err not main client"}
 	ErrRouteSameApplication        = &gs_commons_dto.State{Ok: false, Code: 20034, Message: "err route same application"}
+	ErrOperateBusy                 = &gs_commons_dto.State{Ok: false, Code: 20035, Message: "err operate busy"}
 )

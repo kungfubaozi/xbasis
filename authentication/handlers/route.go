@@ -5,38 +5,95 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb"
+	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
+	"konekko.me/gosion/connection/cmd/connectioncli"
+	"time"
 )
 
 type routeService struct {
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
 	extUsersyncService          gs_ext_service_application.UsersyncService
+	extTokenService             gs_ext_service_authentication.TokenService
+	connectioncli               connectioncli.ConnectionClient
 	*indexutils.Client
 	pool *redis.Pool
 }
 
 func (svc *routeService) Logout(ctx context.Context, in *gs_service_authentication.LogoutRequest, out *gs_commons_dto.Status) error {
-	panic("implement me")
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		return offlineUser(svc.connectioncli, repo, auth.Token.UserId, auth.Token.ClientId)
+	})
+}
+
+func (svc *routeService) GetRepo() *tokenRepo {
+	return &tokenRepo{conn: svc.pool.Get()}
 }
 
 func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authentication.RefreshRequest, out *gs_service_authentication.RefreshResponse) error {
-	panic("implement me")
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(in.RefreshToken) >= 100 {
+
+			configuration := serviceconfiguration.Get()
+
+			claims, err := decodeToken(in.RefreshToken, configuration.TokenSecretKey)
+			if err == nil {
+
+				repo := svc.GetRepo()
+				defer repo.Close()
+
+				if claims.Valid() != nil {
+					//offline
+					offlineUser(svc.connectioncli, repo, claims.Token.UserId, auth.ClientId)
+					return errstate.ErrRefreshTokenExpired
+				}
+
+				//limit 3 minute refresh
+				if time.Now().UnixNano()-claims.IssuedAt <= 3*60*1e9 {
+					return errstate.ErrOperateBusy
+				}
+
+				refresh := &simpleUserToken{
+					UserId:   claims.Token.UserId,
+					AppId:    claims.Token.AppId,
+					ClientId: claims.Token.ClientId,
+					Relation: claims.Token.Relation,
+					Type:     gs_commons_constants.AccessToken,
+				}
+
+				token, err := encodeToken(configuration.TokenSecretKey, time.Minute*10, refresh)
+				if err != nil {
+					return errstate.ErrSystem
+				}
+
+				out.AccessToken = token
+				return errstate.Success
+			}
+		}
+
+		return nil
+	})
 }
 
 //just support root application web client
 //It passes on to the caller new accessToken and refreshToken!
 func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication.PushRequest, out *gs_service_authentication.PushResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.Redirect) == 0 || len(in.RouteTo) == 0 {
+		if len(in.RouteTo) == 0 {
 			return nil
 		}
 
 		app, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 			ClientId: in.RouteTo,
+			Redirect: in.Redirect,
 		})
 
 		if err != nil {
@@ -44,6 +101,11 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 		}
 
 		if app.State.Ok {
+
+			//can't jump to the main application
+			if app.Main {
+				return errstate.ErrRequest
+			}
 
 			if app.ClientEnabled != gs_commons_constants.Enabled {
 				return errstate.ErrClientClosed
@@ -91,6 +153,33 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 						return errstate.ErrRouteSameApplication
 					}
 
+					//jump to app
+					token, err := svc.extTokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
+						RelationId: auth.Token.Relation,
+						Route:      true,
+						Auth: &gs_commons_dto.Authorize{
+							ClientId: in.RouteTo,
+							UserId:   auth.Token.UserId,
+							Ip:       auth.IP,
+							Device:   auth.UserDevice,
+							Platform: app.ClientPlatform,
+							AppId:    app.AppId,
+						},
+					})
+
+					if err != nil {
+						return errstate.ErrRequest
+					}
+
+					if !token.State.Ok {
+						return token.State
+					}
+
+					out.RefreshToken = token.RefreshToken
+					out.AccessToken = token.AccessToken
+
+					return errstate.Success
+
 				}
 			}
 
@@ -101,6 +190,6 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 }
 
 func NewRouteService(client *indexutils.Client, pool *redis.Pool, extApplicationStatusService gs_ext_service_application.ApplicationStatusService,
-	extUsersyncService gs_ext_service_application.UsersyncService) gs_service_authentication.RouterHandler {
-	return &routeService{Client: client, pool: pool, extUsersyncService: extUsersyncService, extApplicationStatusService: extApplicationStatusService}
+	extUsersyncService gs_ext_service_application.UsersyncService, extTokenService gs_ext_service_authentication.TokenService, connectioncli connectioncli.ConnectionClient) gs_service_authentication.RouterHandler {
+	return &routeService{Client: client, pool: pool, extTokenService: extTokenService, extUsersyncService: extUsersyncService, extApplicationStatusService: extApplicationStatusService, connectioncli: connectioncli}
 }

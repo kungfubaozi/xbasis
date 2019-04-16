@@ -107,6 +107,13 @@
           "auth_type": [
             5632
           ]
+        },
+        {
+          "api": "/authorization/sync",
+          "name": "Authorization",
+          "auth_type": [
+            5632
+          ]
         }
       ]
     },
@@ -338,10 +345,7 @@
         },
         {
           "api": "/router/refresh",
-          "name": "TokenRefresh",
-          "auth_type": [
-            5632
-          ]
+          "name": "TokenRefresh"
         },
         {
           "api": "/router/logout",

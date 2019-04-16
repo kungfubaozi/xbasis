@@ -54,8 +54,10 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 
 			if status.Token != nil {
 				cm["transport-token-user-id"] = status.Token.UserId
+				cm["transport-token-app-id"] = status.Token.AppId
 				cm["transport-token-client-platform"] = fmt.Sprintf("%d", status.Token.Platform)
 				cm["transport-token-client-id"] = status.Token.ClientId
+				cm["transport-token-user-relation"] = status.Token.Relation
 			}
 
 			//compressed volume

@@ -14,16 +14,16 @@ service Router {
 }
 
 message LogoutRequest {
-    string accessToken = 1;
+
 }
 
 message RefreshRequest {
-    string accessToken = 1;
+    string refreshToken = 1;
 }
 
 message RefreshResponse {
     gs.commons.dto.State state = 1;
-    string token = 2;
+    string accessToken = 2;
 }
 
 message PushRequest {

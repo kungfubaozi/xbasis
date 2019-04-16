@@ -3,6 +3,7 @@ package authenticationhandlers
 import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"konekko.me/gosion/commons/encrypt"
 )
 
 type tokenRepo struct {
@@ -10,7 +11,7 @@ type tokenRepo struct {
 }
 
 func (repo *tokenRepo) fix(userId string) string {
-	return fmt.Sprintf("auth-u.%s", userId)
+	return encrypt.SHA256(fmt.Sprintf("auth-u.%s", userId))
 }
 
 func (repo *tokenRepo) Get(userId, key string) ([]byte, error) {

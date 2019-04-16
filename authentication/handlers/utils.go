@@ -33,6 +33,7 @@ func encodeToken(tokenKey string, et time.Duration, authorize *simpleUserToken) 
 
 	c := jwt.StandardClaims{
 		Issuer:    "gosion.authenticate",
+		IssuedAt:  time.Now().UnixNano(),
 		ExpiresAt: expireTime,
 	}
 
@@ -55,7 +56,7 @@ func b2s(bs []uint8) string {
 	return string(ba)
 }
 
-func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, clientId string) *gs_commons_dto.State {
+func offlineUser(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, clientId string) *gs_commons_dto.State {
 	v, err := repo.SizeOf(userId)
 	if err != nil {
 		return errstate.ErrSystem
@@ -70,27 +71,22 @@ func sizeCheck(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, us
 			if key[0:i] == clientId {
 				fmt.Println("check", clientId)
 				offlineTarget(connectioncli, repo, userId, key, clientId)
+
+				//除了需要离线client之外，还需要离线与之相关的relation
+				offlineRelation(connectioncli, v, repo, userId, key[i+1:])
 			}
 		}
 	}
 
-	fmt.Println("break")
-
 	return errstate.Success
 }
 
-func offlineRelation(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, relation string) *gs_commons_dto.State {
-	v, err := repo.SizeOf(userId)
-	if err != nil {
-		return errstate.ErrSystem
-	}
-	if len(v) > 0 {
-		for _, k := range v {
-			key := b2s(k.([]uint8))
-			result := strings.Index(key, ".")
-			if key[result+1:] == relation {
-				go offlineTarget(connectioncli, repo, userId, key, key[0:result])
-			}
+func offlineRelation(connectioncli connectioncli.ConnectionClient, v []interface{}, repo *tokenRepo, userId, relation string) *gs_commons_dto.State {
+	for _, k := range v {
+		key := b2s(k.([]uint8))
+		result := strings.Index(key, ".")
+		if key[result+1:] == relation {
+			offlineTarget(connectioncli, repo, userId, key, key[0:result])
 		}
 	}
 	return errstate.Success

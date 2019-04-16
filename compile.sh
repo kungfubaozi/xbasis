@@ -23,6 +23,7 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/active.
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/grant.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/oauth.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/message.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/authorization.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/ext/message.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/ext/user.proto
 

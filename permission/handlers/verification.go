@@ -96,7 +96,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 			//new request
 			rh := &requestHeaders{
 				authorization: md["authorization"],
-				userAgent:     md["user-agent"],
+				userAgent:     md["x-user-agent"],
 				ip:            md["x-real-ip"],
 				clientId:      md["gs-client-id"],
 				userDevice:    md["gs-user-device"],
@@ -311,6 +311,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 								UserId:   status.UserId,
 								ClientId: status.ClientId,
 								Platform: status.ClientPlatform,
+								AppId:    status.AppId,
+								Relation: status.Relation,
 							}
 
 							userId = status.UserId
