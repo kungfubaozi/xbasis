@@ -32,7 +32,7 @@ func encodeToken(tokenKey string, et time.Duration, authorize *simpleUserToken) 
 	expireTime := time.Now().Add(et).Unix()
 
 	c := jwt.StandardClaims{
-		Issuer:    "gosion.authenticate",
+		Issuer:    "Gosion",
 		IssuedAt:  time.Now().UnixNano(),
 		ExpiresAt: expireTime,
 	}

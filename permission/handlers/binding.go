@@ -7,6 +7,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/user/pb/ext"
@@ -16,6 +17,7 @@ type bindingService struct {
 	pool           *redis.Pool
 	session        *mgo.Session
 	extUserService gs_ext_service_user.UserService
+	*gslogrus.Logger
 }
 
 func (svc *bindingService) GetRepo() *bindingRepo {
@@ -178,6 +180,6 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *gs_servic
 	})
 }
 
-func NewBindingService(pool *redis.Pool, session *mgo.Session, extUserService gs_ext_service_user.UserService) gs_service_permission.BindingHandler {
-	return &bindingService{pool: pool, session: session, extUserService: extUserService}
+func NewBindingService(pool *redis.Pool, session *mgo.Session, extUserService gs_ext_service_user.UserService, log *gslogrus.Logger) gs_service_permission.BindingHandler {
+	return &bindingService{pool: pool, session: session, extUserService: extUserService, Logger: log}
 }

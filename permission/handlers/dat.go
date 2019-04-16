@@ -9,6 +9,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
@@ -24,6 +25,7 @@ type durationAccessService struct {
 	*indexutils.Client
 	configuration  *gs_commons_config.GosionConfiguration
 	messageService gs_ext_service_user.MessageService
+	*gslogrus.Logger
 }
 
 func (svc *durationAccessService) GetRepo() functionRepo {
@@ -204,6 +206,6 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 }
 
 func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration,
-	messageService gs_ext_service_user.MessageService, client *indexutils.Client) gs_service_permission.DurationAccessHandler {
-	return &durationAccessService{pool: pool, Client: client, session: session, configuration: configuration, messageService: messageService}
+	messageService gs_ext_service_user.MessageService, client *indexutils.Client, log *gslogrus.Logger) gs_service_permission.DurationAccessHandler {
+	return &durationAccessService{pool: pool, Client: client, session: session, configuration: configuration, messageService: messageService, Logger: log}
 }
