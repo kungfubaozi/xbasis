@@ -42,16 +42,24 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 
 		if status.State.Ok {
 
+			cm := make(map[string]string)
+			cm["transport-user"] = status.User
+			cm["transport-app-id"] = status.AppId
+			cm["transport-client-id"] = status.ClientId
+			cm["transport-trace-id"] = status.TraceId
+			cm["transport-ip"] = status.Ip
+			cm["transport-user-device"] = status.UserDevice
+			cm["transport-user-agent"] = status.UserAgent
+			cm["transport-client-platform"] = fmt.Sprintf("%d", status.Platform)
+
+			if status.Token != nil {
+				cm["transport-token-user-id"] = status.Token.UserId
+				cm["transport-token-client-platform"] = fmt.Sprintf("%d", status.Token.Platform)
+				cm["transport-token-client-id"] = status.Token.ClientId
+			}
+
 			//compressed volume
-			ctx = metadata.NewContext(ctx, map[string]string{
-				"transport-user":        status.User,
-				"transport-app-id":      status.AppId,
-				"transport-client-id":   status.ClientId,
-				"transport-trace-id":    status.TraceId,
-				"transport-ip":          status.Ip,
-				"transport-user-device": status.UserDevice,
-				"transport-user-agent":  status.UserAgent,
-			})
+			ctx = metadata.NewContext(ctx, cm)
 		}
 
 		return fn(ctx, req, rsp)

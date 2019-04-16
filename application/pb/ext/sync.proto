@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package gs.ext.service.application;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Usersync {
+
+    rpc Transport (UserInfo) returns (gs.commons.dto.Status);
+
+    rpc Check (CheckRequest) returns (gs.commons.dto.Status);
+
+    rpc Update (UserInfo) returns (gs.commons.dto.Status);
+}
+
+message CheckRequest {
+    string userId = 1;
+    string appId = 2;
+}
+
+message UserInfo {
+    string gId = 1;
+    string username = 2;
+    string account = 3;
+    string icon = 4;
+    string realName = 5;
+    string appId = 6;
+    string url = 7;
+}

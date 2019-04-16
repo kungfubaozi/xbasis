@@ -66,6 +66,10 @@ const (
 
 	//web
 	PlatformOfWeb = 13 << 15
+
+	PlatformOfLinux = 13 << 16
+
+	PlatformOfFuchsia = 13 << 17
 )
 
 const (

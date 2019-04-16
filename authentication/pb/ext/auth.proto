@@ -7,7 +7,7 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 service Auth {
 
     //response authorize data save to context
-    rpc Verify (VerifyRequest) returns (gs.commons.dto.Status);
+    rpc Verify (VerifyRequest) returns (VerifyResponse);
 
 }
 
@@ -16,4 +16,11 @@ message VerifyRequest {
     string clientId = 2;
     repeated string functionRoles = 3;
     string funcs = 4;
+}
+
+message VerifyResponse {
+    string userId = 1;
+    string clientId = 2;
+    int64 clientPlatform = 3;
+    gs.commons.dto.State state = 4;
 }

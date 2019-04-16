@@ -2,14 +2,12 @@ package applicationhanderls
 
 import (
 	"context"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"time"
 )
 
 type applicationStatusService struct {
@@ -24,8 +22,6 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 		if len(in.ClientId) == 0 {
 			return errstate.ErrRequest
 		}
-		s := time.Now().UnixNano()
-
 		repo := svc.GetRepo()
 		defer repo.Close()
 
@@ -36,7 +32,6 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 
 		for _, v := range a.Clients {
 			if v.Id == in.ClientId {
-				fmt.Println("ok, find")
 				out.State = errstate.Success
 				out.ClientPlatform = v.Platform
 				out.ClientEnabled = v.Enabled
@@ -45,7 +40,8 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 				out.AppQuarantine = a.Settings.Quarantine
 				out.UserStructure = a.UserS.Id
 				out.FunctionStructure = a.FunctionS.Id
-				fmt.Println("time.now-wrapper", (time.Now().UnixNano()-s)/1e6)
+				out.Mustsync = a.Settings.MustSync
+				out.Main = a.Main == 101
 				return nil
 			}
 		}

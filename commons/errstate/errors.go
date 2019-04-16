@@ -31,8 +31,12 @@ var (
 	ErrOperate                     = &gs_commons_dto.State{Ok: false, Code: 20024, Message: "err operate"}
 	ErrClientClosed                = &gs_commons_dto.State{Ok: false, Code: 20025, Message: "err client closed"}
 	ErrAccessTokenOrClient         = &gs_commons_dto.State{Ok: false, Code: 20026, Message: "err access token or client"}
-	ErrUserPermission              = &gs_commons_dto.State{Ok: false, Code: 20027, Message: "err permission"}
+	ErrUserPermission              = &gs_commons_dto.State{Ok: false, Code: 20027, Message: "err access function without permission"}
 	ErrAppStructureNotOpening      = &gs_commons_dto.State{Ok: false, Code: 20028, Message: "err app structure not opening"}
 	ErrInvalidStructure            = &gs_commons_dto.State{Ok: false, Code: 20029, Message: "err invalid structure"}
 	ErrInvalidClientId             = &gs_commons_dto.State{Ok: false, Code: 20030, Message: "err invalid client"}
+	ErrUserAppPermission           = &gs_commons_dto.State{Ok: false, Code: 20031, Message: "err access application without permission"}
+	ErrRoutePlatform               = &gs_commons_dto.State{Ok: false, Code: 20032, Message: "err route platform"}
+	ErrRouteNotMainClient          = &gs_commons_dto.State{Ok: false, Code: 20033, Message: "err not main client"}
+	ErrRouteSameApplication        = &gs_commons_dto.State{Ok: false, Code: 20034, Message: "err route same application"}
 )

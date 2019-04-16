@@ -30,7 +30,7 @@ func (svc *authService) GetRepo() *tokenRepo {
 	return &tokenRepo{conn: svc.pool.Get()}
 }
 
-func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentication.VerifyRequest, out *gs_commons_dto.Status) error {
+func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentication.VerifyRequest, out *gs_ext_service_authentication.VerifyResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		//1.verify token
 
@@ -67,6 +67,8 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 			}
 		}
 
+		var uai userAuthorizeInfo
+
 		go func() {
 			defer wg.Done()
 
@@ -84,7 +86,6 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 			fmt.Println("a-2", (time.Now().UnixNano()-st)/1e6)
 
-			var uai userAuthorizeInfo
 			err = msgpack.Unmarshal(b, &uai)
 			if err != nil {
 				resp(errstate.ErrSystem)
@@ -179,6 +180,17 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		wg.Wait()
 
 		fmt.Println("finished", (time.Now().UnixNano()-s)/1e6)
+
+		if state.Ok {
+			if len(uai.UserId) == 0 {
+				return errstate.ErrSystem
+			}
+			out.State = state
+			out.UserId = claims.Token.UserId
+			out.ClientPlatform = uai.Platform
+			out.ClientId = uai.ClientId
+			return nil
+		}
 
 		return state
 	})

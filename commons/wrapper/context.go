@@ -7,6 +7,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	gserrors "konekko.me/gosion/commons/errstate"
 	"reflect"
+	"strconv"
 )
 
 type WrapperUser struct {
@@ -17,7 +18,15 @@ type WrapperUser struct {
 	TraceId    string
 	UserAgent  string
 	UserDevice string
-	DAU        DurationAccessUser
+	DAU        *DurationAccessUser
+	Platform   int64
+	Token      *WrapperUserToken
+}
+
+type WrapperUserToken struct {
+	ClientId       string
+	ClientPlatform int64
+	AppId          string
 }
 
 type DurationAccessUser struct {
@@ -35,6 +44,20 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	auth.TraceId = md["transport-trace-id"]
 	auth.UserAgent = md["transport-user-agent"]
 	auth.UserDevice = md["transport-user-device"]
+	auth.Platform = 0
+	a, err := strconv.ParseInt(md["transport-client-platform"], 10, 64)
+	if err == nil {
+		auth.Platform = a
+	}
+	wut := &WrapperUserToken{
+		ClientId: md["transport-token-client-id"],
+		AppId:    md["transport-token-app-id"],
+	}
+	a, err = strconv.ParseInt(md["transport-token-client-platform"], 10, 64)
+	if err == nil {
+		wut.ClientPlatform = a
+	}
+	auth.Token = wut
 	return auth
 }
 

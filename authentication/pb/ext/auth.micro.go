@@ -9,13 +9,14 @@ It is generated from these files:
 
 It has these top-level messages:
 	VerifyRequest
+	VerifyResponse
 */
 package gs_ext_service_authentication
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import _ "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +28,6 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,7 +44,7 @@ var _ server.Option
 
 type AuthService interface {
 	// response authorize data save to context
-	Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*VerifyResponse, error)
 }
 
 type authService struct {
@@ -65,9 +65,9 @@ func NewAuthService(name string, c client.Client) AuthService {
 	}
 }
 
-func (c *authService) Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *authService) Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*VerifyResponse, error) {
 	req := c.c.NewRequest(c.name, "Auth.Verify", in)
-	out := new(gs_commons_dto.Status)
+	out := new(VerifyResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,12 +79,12 @@ func (c *authService) Verify(ctx context.Context, in *VerifyRequest, opts ...cli
 
 type AuthHandler interface {
 	// response authorize data save to context
-	Verify(context.Context, *VerifyRequest, *gs_commons_dto.Status) error
+	Verify(context.Context, *VerifyRequest, *VerifyResponse) error
 }
 
 func RegisterAuthHandler(s server.Server, hdlr AuthHandler, opts ...server.HandlerOption) error {
 	type auth interface {
-		Verify(ctx context.Context, in *VerifyRequest, out *gs_commons_dto.Status) error
+		Verify(ctx context.Context, in *VerifyRequest, out *VerifyResponse) error
 	}
 	type Auth struct {
 		auth
@@ -97,6 +97,6 @@ type authHandler struct {
 	AuthHandler
 }
 
-func (h *authHandler) Verify(ctx context.Context, in *VerifyRequest, out *gs_commons_dto.Status) error {
+func (h *authHandler) Verify(ctx context.Context, in *VerifyRequest, out *VerifyResponse) error {
 	return h.AuthHandler.Verify(ctx, in, out)
 }

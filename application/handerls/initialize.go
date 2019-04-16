@@ -70,6 +70,16 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 						Platform: gs_commons_constants.PlatformOfAndroid,
 						Enabled:  gs_commons_constants.Enabled,
 					},
+					{
+						Id:       id.Short(),
+						Platform: gs_commons_constants.PlatformOfLinux,
+						Enabled:  gs_commons_constants.Closed,
+					},
+					{
+						Id:       id.Short(),
+						Platform: gs_commons_constants.PlatformOfFuchsia,
+						Enabled:  gs_commons_constants.Closed,
+					},
 				},
 			}
 			err = repo.Add(info)

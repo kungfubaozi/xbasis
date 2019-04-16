@@ -287,15 +287,14 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 							fmt.Println("time.now 1-0", (time.Now().UnixNano()-a)/1e6)
 
 							ac := metadata.NewContext(context.Background(), map[string]string{
-								"transport-user-agent":  rh.userAgent,
-								"transport-app-id":      appResp.AppId,
-								"transport-ip":          rh.ip,
-								"transport-client-id":   rh.clientId,
-								"transport-trace-id":    traceId,
-								"transport-user-device": rh.userDevice,
+								"transport-user-agent":      rh.userAgent,
+								"transport-app-id":          appResp.AppId,
+								"transport-ip":              rh.ip,
+								"transport-client-id":       rh.clientId,
+								"transport-trace-id":        traceId,
+								"transport-user-device":     rh.userDevice,
+								"transport-client-platform": fmt.Sprintf("%d", appResp.ClientPlatform),
 							})
-
-							fmt.Println("ac")
 
 							status, err := svc.extAuthService.Verify(ac, &gs_ext_service_authentication.VerifyRequest{
 								Token:         rh.authorization,
@@ -308,61 +307,16 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 								return
 							}
 
+							out.Token = &gs_service_permission.TokenInfo{
+								UserId:   status.UserId,
+								ClientId: status.ClientId,
+								Platform: status.ClientPlatform,
+							}
+
+							userId = status.UserId
+
 							resp(status.State)
-							////if !openPermission {
-							////	resp(errstate.Success)
-							////	return
-							////}
-							////2.check user roles
-							//var userRoles []interface{}
-							//
-							//fmt.Println("time.now 1-2", (time.Now().UnixNano()-a)/1e6)
-							//
-							////get user require roles
-							//var userroles map[string]interface{}
-							//ok, err := svc.Client.QueryFirst("gs_user_ort", map[string]interface{}{"link_structure_roles.structure_id": appResp.FunctionStructure, "user_id": status.Content}, &userroles, "link_structure_roles.roles")
-							//if err != nil || !ok {
-							//	fmt.Println(err)
-							//	spew.Dump(userroles)
-							//	resp(errstate.ErrRequest)
-							//	return
-							//}
-							//
-							//fmt.Println("time.now 1-3", (time.Now().UnixNano()-a)/1e6)
-							//
-							//userRoles = userroles["link_structure_roles"].([]interface{})[0].(map[string]interface{})["roles"].([]interface{})
-							//
-							//fmt.Println("time.now 1-4", (time.Now().UnixNano()-a)/1e6)
-							//
-							////appId.userId
-							//if userRoles != nil && f.Roles != nil && len(userRoles) > 0 && len(f.Roles) > 0 {
-							//	fmt.Println("entry check roles")
-							//	roles := make(map[string]string)
-							//	ok := false
-							//	for _, v := range userRoles {
-							//		b := v.(string)
-							//		roles[b] = "ok"
-							//	}
-							//	for _, v := range f.Roles {
-							//		//The current design is to delete the role only by deleting the corresponding data,
-							//		//not deleting the data corresponding to the role, so we need to do a layer of dynamic deletion.
-							//		if roles[v] == "ok" {
-							//			//check role
-							//			ok = true
-							//			break
-							//		}
-							//	}
-							//	if ok {
-							//		resp(errstate.Success)
-							//		return
-							//	} else {
-							//		resp(errstate.ErrUserPermission)
-							//		return
-							//	}
-							//} else {
-							//	resp(errstate.ErrUserPermission)
-							//	return
-							//}
+
 							break
 						case gs_commons_constants.AuthTypeOfFace:
 							break
@@ -379,6 +333,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 						userId = rh.ip
 					}
 					if dat.User != userId {
+						out.Token = nil
 						return errstate.ErrDurationAccess
 					}
 
@@ -386,6 +341,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 
 				if !state.Ok {
 					out.State = state
+					out.Token = nil
 					return nil
 				}
 
@@ -395,6 +351,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_service_permis
 				out.ClientId = rh.clientId
 				out.Ip = rh.ip
 				out.TraceId = traceId
+				out.Platform = appResp.ClientPlatform
 				if len(userId) == 0 {
 					userId = rh.ip
 				}

@@ -48,6 +48,8 @@ func StartService() {
 
 		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(client))
 
+		gs_ext_service_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(client, session))
+
 		errc <- s.Run()
 	}()
 

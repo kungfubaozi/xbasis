@@ -25,4 +25,12 @@ message HasPermissionResponse {
     string ip = 6;
     string userAgent = 7;
     string userDevice = 8;
+    int64 platform = 9;
+    TokenInfo token = 10;
+}
+
+message TokenInfo {
+    string userId = 1;
+    string clientId = 2;
+    int64 platform = 3;
 }

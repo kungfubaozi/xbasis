@@ -78,6 +78,16 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 					Platform: gs_commons_constants.PlatfromOfMacOS,
 					Enabled:  gs_commons_constants.Enabled,
 				},
+				{
+					Id:       id.Short(),
+					Platform: gs_commons_constants.PlatformOfLinux,
+					Enabled:  gs_commons_constants.Enabled,
+				},
+				{
+					Id:       id.Short(),
+					Platform: gs_commons_constants.PlatformOfFuchsia,
+					Enabled:  gs_commons_constants.Enabled,
+				},
 			},
 		}
 

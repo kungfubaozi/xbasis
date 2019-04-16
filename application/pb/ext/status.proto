@@ -23,4 +23,6 @@ message GetAppClientStatusResponse {
     int64 clientEnabled = 6;
     string userStructure = 7;
     string functionStructure = 8;
+    bool mustsync = 9;
+    bool main = 10;
 }

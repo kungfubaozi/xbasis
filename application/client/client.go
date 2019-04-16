@@ -23,3 +23,7 @@ func NewClient(client client.Client) gs_service_application.ApplicationService {
 func NewStatusClient(client client.Client) gs_ext_service_application.ApplicationStatusService {
 	return gs_ext_service_application.NewApplicationStatusService(gs_commons_constants.ExtApplicationService, client)
 }
+
+func NewSyncClient(client client.Client) gs_ext_service_application.UsersyncService {
+	return gs_ext_service_application.NewUsersyncService(gs_commons_constants.ExtApplicationService, client)
+}
