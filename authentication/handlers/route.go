@@ -52,8 +52,11 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 
 				if claims.Valid() != nil {
 					//offline
-					offlineUser(svc.connectioncli, repo, claims.Token.UserId, auth.ClientId)
-					return errstate.ErrRefreshTokenExpired
+					s := offlineUser(svc.connectioncli, repo, claims.Token.UserId, auth.ClientId)
+					if s.Ok {
+						return errstate.ErrRefreshTokenExpired
+					}
+					return s
 				}
 
 				//limit 3 minute refresh
