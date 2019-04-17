@@ -45,6 +45,8 @@ type logdata struct {
 func New(serviceName string, client *indexutils.Client) *Logger {
 	log := logrus.New()
 
+	log.SetFormatter(&logrus.JSONFormatter{PrettyPrint: true})
+
 	l := &Logger{log: log, serviceName: serviceName, client: client}
 
 	log.Hooks.Add(l)
