@@ -24,6 +24,6 @@ message GetAppClientStatusResponse {
     string userStructure = 6;
     string functionStructure = 7;
     bool mustsync = 8;
-    bool main = 9;
+    int64 main = 9;
     bool canRedirect = 10;
 }

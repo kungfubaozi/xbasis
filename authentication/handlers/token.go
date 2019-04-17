@@ -41,12 +41,15 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			return s
 		}
 
+		id := gs_commons_generator.NewIDG()
+
 		if len(in.RelationId) <= 30 {
-			id := gs_commons_generator.NewIDG()
+
 			in.RelationId = id.Get()
 		}
 
 		refresh := &simpleUserToken{
+			Id:       id.Get(),
 			UserId:   in.Auth.UserId,
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
@@ -55,6 +58,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 		}
 
 		access := &simpleUserToken{
+			Id:       id.Get(),
 			UserId:   in.Auth.UserId,
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
@@ -71,6 +75,8 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			UserAgent: in.Auth.UserAgent,
 			ClientId:  in.Auth.ClientId,
 			Ip:        in.Auth.Ip,
+			RefreshId: refresh.Id,
+			AccessId:  access.Id,
 		}
 
 		b, err := msgpack.Marshal(ui)

@@ -5,7 +5,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"konekko.me/gosion/commons/date"
 	"konekko.me/gosion/commons/indexutils"
-	"time"
 )
 
 type Logger struct {
@@ -19,16 +18,20 @@ func (l *Logger) Levels() []logrus.Level {
 }
 
 func (l *Logger) Fire(data *logrus.Entry) error {
-	d := &logdata{
-		Service:   l.serviceName,
-		Timestamp: data.Time.UnixNano(),
-		Message:   data.Message,
-		Level:     data.Level.String(),
-		Data:      data.Data,
-	}
+	go func() {
+		d := &logdata{
+			Service:   l.serviceName,
+			Timestamp: data.Time.UnixNano(),
+			Message:   data.Message,
+			Level:     data.Level.String(),
+			Data:      data.Data,
+		}
 
-	_, err := l.client.AddData(fmt.Sprintf("gs_logger.%s", gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_MM_DD)), d)
-	return err
+		l.client.AddData(fmt.Sprintf("gs_logger.%s", gs_commons_date.FormatDate(data.Time, gs_commons_date.YYYY_MM_DD)), d)
+
+	}()
+
+	return nil
 }
 
 type logdata struct {
@@ -44,7 +47,7 @@ func New(serviceName string, client *indexutils.Client) *Logger {
 
 	l := &Logger{log: log, serviceName: serviceName, client: client}
 
-	log.AddHook(l)
+	log.Hooks.Add(l)
 
 	return l
 }
@@ -53,11 +56,13 @@ type Map map[string]interface{}
 
 type TCI struct {
 	fields logrus.Fields
+	log    *logrus.Logger
 }
 
 func (t *TCI) WithAction(action string, fields logrus.Fields) *logrus.Entry {
+	fields["content"] = t.fields
 	t.fields["action"] = action
-	return logrus.WithFields(fields)
+	return t.log.WithFields(fields)
 }
 
 func (l *Logger) WithHeaders(traceId, clientId, ip, path, userAgent, userDevice string) *TCI {
@@ -68,5 +73,5 @@ func (l *Logger) WithHeaders(traceId, clientId, ip, path, userAgent, userDevice 
 	fields["user_ip"] = ip
 	fields["user_agent"] = userAgent
 	fields["user_device"] = userDevice
-	return &TCI{fields: fields}
+	return &TCI{fields: fields, log: l.log}
 }

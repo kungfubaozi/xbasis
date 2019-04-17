@@ -20,6 +20,7 @@ type WrapperUser struct {
 	UserDevice string
 	DAU        *DurationAccessUser
 	Platform   int64
+	NowMain    bool
 	Token      *WrapperUserToken
 }
 
@@ -47,6 +48,7 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	auth.UserAgent = md["transport-user-agent"]
 	auth.UserDevice = md["transport-user-device"]
 	auth.Platform = 0
+	auth.NowMain = md["transport-client-main"] == "101"
 	a, err := strconv.ParseInt(md["transport-client-platform"], 10, 64)
 	if err == nil {
 		auth.Platform = a

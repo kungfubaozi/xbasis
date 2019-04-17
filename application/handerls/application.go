@@ -49,8 +49,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			Id:           appId,
 			CreateUserId: auth.User,
 			Settings: &appSetting{
-				Enabled:  gs_commons_constants.Enabled,
-				OpenMode: gs_commons_constants.OpenModeOfAllOrganization,
+				Enabled: gs_commons_constants.Enabled,
 			},
 			Clients: []*appClient{
 				{
@@ -131,8 +130,7 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 			Name:  info.Name,
 			AppId: info.Id,
 			Settings: &gs_commons_dto.AppSettings{
-				Enabled:  info.Settings.Enabled,
-				OpenMode: info.Settings.OpenMode,
+				Enabled: info.Settings.Enabled,
 			},
 		}
 

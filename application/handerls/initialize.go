@@ -29,7 +29,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 				Id:           config.AppId,
 				CreateUserId: config.UserId,
 				CreateAt:     time.Now().UnixNano(),
-				Main:         101,
+				Type:         gs_commons_constants.AppTypeMain,
 				UserS: &appStructure{
 					Id:           config.UserS,
 					LastUpdateAt: time.Now().UnixNano(),
@@ -41,8 +41,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 					LastUpdateBy: config.UserId,
 				},
 				Settings: &appSetting{
-					Enabled:  gs_commons_constants.Enabled,
-					OpenMode: gs_commons_constants.OpenModeOfSelfOrganization,
+					Enabled: gs_commons_constants.Enabled,
 				},
 				Clients: []*appClient{
 					{

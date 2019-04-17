@@ -82,6 +82,11 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				return
 			}
 
+			if claims.Token.Id != uai.AccessId {
+				resp(errstate.ErrAccessToken)
+				return
+			}
+
 			//check
 			if claims.Token.UserId != uai.UserId || claims.Token.ClientId != uai.ClientId ||
 				claims.Token.Relation != uai.Relation || claims.Token.AppId != uai.AppId ||
@@ -105,6 +110,11 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 		go func() {
 			defer wg.Done()
+
+			if len(in.FunctionRoles) == 0 {
+				resp(errstate.Success)
+				return
+			}
 
 			var userRoles []interface{}
 

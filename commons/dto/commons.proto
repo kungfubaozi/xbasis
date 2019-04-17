@@ -25,5 +25,4 @@ message Authorize {
 
 message AppSettings {
     int64 enabled = 1;
-    int64 openMode = 2;
 }

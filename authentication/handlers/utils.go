@@ -1,7 +1,6 @@
 package authenticationhandlers
 
 import (
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -33,7 +32,6 @@ func encodeToken(tokenKey string, et time.Duration, authorize *simpleUserToken) 
 
 	c := jwt.StandardClaims{
 		Issuer:    "Gosion",
-		IssuedAt:  time.Now().UnixNano(),
 		ExpiresAt: expireTime,
 	}
 
@@ -63,13 +61,10 @@ func offlineUser(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, 
 	}
 
 	if len(v) > 0 {
-		fmt.Println("size", len(v))
 		i := len(clientId)
 		for _, k := range v {
 			key := b2s(k.([]uint8))
-			fmt.Println("key", key)
 			if key[0:i] == clientId {
-				fmt.Println("check", clientId)
 				offlineTarget(connectioncli, repo, userId, key, clientId)
 
 				//除了需要离线client之外，还需要离线与之相关的relation

@@ -48,7 +48,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 				out.UserStructure = a.UserS.Id
 				out.FunctionStructure = a.FunctionS.Id
 				out.Mustsync = a.Settings.MustSync
-				out.Main = a.Main == 101
+				out.Main = a.Type
 
 				return nil
 			}

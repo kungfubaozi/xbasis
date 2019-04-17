@@ -73,6 +73,10 @@ const (
 )
 
 const (
+	AppTypeMain int64 = 101
+)
+
+const (
 	Enabled = 14 << 6
 	Closed  = 14 << 7
 )

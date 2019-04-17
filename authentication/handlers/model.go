@@ -7,6 +7,7 @@ type simpleUserToken struct {
 	Relation  string
 	Type      int64
 	Structure string
+	Id        string
 }
 
 type userAuthorizeInfo struct {
@@ -18,4 +19,6 @@ type userAuthorizeInfo struct {
 	UserAgent string
 	AppId     string
 	ClientId  string
+	AccessId  string
+	RefreshId string
 }

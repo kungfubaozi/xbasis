@@ -8,9 +8,10 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/g
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/role.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/function.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/binding.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/verification.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/dat.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/structure.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/verify.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/ext/verification.proto
 
 #user
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/update.proto
@@ -36,7 +37,7 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/ext/s
 #authentication
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/ext/auth.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/ext/token.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/route.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/router.proto
 
 #application
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/application.proto
@@ -46,8 +47,8 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/
 
 
 #micro
-protoc -I ${GOPATH}/src -I ${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-        --proto_path=. --micro_out=. --go_out=:. permission/pb/test.proto
+#protoc -I ${GOPATH}/src -I ${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+#        --proto_path=. --micro_out=. --go_out=:. permission/pb/test.proto
 
 #process api
 #protoc -I. \

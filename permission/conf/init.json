@@ -221,7 +221,7 @@
           ]
         },
         {
-          "api": "/function/RenameGroup",
+          "api": "/function/renameGroup",
           "name": "RenameFunctionGroup",
           "roles": [
             "Administrator",

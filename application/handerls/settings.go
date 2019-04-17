@@ -38,14 +38,6 @@ func (svc *settingsService) Update(ctx context.Context, in *gs_service_applicati
 			return nil
 		}
 
-		if in.Setting.OpenMode == gs_commons_constants.OpenModeOfAllOrganization ||
-			in.Setting.OpenMode == gs_commons_constants.OpenModeOfCompletely ||
-			in.Setting.OpenMode == gs_commons_constants.OpenModeOfSelfOrganization {
-			info.Settings.OpenMode = in.Setting.OpenMode
-		} else {
-			return nil
-		}
-
 		//err = repo.Upsert(info)
 		//
 		//if err != nil {

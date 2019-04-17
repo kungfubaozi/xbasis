@@ -2,7 +2,9 @@ package authenticationhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb"
 	"konekko.me/gosion/authentication/pb/ext"
@@ -10,6 +12,7 @@ import (
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/connection/cmd/connectioncli"
@@ -50,6 +53,8 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 				repo := svc.GetRepo()
 				defer repo.Close()
 
+				fmt.Println("expire", claims.VerifyExpiresAt(time.Now().Unix(), true))
+
 				if claims.Valid() != nil {
 					//offline
 					s := offlineUser(svc.connectioncli, repo, claims.Token.UserId, auth.ClientId)
@@ -59,12 +64,15 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 					return s
 				}
 
-				//limit 3 minute refresh
-				if time.Now().UnixNano()-claims.IssuedAt <= 3*60*1e9 {
+				//limit 1 minute refresh
+				if time.Now().UnixNano()-claims.IssuedAt <= 60*1e9 {
 					return errstate.ErrOperateBusy
 				}
 
-				refresh := &simpleUserToken{
+				id := gs_commons_generator.NewIDG()
+
+				access := &simpleUserToken{
+					Id:       id.Get(),
 					UserId:   claims.Token.UserId,
 					AppId:    claims.Token.AppId,
 					ClientId: claims.Token.ClientId,
@@ -72,7 +80,31 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 					Type:     gs_commons_constants.AccessToken,
 				}
 
-				token, err := encodeToken(configuration.TokenSecretKey, time.Minute*10, refresh)
+				token, err := encodeToken(configuration.TokenSecretKey, time.Minute*10, access)
+				if err != nil {
+					return errstate.ErrSystem
+				}
+
+				//override
+				b, err := repo.Get(claims.Token.UserId, claims.Token.ClientId+"."+claims.Token.Relation)
+				if err != nil {
+					return errstate.ErrSystem
+				}
+
+				var uai userAuthorizeInfo
+				err = msgpack.Unmarshal(b, &uai)
+				if err != nil {
+					return errstate.ErrSystem
+				}
+
+				uai.AccessId = access.Id
+
+				b, err = msgpack.Marshal(uai)
+				if err != nil {
+					return errstate.ErrSystem
+				}
+
+				err = repo.Add(access.UserId, access.ClientId, access.Relation, b)
 				if err != nil {
 					return errstate.ErrSystem
 				}
@@ -94,6 +126,11 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 			return nil
 		}
 
+		//just main client can be route to other application client
+		if !auth.NowMain {
+			return errstate.ErrRouteNotMainClient
+		}
+
 		app, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 			ClientId: in.RouteTo,
 			Redirect: in.Redirect,
@@ -106,7 +143,7 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 		if app.State.Ok {
 
 			//can't jump to the main application
-			if app.Main {
+			if app.Main == gs_commons_constants.AppTypeMain {
 				return errstate.ErrRequest
 			}
 

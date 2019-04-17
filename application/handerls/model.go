@@ -15,7 +15,7 @@ type appInfo struct {
 	CreateAt     int64         `bson:"create_at" json:"create_at"`
 	Settings     *appSetting   `bson:"settings" json:"settings"`
 	Clients      []*appClient  `bson:"clients" json:"clients"`
-	Main         int64         `bson:"main" json:"main"` //main application, provider sso, permission, user and so more
+	Type         int64         `bson:"type" json:"type"` //main application, provider sso, permission, user and so more
 	UserS        *appStructure `bson:"user_s" json:"user_s"`
 	FunctionS    *appStructure `bson:"function_s" json:"function_s"`
 }

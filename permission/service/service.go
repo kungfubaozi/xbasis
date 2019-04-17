@@ -12,6 +12,7 @@ import (
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/permission/handlers"
 	"konekko.me/gosion/permission/pb"
+	"konekko.me/gosion/permission/pb/ext"
 	"konekko.me/gosion/safety/client"
 	"konekko.me/gosion/user/client"
 )
@@ -43,7 +44,7 @@ func StartService() {
 
 		log := gslogrus.New(gs_commons_constants.ExtPermissionVerification, client)
 
-		gs_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
+		gs_ext_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
 			session, applicationclient.NewStatusClient(m.Client()),
 			safetyclient.NewBlacklistClient(m.Client()),
 			authenticationcli.NewAuthClient(m.Client()), client, log))
@@ -63,7 +64,7 @@ func StartService() {
 
 		gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us, log))
 
-		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc, client))
+		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc, client, log))
 
 		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session))
 

@@ -10,7 +10,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/permission/client"
-	"konekko.me/gosion/permission/pb"
+	"konekko.me/gosion/permission/pb/ext"
 	"reflect"
 )
 
@@ -27,7 +27,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 	verificationClient := permissioncli.NewVerificationClient(c)
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 
-		status, err := verificationClient.Check(ctx, &gs_service_permission.HasPermissionRequest{})
+		status, err := verificationClient.Check(ctx, &gs_ext_service_permission.HasPermissionRequest{})
 		if err != nil {
 			fmt.Println("verification error", err)
 			return set(rsp, errstate.ErrRequest)
@@ -50,6 +50,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			cm["transport-ip"] = status.Ip
 			cm["transport-user-device"] = status.UserDevice
 			cm["transport-user-agent"] = status.UserAgent
+			cm["transport-client-main"] = fmt.Sprintf("%d", status.CurrentMain)
 			cm["transport-client-platform"] = fmt.Sprintf("%d", status.Platform)
 
 			if status.Token != nil {
