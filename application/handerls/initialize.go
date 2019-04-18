@@ -29,7 +29,6 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 				Id:           config.AppId,
 				CreateUserId: config.UserId,
 				CreateAt:     time.Now().UnixNano(),
-				Type:         gs_commons_constants.AppTypeMain,
 				UserS: &appStructure{
 					Id:           config.UserS,
 					LastUpdateAt: time.Now().UnixNano(),
@@ -79,6 +78,25 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 						Platform: gs_commons_constants.PlatformOfFuchsia,
 						Enabled:  gs_commons_constants.Closed,
 					},
+				},
+			}
+			err = repo.Add(info)
+			if err != nil {
+				fmt.Println("application initialize failed.")
+				return
+			}
+
+			//this is web route application, used for jumping applications on the web side
+			info.Id = config.RouteAppId
+			info.UserS = nil
+			info.Name = "SSO route"
+			info.Type = gs_commons_constants.AppTypeRoute
+			info.FunctionS = nil
+			info.Clients = []*appClient{
+				{
+					Id:       config.RouteAppClientId,
+					Platform: gs_commons_constants.PlatformOfWeb,
+					Enabled:  gs_commons_constants.Enabled,
 				},
 			}
 			err = repo.Add(info)

@@ -29,6 +29,7 @@ func (svc *loginService) GetRepo() *userRepo {
 
 //web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithAccountResponse) error {
+	fmt.Println("with account")
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Account) > 0 && len(in.Content) > 0 {
 			repo := svc.GetRepo()

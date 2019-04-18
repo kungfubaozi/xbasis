@@ -35,7 +35,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 				CreateUserId: config.UserId,
 				CreateAt:     time.Now().UnixNano(),
 				AppId:        config.AppId,
-				Name:         "ROOT",
+				Name:         "Manage-UserS",
 				Type:         permissionutils.TypeFunctionStructure,
 			}
 
@@ -48,10 +48,34 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 
 			defStructure.Type = permissionutils.TypeUserStructure
 			defStructure.Id = userStructureId
-			defStructure.SID = ""
+			defStructure.Name = "Manage-FuncS"
 			err = structureRepo.Add(defStructure)
 			if err != nil {
 				fmt.Println("init def user structure err.", err)
+				panic(err)
+			}
+
+			defRouteStructure := &structure{
+				Id:           config.RouteFuncS,
+				CreateAt:     time.Now().UnixNano(),
+				CreateUserId: config.UserId,
+				AppId:        config.RouteAppId,
+				Name:         "WebRoute-FuncS",
+				Type:         permissionutils.TypeFunctionStructure,
+			}
+
+			err = structureRepo.Add(defRouteStructure)
+			if err != nil {
+				fmt.Println("init def route function structure err.", err)
+				panic(err)
+			}
+
+			defRouteStructure.Type = permissionutils.TypeUserStructure
+			defRouteStructure.Id = config.RouteUserS
+			defRouteStructure.Name = "WebRoute-UserS"
+			err = structureRepo.Add(defRouteStructure)
+			if err != nil {
+				fmt.Println("init def route user structure err.", err)
 				panic(err)
 			}
 
@@ -66,7 +90,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 func fuinit(funcs string, userss, userId string, db *mgo.Database, client *indexutils.Client) {
 	id := gs_commons_generator.NewIDG()
 
-	buffer, err := ioutil.ReadFile("/Users/Richard/Desktop/Development/Golang/src/konekko.me/gosion/permission/conf/init.json")
+	buffer, err := ioutil.ReadFile("init.json")
 	if err != nil {
 		panic(err)
 	}

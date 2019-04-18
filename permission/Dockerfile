@@ -4,6 +4,7 @@ RUN mkdir /app
 
 WORKDIR /app
 
-ADD cmd/cmd /app/cmd
+ADD conf/manage.json /app/init.json
+ADD permission /app/permission
 
-CMD ["./cmd"]
+CMD ["./permission"]

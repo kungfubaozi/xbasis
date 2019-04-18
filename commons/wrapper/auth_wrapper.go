@@ -26,7 +26,7 @@ func set(rsp interface{}, state *gs_commons_dto.State) error {
 func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 	verificationClient := permissioncli.NewVerificationClient(c)
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-
+		fmt.Println("auth wrapper")
 		status, err := verificationClient.Check(ctx, &gs_ext_service_permission.HasPermissionRequest{})
 		if err != nil {
 			fmt.Println("verification error", err)
@@ -34,7 +34,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 		}
 
 		if !status.State.Ok {
-			fmt.Println("verification state error", rsp)
+			fmt.Println("verification state error", status)
 			return set(rsp, status.State)
 		}
 
@@ -50,7 +50,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			cm["transport-ip"] = status.Ip
 			cm["transport-user-device"] = status.UserDevice
 			cm["transport-user-agent"] = status.UserAgent
-			cm["transport-client-main"] = fmt.Sprintf("%d", status.CurrentMain)
+			cm["transport-app-type"] = fmt.Sprintf("%d", status.AppType)
 			cm["transport-client-platform"] = fmt.Sprintf("%d", status.Platform)
 
 			if status.Token != nil {
@@ -59,6 +59,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 				cm["transport-token-client-platform"] = fmt.Sprintf("%d", status.Token.Platform)
 				cm["transport-token-client-id"] = status.Token.ClientId
 				cm["transport-token-user-relation"] = status.Token.Relation
+				cm["transport-token-app-type"] = fmt.Sprintf("%d", status.Token.AppType)
 			}
 
 			//compressed volume

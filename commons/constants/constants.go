@@ -73,7 +73,7 @@ const (
 )
 
 const (
-	AppTypeMain int64 = 101
+	AppTypeRoute int64 = 201
 )
 
 const (

@@ -56,6 +56,8 @@ func (svc *verificationService) GetRepo() *functionRepo {
 func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_permission.HasPermissionRequest, out *gs_ext_service_permission.HasPermissionResponse) error {
 	var wg sync.WaitGroup
 
+	fmt.Println("check verification")
+
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		md, ok := metadata.FromContext(ctx)
@@ -99,8 +101,11 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			if len(rh.userDevice) == 0 ||
 				len(rh.clientId) == 0 || len(rh.userAgent) == 0 || len(rh.ip) == 0 ||
 				len(rh.path) == 0 {
+				fmt.Println("basic check failed")
 				return nil
 			}
+
+			fmt.Println("start check process")
 
 			state := errstate.Success
 
@@ -207,7 +212,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 					}
 				}
 
-				out.CurrentMain = appResp.Main
+				out.AppType = appResp.Type
 
 				dat := &durationAccess{}
 				userId := ""
@@ -269,6 +274,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								Token:         rh.authorization,
 								ClientId:      rh.clientId,
 								FunctionRoles: f.Roles,
+								Share:         f.Share,
 								Funcs:         appResp.FunctionStructure,
 							})
 							if err != nil {
@@ -283,6 +289,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 									Platform: status.ClientPlatform,
 									AppId:    status.AppId,
 									Relation: status.Relation,
+									AppType:  status.AppType,
 								}
 
 								userId = status.UserId
@@ -347,6 +354,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			}
 
 		}
+
+		fmt.Println("context data nil")
 
 		return errstate.ErrRequest
 	})

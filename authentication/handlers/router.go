@@ -127,7 +127,7 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 		}
 
 		//just main client can be route to other application client
-		if !auth.NowMain {
+		if auth.AppType != gs_commons_constants.AppTypeRoute && auth.Token.AppType != gs_commons_constants.AppTypeRoute {
 			return errstate.ErrRouteNotMainClient
 		}
 
@@ -143,7 +143,7 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 		if app.State.Ok {
 
 			//can't jump to the main application
-			if app.Main == gs_commons_constants.AppTypeMain {
+			if app.Type == gs_commons_constants.AppTypeRoute {
 				return errstate.ErrRequest
 			}
 

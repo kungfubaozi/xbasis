@@ -1,0 +1,102 @@
+{
+  "version": 1.0,
+  "desc": "route function structure",
+  "roles": [
+    "User"
+  ],
+  "api": [
+    {
+      "group_name": "Authentication",
+      "prefix": "/authentication",
+      "functions": [
+        {
+          "api": "/router/push",
+          "name": "AppPush",
+          "roles": [
+            "User"
+          ],
+          "share": true,
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/router/refresh",
+          "name": "TokenRefresh",
+          "share": true,
+          "roles": [
+            "User"
+          ]
+        },
+        {
+          "api": "/router/logout",
+          "name": "Logout",
+          "share": true,
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "User",
+      "prefix": "/user",
+      "functions": [
+        {
+          "api": "/login/withAccount",
+          "share": true,
+          "name": "LoginWithAccount"
+        },
+        {
+          "api": "/login/withValidateCode",
+          "name": "LoginWithValidateCode",
+          "share": true,
+          "auth_type": [
+            352
+          ]
+        },
+        {
+          "api": "/login/withQRCode",
+          "name": "LoginWithQRCode",
+          "share": true
+        },
+        {
+          "api": "/register/new",
+          "name": "Register",
+          "share": true,
+          "auth_type": [
+            352
+          ]
+        },
+        {
+          "api": "/oauth/login",
+          "name": "OAuthLogin",
+          "share": true,
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/grant/yes",
+          "name": "AuthorizationConfirmation",
+          "share": true,
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/authorization/sync",
+          "name": "Authorization",
+          "share": true,
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    }
+  ]
+}

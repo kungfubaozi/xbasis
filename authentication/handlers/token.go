@@ -89,7 +89,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 			return errstate.ErrSystem
 		}
 
-		refreshToken, err := encodeToken(configuration.TokenSecretKey, time.Hour*24*7, refresh)
+		refreshToken, err := encodeToken(configuration.TokenSecretKey, time.Hour*24*3, refresh)
 		if err != nil {
 			return errstate.ErrSystem
 		}

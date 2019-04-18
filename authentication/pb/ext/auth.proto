@@ -17,6 +17,7 @@ message VerifyRequest {
     repeated string functionRoles = 3;
     string funcs = 4;
     int64 access = 5;
+    bool share = 6;
 }
 
 message VerifyResponse {
@@ -26,4 +27,5 @@ message VerifyResponse {
     gs.commons.dto.State state = 4;
     string appId = 5;
     string relation = 6;
+    int64 appType = 7;
 }

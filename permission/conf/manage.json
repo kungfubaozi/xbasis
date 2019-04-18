@@ -1,6 +1,6 @@
 {
   "version": 1.0,
-  "desc": "main structure functions",
+  "desc": "manage function structure",
   "roles": [
     "Administrator",
     "AppManage"
@@ -11,106 +11,12 @@
       "prefix": "/user",
       "functions": [
         {
-          "api": "/login/withAccount",
-          "name": "LoginWithAccount"
-        },
-        {
-          "api": "/login/withValidateCode",
-          "name": "LoginWithValidateCode",
-          "auth_type": [
-            352
-          ]
-        },
-        {
-          "api": "/login/withQRCode",
-          "name": "LoginWithQRCode"
-        },
-        {
-          "api": "/register/new",
-          "name": "Register",
-          "auth_type": [
-            352
-          ]
-        },
-        {
-          "api": "/update/username",
-          "name": "UpdateUsername",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/update/realName",
-          "name": "UpdateRealName",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/update/phone",
-          "name": "UpdatePhone",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/update/userIcon",
-          "name": "UpdateIcon",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/update/email",
-          "name": "UpdateEmail",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/update/password",
-          "name": "UpdatePassword",
-          "auth_type": [
-            5632,
-            352
-          ]
-        },
-        {
-          "api": "/oauth/bindOAuth",
-          "name": "BindOAuth",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/oauth/login",
-          "name": "OAuthLogin",
-          "auth_type": [
-            5632,
-            352
-          ]
-        },
-        {
           "api": "/invite/user",
           "name": "InviteUser",
           "roles": [
             "Administrator",
             "AppManage"
           ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/grant/yes",
-          "name": "AuthorizationConfirmation",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/authorization/sync",
-          "name": "Authorization",
           "auth_type": [
             5632
           ]
@@ -333,30 +239,6 @@
       ]
     },
     {
-      "group_name": "Authentication",
-      "prefix": "/authentication",
-      "functions": [
-        {
-          "api": "/router/push",
-          "name": "AppPush",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/router/refresh",
-          "name": "TokenRefresh"
-        },
-        {
-          "api": "/router/logout",
-          "name": "Logout",
-          "auth_type": [
-            5632
-          ]
-        }
-      ]
-    },
-    {
       "group_name": "Safety",
       "prefix": "/safety",
       "functions": [
@@ -374,17 +256,6 @@
         {
           "api": "/blacklist/remove",
           "name": "RemoveBlacklist",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/blacklist/check",
-          "name": "CheckBlacklist",
           "roles": [
             "Administrator",
             "AppManage"
@@ -414,20 +285,6 @@
           ],
           "auth_type": [
             5632,
-            352
-          ]
-        },
-        {
-          "api": "/frozen/request",
-          "name": "Frozen",
-          "auth_type": [
-            352
-          ]
-        },
-        {
-          "api": "/frozen/unblock",
-          "name": "Unblock",
-          "auth_type": [
             352
           ]
         }

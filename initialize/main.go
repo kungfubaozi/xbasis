@@ -88,18 +88,20 @@ func main() {
 	secretKey := encrypt.Md5(time.Now().String())
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
-		AppId:       id.Short(),
-		AppName:     enterprise,
-		UserId:      id.Get(),
-		Desc:        desc,
-		Username:    username,
-		Phone:       phone,
-		Email:       email,
-		Password:    string(b),
-		WebClientId: id.Short(),
-		SecretKey:   secretKey,
-		FuncS:       id.UUID(),
-		UserS:       id.UUID(),
+		AppId:            id.Short(),
+		AppName:          enterprise,
+		UserId:           id.Get(),
+		Desc:             desc,
+		Username:         username,
+		Phone:            phone,
+		Email:            email,
+		Password:         string(b),
+		WebClientId:      id.Short(),
+		SecretKey:        secretKey,
+		FuncS:            id.UUID(),
+		UserS:            id.UUID(),
+		RouteAppId:       id.Short(),
+		RouteAppClientId: id.Short(),
 	}
 
 	fmt.Println("init application def clientId(web) is:", initConfig.WebClientId)

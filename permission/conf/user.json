@@ -1,0 +1,86 @@
+{
+  "version": 1.0,
+  "desc": "user function structure",
+  "roles": [
+    "User"
+  ],
+  "api": [
+    {
+      "group_name": "User",
+      "prefix": "/user",
+      "functions": [
+        {
+          "api": "/update/username",
+          "name": "UpdateUsername",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/realName",
+          "name": "UpdateRealName",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/phone",
+          "name": "UpdatePhone",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/userIcon",
+          "name": "UpdateIcon",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/email",
+          "name": "UpdateEmail",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/update/password",
+          "name": "UpdatePassword",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632,
+            352
+          ]
+        },
+        {
+          "api": "/oauth/bindOAuth",
+          "name": "BindOAuth",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    }
+  ]
+}

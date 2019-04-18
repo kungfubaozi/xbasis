@@ -100,6 +100,8 @@ type function struct {
 	ValTokenLife   int64    `bson:"val_token_life" json:"val_token_life"` //def: 0 second (your value must >= 60s)
 	GrantPlatforms []int64  `bson:"grant_platforms" json:"grant_platforms"`
 	Roles          []string `json:"roles" bson:"roles"`
+	//representation validation does not require judging the application to which it belongs, and each application can share this function (roles need to be set to null)
+	Share bool `bson:"share" json:"share"`
 }
 
 type simplifiedFunction struct {
@@ -108,4 +110,5 @@ type simplifiedFunction struct {
 	ValTokenLife   int64    `json:"val_token_life"` //def: 0 second (your value must >= 60s)
 	GrantPlatforms []int64  `json:"grant_platforms"`
 	Roles          []string `json:"roles" bson:"roles"`
+	Share          bool     `bson:"share" json:"share"`
 }

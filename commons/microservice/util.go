@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/registry/consul"
 	r "github.com/micro/go-plugins/wrapper/ratelimiter/ratelimit"
+
 	"time"
 )
 
@@ -20,23 +21,21 @@ func NewService(name string, init bool) micro.Service {
 	cr := consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
 		registry.Secure(false))
 
-	//cr.Watch()
-
-	s := grpc.NewService(micro.Registry(cr),
-		micro.Name(name),
+	srv := grpc.NewService(
+		micro.Registry(cr), micro.Name(name),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
 		micro.WrapClient(r.NewClientWrapper(c, false)),
 	)
 
 	if init {
-		s.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
-			return gs_commons_wrapper.AuthWrapper(s.Client(), handlerFunc)
+		srv.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
+			return gs_commons_wrapper.AuthWrapper(srv.Client(), handlerFunc)
 		}))
 
 	}
 
-	return s
+	return srv
 }
 
 func Watcher() {
