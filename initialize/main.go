@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/vmihailenco/msgpack"
-	"golang.org/x/crypto/bcrypt"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/encrypt"
@@ -21,7 +20,6 @@ var (
 	phone      string
 	username   string
 	name       string
-	password   string
 	enterprise string
 	config     string
 	desc       string
@@ -33,7 +31,6 @@ func init() {
 	flag.StringVar(&phone, "phone", "", "def admin phone.")
 	flag.StringVar(&username, "username", "admin", "def admin username.")
 	flag.StringVar(&name, "name", "admin", "def admin realName.")
-	flag.StringVar(&password, "password", "admin123", "def admin password.")
 	flag.StringVar(&enterprise, "enterprise", "", "your enterprise name.")
 	flag.StringVar(&desc, "desc", "", "your enterprise desc.")
 	flag.StringVar(&config, "config", "", "zookeeper config address.")
@@ -63,10 +60,6 @@ func main() {
 		fmt.Println("admin name length must >= 2")
 		return
 	}
-	if len(password) < 6 {
-		fmt.Println("admin password length must >= 6")
-		return
-	}
 	if len(enterprise) < 2 {
 		fmt.Println("please set your enterprise name.")
 		return
@@ -80,31 +73,29 @@ func main() {
 
 	id := gs_commons_generator.NewIDG()
 
-	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-
 	secretKey := encrypt.Md5(time.Now().String())
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
-		AppId:            id.Short(),
-		AppName:          enterprise,
-		UserId:           id.Get(),
-		Desc:             desc,
-		Username:         username,
-		Phone:            phone,
-		Email:            email,
-		Password:         string(b),
-		WebClientId:      id.Short(),
-		SecretKey:        secretKey,
-		FuncS:            id.UUID(),
-		UserS:            id.UUID(),
-		RouteAppId:       id.Short(),
-		RouteAppClientId: id.Short(),
+		AppName:      enterprise,
+		UserId:       id.Get(),
+		Desc:         desc,
+		Username:     username,
+		Phone:        phone,
+		Email:        email,
+		SecretKey:    secretKey,
+		UserAppId:    id.Short(),
+		UserAppUSId:  id.UUID(),
+		UserAppFSId:  id.UUID(),
+		RouteAppId:   id.Short(),
+		RouteAppUSId: id.UUID(),
+		RouteAppFSId: id.UUID(),
+		SafeAppId:    id.Short(),
+		SafeAppUSId:  id.UUID(),
+		SafeAppFSId:  id.UUID(),
+		ManageAppId:  id.Short(),
+		ManageUSId:   id.UUID(),
+		ManageFSId:   id.UUID(),
 	}
-
-	fmt.Println("init application def clientId(web) is:", initConfig.WebClientId)
 
 	configuration := &gs_commons_config.GosionConfiguration{
 		AccessTokenExpiredTime:           10 * 60 * 1000,
@@ -112,13 +103,13 @@ func main() {
 		EmailVerificationCodeExpiredTime: 10 * 60 * 1000,
 		PhoneVerificationCodeExpiredTime: 10 * 60 * 1000,
 		LoginIntervalToStartLock:         30 * 24 * 60 * 60 * 1000,
-		CurrencySecretKey:                encrypt.Md5("currency-secret" + initConfig.AppId + strconv.FormatInt(time.Now().UnixNano(), 10)),
+		CurrencySecretKey:                encrypt.Md5("currency-secret" + strconv.FormatInt(time.Now().UnixNano(), 10)),
 		RegisterType:                     1001 | 1002 | 1003,
 		LoginType:                        1001 | 1002 | 1003,
 		TokenSecretKey:                   secretKey,
 	}
 
-	b, err = msgpack.Marshal(initConfig)
+	b, err := msgpack.Marshal(initConfig)
 	if err != nil {
 		panic(err)
 	}

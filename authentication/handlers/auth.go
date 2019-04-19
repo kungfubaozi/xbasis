@@ -113,8 +113,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 			}
 
 			//check
-			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation ||
-				claims.Token.AppId != uai.AppId || uai.Device != auth.UserDevice ||
+			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation || uai.Device != auth.UserDevice ||
 				uai.UserAgent != auth.UserAgent {
 				resp(errstate.ErrAccessToken)
 				return
@@ -185,7 +184,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				//get user require roles
 				var userroles map[string]interface{}
 
-				ok, err := svc.Client.QueryFirst("gs_user_ort", map[string]interface{}{"link_structure_roles.structure_id": in.Funcs, "user_id": claims.Token.UserId}, &userroles, "link_structure_roles.roles")
+				ok, err := svc.Client.QueryFirst("gs-user-ort", map[string]interface{}{"link_structure_roles.structure_id": in.Funcs, "user_id": claims.Token.UserId}, &userroles, "link_structure_roles.roles")
 				if err != nil || !ok {
 
 					resp(errstate.ErrRequest)

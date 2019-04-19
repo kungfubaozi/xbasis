@@ -27,7 +27,7 @@ func (l *Logger) Fire(data *logrus.Entry) error {
 			Data:      data.Data,
 		}
 
-		l.client.AddData(fmt.Sprintf("gs_logger.%s", gs_commons_date.FormatDate(data.Time, gs_commons_date.YYYY_MM_DD)), d)
+		l.client.AddData(fmt.Sprintf("gs-log.%s", gs_commons_date.FormatDate(data.Time, gs_commons_date.YYYY_MM_DD)), d)
 
 	}()
 

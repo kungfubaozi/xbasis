@@ -6,7 +6,7 @@ import (
 )
 
 func isStructureExists(session *mgo.Session, id string) int {
-	c, err := session.DB("gosion").C("structure").Find(bson.M{"_id": id}).Count()
+	c, err := session.DB(dbName).C(structureCollection).Find(bson.M{"_id": id}).Count()
 	if err != nil {
 		return 0
 	}

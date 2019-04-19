@@ -2,6 +2,7 @@ package userhandlers
 
 import (
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/indexutils"
@@ -22,12 +23,17 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 			userRepo := userRepo{session: session, Client: client}
 			defer userRepo.Close()
 
+			b, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+			if err != nil {
+				panic(err)
+			}
+
 			u := &userModel{
 				Id:         config.UserId,
 				CreateAt:   time.Now().UnixNano(),
 				Account:    config.Username,
-				Password:   config.Password,
-				RegisterAt: config.WebClientId,
+				Password:   string(b),
+				RegisterAt: "",
 				Phone:      config.Phone,
 				Email:      config.Email,
 			}

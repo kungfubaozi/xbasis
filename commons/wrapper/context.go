@@ -100,7 +100,7 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 		//	return nil
 		//}
 
-		fmt.Println("auth data", auth)
+		fmt.Println("entry md ok")
 
 		if auth.Token != nil && len(auth.Token.UserId) > 0 {
 			if auth.Token.AppType == -1 || auth.Platform == -1 || auth.AppType == -1 {

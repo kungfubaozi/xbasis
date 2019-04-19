@@ -53,29 +53,29 @@ type initializeRepo struct {
 
 func (repo *initializeRepo) AddManageApp() {
 	config := repo.readFile("manage.json")
-	mus := repo.buildStructure(repo.config.ManageAppId, permissionutils.TypeUserStructure)
-	mfs := repo.buildStructure(repo.config.ManageAppId, permissionutils.TypeFunctionStructure)
+	repo.buildStructure(repo.config.ManageUSId, repo.config.ManageAppId, permissionutils.TypeUserStructure)
+	mfs := repo.buildStructure(repo.config.ManageFSId, repo.config.ManageAppId, permissionutils.TypeFunctionStructure)
 	repo.generate(mfs.Id, config)
 }
 
 func (repo *initializeRepo) AddRouteApp() {
 	config := repo.readFile("route.json")
-	rus := repo.buildStructure(repo.config.RouteAppId, permissionutils.TypeUserStructure)
-	rfs := repo.buildStructure(repo.config.RouteAppId, permissionutils.TypeFunctionStructure)
+	repo.buildStructure(repo.config.RouteAppUSId, repo.config.RouteAppId, permissionutils.TypeUserStructure)
+	rfs := repo.buildStructure(repo.config.RouteAppFSId, repo.config.RouteAppId, permissionutils.TypeFunctionStructure)
 	repo.generate(rfs.Id, config)
 }
 
 func (repo *initializeRepo) AddSafeApp() {
 	config := repo.readFile("safe.json")
-	sus := repo.buildStructure(repo.config.SafeAppId, permissionutils.TypeUserStructure)
-	sfs := repo.buildStructure(repo.config.SafeAppId, permissionutils.TypeFunctionStructure)
+	repo.buildStructure(repo.config.SafeAppUSId, repo.config.SafeAppId, permissionutils.TypeUserStructure)
+	sfs := repo.buildStructure(repo.config.SafeAppFSId, repo.config.SafeAppId, permissionutils.TypeFunctionStructure)
 	repo.generate(sfs.Id, config)
 }
 
 func (repo *initializeRepo) AddUserApp() {
 	config := repo.readFile("user.json")
-	uus := repo.buildStructure(repo.config.UserAppId, permissionutils.TypeUserStructure)
-	ufs := repo.buildStructure(repo.config.UserAppId, permissionutils.TypeFunctionStructure)
+	repo.buildStructure(repo.config.UserAppUSId, repo.config.UserAppId, permissionutils.TypeUserStructure)
+	ufs := repo.buildStructure(repo.config.UserAppFSId, repo.config.UserAppId, permissionutils.TypeFunctionStructure)
 	repo.generate(ufs.Id, config)
 }
 
@@ -85,7 +85,7 @@ func (repo *initializeRepo) SaveAndClose() {
 		db := repo.session.DB("gs_permission")
 		if repo.userOrientate != nil && len(repo.userOrientate.LinkStructureRoles) > 0 {
 			check(db.C(fmt.Sprintf("user_ort_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userOrientate))
-			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs_user_ort").Type("v").Doc(repo.userOrientate))
+			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-ort").Type("_doc").Doc(repo.userOrientate))
 		}
 
 		if len(repo.userRoles) > 0 {
@@ -130,7 +130,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 			adminRoles = append(adminRoles, role.Id)
 		}
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs_roles").Type("v").Doc(role))
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-roles").Type("_doc").Doc(role))
 
 		repo.userRoles = append(repo.userRoles, role)
 
@@ -158,7 +158,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 
 		repo.functionGroups = append(repo.functionGroups, g)
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs_function_groups").Type("v").Doc(g))
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-function-groups").Type("_doc").Doc(g))
 
 		for _, v := range v.Functions {
 			f := &function{
@@ -182,12 +182,12 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 				f.Roles = nr
 			}
 
-			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs_functions").Type("v").Doc(f))
+			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-functions").Type("_doc").Doc(f))
 		}
 	}
 }
 
-func (repo *initializeRepo) buildStructure(appId string, st int64) *structure {
+func (repo *initializeRepo) buildStructure(id, appId string, st int64) *structure {
 	var name string
 	if st == permissionutils.TypeUserStructure {
 		name = "Users"
@@ -195,7 +195,7 @@ func (repo *initializeRepo) buildStructure(appId string, st int64) *structure {
 		name = "Functions"
 	}
 	s := &structure{
-		Id:           repo.id.UUID(),
+		Id:           id,
 		Type:         st,
 		Name:         name,
 		AppId:        appId,
@@ -203,7 +203,7 @@ func (repo *initializeRepo) buildStructure(appId string, st int64) *structure {
 		CreateAt:     time.Now().UnixNano(),
 	}
 	repo.structures = append(repo.structures, s)
-	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs_structures").Type("v").Doc(s))
+	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-structures").Type("_doc").Doc(s))
 	return s
 }
 

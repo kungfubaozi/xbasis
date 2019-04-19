@@ -73,7 +73,13 @@ const (
 )
 
 const (
-	AppTypeRoute int64 = 201
+	AppTypeRoute int64 = 9 << 3
+
+	AppTypeUser int64 = 9 << 5
+
+	AppTypeManage int64 = 9 << 7
+
+	AppTypeSafe int64 = 9 << 9
 )
 
 const (

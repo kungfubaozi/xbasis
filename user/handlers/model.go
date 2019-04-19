@@ -19,7 +19,7 @@ const (
 )
 
 const (
-	typeUserIndex = "gs_users"
+	typeUserIndex = "gs-users"
 )
 
 const (

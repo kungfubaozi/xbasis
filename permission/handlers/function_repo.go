@@ -13,7 +13,7 @@ type functionRepo struct {
 }
 
 func (repo *functionRepo) AddFunction(function *function) error {
-	id, err := repo.AddData("gs_functions", function)
+	id, err := repo.AddData("gs-functions", function)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 
 func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, error) {
 	var function function
-	ok, err := repo.QueryFirst("gs_functions", map[string]interface{}{
+	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{
 		"api":          api,
 		"structure_id": structureId,
 	}, &function)
@@ -76,7 +76,7 @@ func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, er
 func (repo *functionRepo) SimplifiedLookupApi(structureId, api string) (*simplifiedFunction, error) {
 	var sf simplifiedFunction
 
-	ok, err := repo.QueryFirst("gs_functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf, "id", "roles", "auth_types", "grant_platforms")
+	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf, "id", "roles", "auth_types", "grant_platforms")
 	if err != nil {
 		return nil, err
 	}

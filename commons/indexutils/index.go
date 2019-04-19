@@ -18,7 +18,7 @@ func (cli *Client) GetElasticClient() *elastic.Client {
 }
 
 func (cli *Client) AddData(index string, v interface{}) (string, error) {
-	s, err := cli.client.Index().Index(index).Type("v").BodyJson(v).Do(context.Background())
+	s, err := cli.client.Index().Index(index).Type("_doc").BodyJson(v).Do(context.Background())
 
 	if err != nil {
 		return "", err
@@ -50,7 +50,7 @@ func (cli *Client) Delete(index string, kvs map[string]interface{}) (bool, error
 		return false, err
 	}
 	if ok {
-		a, err := cli.client.Delete().Index(index).Type("v").Id(v[0].Id).Do(context.Background())
+		a, err := cli.client.Delete().Index(index).Type("_doc").Id(v[0].Id).Do(context.Background())
 		if err != nil {
 			return false, nil
 		}
@@ -65,7 +65,7 @@ func (cli *Client) _queryFirst(index string, kvs map[string]interface{}, include
 
 	query := cli._buildQuery(kvs)
 
-	e := cli.client.Search(index).Type("v").Query(query)
+	e := cli.client.Search(index).Type("_doc").Query(query)
 	if includes != nil && len(includes) > 0 {
 		e.FetchSourceContext(elastic.NewFetchSourceContext(true).Include(includes...))
 	}
@@ -95,7 +95,7 @@ func (cli *Client) _queryFirst(index string, kvs map[string]interface{}, include
 }
 
 func (cli *Client) Update(index, id string, values map[string]interface{}) (bool, error) {
-	a, err := cli.client.Update().Index(index).Type("v").Id(id).Upsert(values).Do(context.Background())
+	a, err := cli.client.Update().Index(index).Type("_doc").Id(id).Upsert(values).Do(context.Background())
 	if err != nil {
 		return false, err
 	}
@@ -106,7 +106,7 @@ func (cli *Client) Update(index, id string, values map[string]interface{}) (bool
 }
 
 func (cli *Client) Count(index string, kvs map[string]interface{}) (int64, error) {
-	a, err := cli.client.Count(index).Type("v").Query(cli._buildQuery(kvs)).Do(context.Background())
+	a, err := cli.client.Count(index).Type("_doc").Query(cli._buildQuery(kvs)).Do(context.Background())
 	if err != nil {
 		return 0, err
 	}
