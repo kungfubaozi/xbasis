@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -17,9 +18,10 @@ import (
 )
 
 type loginService struct {
-	session         *mgo.Session
-	securityService gs_ext_service_safety.SecurityService
-	tokenService    gs_ext_service_authentication.TokenService
+	session            *mgo.Session
+	extSecurityService gs_ext_service_safety.SecurityService
+	extTokenService    gs_ext_service_authentication.TokenService
+	extSyncCheck       gs_ext_service_application.UsersyncService
 	*indexutils.Client
 }
 
@@ -27,6 +29,10 @@ func (svc *loginService) GetRepo() *userRepo {
 	return &userRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
+/**
+1）登录生成的token只适用于当前登录的项目(x-client-id)
+2)
+*/
 //web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithAccountResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
@@ -69,7 +75,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 
 				fmt.Println("entry")
 
-				s, err := svc.securityService.Get(ctx, &gs_ext_service_safety.GetRequest{
+				s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{
 					UserId: info.Id,
 				})
 
@@ -97,7 +103,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				fmt.Println("login clientId", auth.ClientId)
 
 				//generate token
-				s1, err := svc.tokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
+				s1, err := svc.extTokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
 					Auth: &gs_commons_dto.Authorize{
 						ClientId:  auth.ClientId,
 						UserId:    info.Id,
@@ -146,5 +152,5 @@ func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.Ent
 
 func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
 	tokenService gs_ext_service_authentication.TokenService, client *indexutils.Client) gs_service_user.LoginHandler {
-	return &loginService{session: session, securityService: securityService, tokenService: tokenService, Client: client}
+	return &loginService{session: session, extSecurityService: securityService, extTokenService: tokenService, Client: client}
 }

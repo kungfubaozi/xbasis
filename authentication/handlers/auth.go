@@ -191,6 +191,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 					return
 				}
 
+				//user self role check
 				userRoles = userroles["link_structure_roles"].([]interface{})[0].(map[string]interface{})["roles"].([]interface{})
 
 				if userRoles != nil && len(userRoles) > 0 && len(in.FunctionRoles) > 0 {
