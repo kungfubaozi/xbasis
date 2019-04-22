@@ -1,6 +1,6 @@
 package workflow
 
-type TaskListener struct {
+type taskListener struct {
 	Id       string `bson:"id" json:"id"`
 	Name     string `bson:"name" json:"name"`
 	Desc     string `bson:"desc" json:"desc"`
@@ -8,7 +8,7 @@ type TaskListener struct {
 	Listener string `bson:"listener" json:"listener"`
 }
 
-type ExecutionListener struct {
+type executionListener struct {
 	Id       string `bson:"id" json:"id"`
 	Name     string `bson:"name" json:"name"`
 	Desc     string `bson:"desc" json:"desc"`

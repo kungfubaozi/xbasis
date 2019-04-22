@@ -12,6 +12,8 @@ type registerService struct {
 	session *mgo.Session
 }
 
+//自注册的用户只能有访问当前项目的权限
+//管理员invite可以选择可以访问哪些项目
 func (svc *registerService) New(ctx context.Context, in *gs_service_user.NewRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil

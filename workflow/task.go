@@ -32,15 +32,15 @@ const (
 	FTEventGateway
 )
 
-type BasicModel struct {
+type basicModel struct {
 	Id       string `bson:"id" json:"id"`
 	Name     string `bson:"name" json:"name"`
 	Desc     string `bson:"desc" json:"desc"`
 	CreateAt int64  `bson:"create_at" json:"create_at"`
 }
 
-type SequenceFlow struct {
-	Basic       *BasicModel    `bson:"basic" json:"basic"`
+type sequenceFlow struct {
+	Basic       *basicModel    `bson:"basic" json:"basic"`
 	Listeners   *TEListener    `bson:"listeners" json:"listeners"`
 	Script      string         `bson:"script" json:"script"`
 	DefaultFlow bool           `bson:"default_flow" json:"default_flow"`
@@ -50,8 +50,8 @@ type SequenceFlow struct {
 	EndType     ConnectionType `bson:"end_type" json:"end_type"`
 }
 
-type UserTask struct {
-	Basic                   *BasicModel `bson:"basic" json:"basic"`
+type userTask struct {
+	Basic                   *basicModel `bson:"basic" json:"basic"`
 	Listeners               *TEListener `bson:"listeners" json:"listeners"`
 	FormRef                 string      `bson:"form_ref" json:"form_ref"`
 	Priority                int64       `json:"priority" bson:"priority"`
@@ -60,8 +60,8 @@ type UserTask struct {
 	AllowOriginatorFinished bool        `bson:"allow_originator_finished" json:"allow_originator_finished"` //允许创建人取消流程
 }
 
-type HttpTask struct {
-	Basic              *BasicModel `bson:"basic" json:"basic"`
+type httpTask struct {
+	Basic              *basicModel `bson:"basic" json:"basic"`
 	Listeners          *TEListener `bson:"listeners" json:"listeners"`
 	RequestMethod      int64       `json:"request_method" bson:"request_method"`   //请求方法
 	RequestURL         string      `bson:"request_url" json:"request_url"`         //请求地址
@@ -71,14 +71,14 @@ type HttpTask struct {
 	SaveResponseAsJson bool        `bson:"save_response_as_json" json:"save_response_as_json"`
 }
 
-type DecisionTask struct {
-	Basic          *BasicModel `bson:"basic" json:"basic"`
+type decisionTask struct {
+	Basic          *basicModel `bson:"basic" json:"basic"`
 	Listeners      *TEListener `bson:"listeners" json:"listeners"`
 	TableReference string      `json:"table_reference" bson:"table_reference"`
 }
 
-type SendTask struct {
-	Basic     *BasicModel `bson:"basic" json:"basic"`
+type sendTask struct {
+	Basic     *basicModel `bson:"basic" json:"basic"`
 	Listeners *TEListener `bson:"listeners" json:"listeners"`
 	UserIds   []string    `bson:"user_ids" json:"user_ids"`
 }

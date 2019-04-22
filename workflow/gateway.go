@@ -1,17 +1,17 @@
 package workflow
 
 //排他网关
-type ExclusiveGateway struct {
+type exclusiveGateway struct {
 }
 
 //并行网关
-type ParallelGateway struct {
+type parallelGateway struct {
 }
 
 //包容网关
-type InclusiveGateway struct {
+type inclusiveGateway struct {
 }
 
 //事件网关
-type EventGateway struct {
+type eventGateway struct {
 }

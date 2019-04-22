@@ -7,17 +7,17 @@ import (
 	"reflect"
 )
 
-type LuaScript struct {
+type luaScript struct {
 	l *lua.LState
 }
 
-func InitScript() *LuaScript {
-	s := &LuaScript{}
+func newScript() *luaScript {
+	s := &luaScript{}
 	s.l = lua.NewState()
 	return s
 }
 
-func (l *LuaScript) Run(script string, value map[string]interface{}) (bool, error) {
+func (l *luaScript) Run(script string, value map[string]interface{}) (bool, error) {
 	if len(script) > 5 {
 		code := fmt.Sprintf("function test(flow) %s end", script)
 		table := l.l.NewTable()

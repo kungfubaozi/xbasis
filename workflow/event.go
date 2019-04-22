@@ -1,6 +1,6 @@
 package workflow
 
-type TypeEvent struct {
+type typeEvent struct {
 	Id                 string   `bson:"id" json:"id"`
 	Name               string   `bson:"name" json:"name"`
 	Desc               string   `bson:"desc" json:"desc"`
@@ -8,32 +8,32 @@ type TypeEvent struct {
 	ExecutionListeners []string `bson:"execution_listeners" json:"execution_listeners"`
 }
 
-type StartEvent struct {
-	TypeEvent
+type startEvent struct {
+	typeEvent
 	FormRef string `bson:"form_ref" json:"form_ref"`
 }
 
 //定时启动事件
-type TimerStartEvent struct {
-	TypeEvent
+type timerStartEvent struct {
+	typeEvent
 	TimeCron string `bson:"time_cron" json:"time_cron"`
 }
 
 //消息事件
-type MessageStartEvent struct {
-	TypeEvent
+type messageStartEvent struct {
+	typeEvent
 	Reference string `bson:"reference" json:"reference"`
 }
 
 //结束事件
-type EndEvent struct {
-	TypeEvent
+type endEvent struct {
+	typeEvent
 }
 
-type EndCancelEvent struct {
-	TypeEvent
+type endCancelEvent struct {
+	typeEvent
 }
 
-type EndTerminateEvent struct {
-	TypeEvent
+type endTerminateEvent struct {
+	typeEvent
 }

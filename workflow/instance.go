@@ -2,16 +2,18 @@ package workflow
 
 //single
 type instance struct {
-	scripts map[string]string
-	start   chan bool
-	next    chan int
+	script         *luaScript
+	id             string
+	scripts        map[string]string
+	forms          map[string]*typeForm
+	flowConditions map[string]string
+	running        bool
+	start          chan bool
+	nextTask       chan int
+	indexTask      int //当前位置
 }
 
-var instances []*instance
-
-func putInstance(i *instance) {
-	instances = append(instances, i)
-	go i.Start()
+type users struct {
 }
 
 func (i *instance) Start() {
@@ -19,13 +21,19 @@ func (i *instance) Start() {
 		select {
 		case s := <-i.start:
 			if !s {
+				i.running = false
 				return
 			}
 
 			break
-		case next := <-i.next:
+		case next := <-i.nextTask:
+			i.indexTask = next
 			break
 		}
 
 	}
+}
+
+func (i *instance) SaveFlowStatus() {
+
 }

@@ -1,10 +1,10 @@
-package workflow
+package main
 
 import (
 	"fmt"
 	"github.com/yuin/gluamapper"
 	"github.com/yuin/gopher-lua"
-	"time"
+	"konekko.me/gosion/workflow"
 )
 
 type Role struct {
@@ -19,10 +19,10 @@ type Person struct {
 }
 
 func main() {
-	//flowinstance.InitProcess()
-	a := time.Now().UnixNano()
-	loadFile()
-	fmt.Println("time", (time.Now().UnixNano()-a)/1e6)
+
+	r := workflow.NewRuntime()
+	r.Initialize()
+
 }
 
 func loadCode() {
