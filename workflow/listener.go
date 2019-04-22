@@ -1,4 +1,4 @@
-package listener
+package workflow
 
 type TaskListener struct {
 	Id       string `bson:"id" json:"id"`
@@ -14,4 +14,9 @@ type ExecutionListener struct {
 	Desc     string `bson:"desc" json:"desc"`
 	CreateAt int64  `bson:"create_at" json:"create_at"`
 	Listener string `bson:"listener" json:"listener"`
+}
+
+type TEListener struct {
+	ExecutionListeners []string `bson:"execution_listeners" json:"execution_listeners"`
+	TaskListeners      []string `bson:"task_listeners" json:"task_listeners"`
 }

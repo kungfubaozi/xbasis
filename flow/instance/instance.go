@@ -1,5 +1,0 @@
-package flowinstance
-
-func InitProcess() {
-
-}
