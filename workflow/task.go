@@ -11,6 +11,8 @@ const (
 
 	FTStartEvent
 
+	FTHeader
+
 	FTTimerStartEvent
 
 	FTMessageStartEvent
@@ -48,6 +50,7 @@ type sequenceFlow struct {
 	StartType   ConnectionType `bson:"start_type" json:"start_type"`
 	End         string         `bson:"end" json:"end"`
 	EndType     ConnectionType `bson:"end_type" json:"end_type"`
+	Priority    int64          `bson:"priority" json:"priority"`
 }
 
 type userTask struct {
@@ -81,4 +84,13 @@ type sendTask struct {
 	Basic     *basicModel `bson:"basic" json:"basic"`
 	Listeners *TEListener `bson:"listeners" json:"listeners"`
 	UserIds   []string    `bson:"user_ids" json:"user_ids"`
+}
+
+type mailTask struct {
+	Basic             *basicModel `bson:"basic" json:"basic"`
+	ServerHost        string      `bson:"mail_server_host" json:"mail_server_host"`
+	ServerPost        int64       `bson:"mail_server_post" json:"mail_server_post"`
+	ServerDefaultFrom string      `bson:"mail_server_default_from" json:"mail_server_default_from"`
+	ServerUsername    string      `bson:"mail_server_username" json:"mail_server_username"`
+	ServerPassword    string      `bson:"mail_server_password" json:"mail_server_password"`
 }

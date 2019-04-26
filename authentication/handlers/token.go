@@ -102,8 +102,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 		if len(refreshToken) > 0 && len(accessToken) > 0 {
 			out.AccessToken = accessToken
 			out.RefreshToken = refreshToken
-			out.State = errstate.Success
-			return nil
+			return errstate.Success
 		}
 
 		return nil

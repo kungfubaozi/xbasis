@@ -116,8 +116,6 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 		}
 	}
 
-	fmt.Println("context md null")
-
 	null()
 	return nil
 }

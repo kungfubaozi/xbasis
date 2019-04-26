@@ -3,17 +3,26 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"github.com/twinj/uuid"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"reflect"
+	"strings"
 )
 
 type Message struct {
+	Basic    *basicModel
 	UserId   string
 	TargetId string
 	Type     int64
 	Content  map[string]interface{}
+}
+
+type basicModel struct {
+	Id       string `bson:"id" json:"id"`
+	Name     string `bson:"name" json:"name"`
+	Desc     string `bson:"desc" json:"desc"`
+	CreateAt int64  `bson:"create_at" json:"create_at"`
 }
 
 func main() {
@@ -186,18 +195,27 @@ func main() {
 	//fmt.Println("face", gs_commons_constants.AuthTypeOfFace)
 	//fmt.Println("token", gs_commons_constants.AuthTypeOfToken)
 
-	log := logrus.New()
+	//log := logrus.New()
+	//
+	//log.SetFormatter(&logrus.JSONFormatter{PrettyPrint: true})
+	//
+	//log.WithFields(logrus.Fields{
+	//	"action":  "askdlfj",
+	//	"action1": "askdlfj",
+	//	"action2": "askdlfj",
+	//	"action3": "askdlfj",
+	//	"action4": "askdlfj",
+	//	"action5": "askdlfj",
+	//}).Info("this is test log")
 
-	log.SetFormatter(&logrus.JSONFormatter{PrettyPrint: true})
-
-	log.WithFields(logrus.Fields{
-		"action":  "askdlfj",
-		"action1": "askdlfj",
-		"action2": "askdlfj",
-		"action3": "askdlfj",
-		"action4": "askdlfj",
-		"action5": "askdlfj",
-	}).Info("this is test log")
+	b := &Message{
+		Basic: &basicModel{
+			Id: uuid.NewV4().String(),
+		},
+	}
+	v := reflect.TypeOf(b).String()
+	fmt.Println(v)
+	fmt.Println(strings.HasSuffix(v, "age"))
 
 }
 

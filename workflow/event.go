@@ -25,6 +25,9 @@ type messageStartEvent struct {
 	Reference string `bson:"reference" json:"reference"`
 }
 
+type errorStartEvent struct {
+}
+
 //结束事件
 type endEvent struct {
 	typeEvent
@@ -36,4 +39,10 @@ type endCancelEvent struct {
 
 type endTerminateEvent struct {
 	typeEvent
+}
+
+//触发器
+type TriggerStartEvent struct {
+	typeEvent
+	Trigger string `bson:"trigger" json:"trigger"`
 }

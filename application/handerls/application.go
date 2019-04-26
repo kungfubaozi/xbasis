@@ -101,7 +101,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 
 func (svc *applicationService) Remove(ctx context.Context, in *gs_service_application.RemoveRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+		return errstate.Success
 	})
 }
 

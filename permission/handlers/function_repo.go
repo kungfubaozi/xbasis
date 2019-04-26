@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"errors"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/indexutils"
@@ -76,7 +77,9 @@ func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, er
 func (repo *functionRepo) SimplifiedLookupApi(structureId, api string) (*simplifiedFunction, error) {
 	var sf simplifiedFunction
 
-	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf, "id", "roles", "auth_types", "grant_platforms")
+	fmt.Println("st", structureId)
+
+	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf, "id", "roles", "auth_types", "grant_platforms", "share")
 	if err != nil {
 		return nil, err
 	}

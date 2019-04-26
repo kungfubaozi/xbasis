@@ -42,17 +42,18 @@ type initializeRepo struct {
 	id        gs_commons_generator.IDGenerator
 	bulk      *elastic.BulkService
 	// data
-	userOrientate  *userOrientate
-	userRoles      []interface{}
-	functions      []interface{}
-	functionGroups []interface{}
-	structures     []interface{}
+	userRolesRelation  []interface{}
+	userGroupsRelation []interface{}
+	userRoles          []interface{}
+	functions          []interface{}
+	functionGroups     []interface{}
+	structures         []interface{}
 
 	//callback
 }
 
 func (repo *initializeRepo) AddManageApp() {
-	config := repo.readFile("manage.json")
+	config := repo.readFile("admin.json")
 	repo.buildStructure(repo.config.ManageUSId, repo.config.ManageAppId, permissionutils.TypeUserStructure)
 	mfs := repo.buildStructure(repo.config.ManageFSId, repo.config.ManageAppId, permissionutils.TypeFunctionStructure)
 	repo.generate(mfs.Id, config)
@@ -83,9 +84,12 @@ func (repo *initializeRepo) SaveAndClose() {
 	defer repo.session.Close()
 	if repo.bulk != nil && repo.bulk.NumberOfActions() > 0 {
 		db := repo.session.DB("gs_permission")
-		if repo.userOrientate != nil && len(repo.userOrientate.LinkStructureRoles) > 0 {
-			check(db.C(fmt.Sprintf("user_ort_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userOrientate))
-			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-ort").Type("_doc").Doc(repo.userOrientate))
+		if repo.userRolesRelation != nil && len(repo.userRolesRelation) > 0 {
+			check(db.C(fmt.Sprintf("user_roles_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userRolesRelation))
+		}
+
+		if repo.userGroupsRelation != nil && len(repo.userGroupsRelation) > 0 {
+			check(db.C(fmt.Sprintf("user_groups_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userGroupsRelation))
 		}
 
 		if len(repo.userRoles) > 0 {
@@ -138,10 +142,18 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 	}
 
 	if len(adminRoles) > 0 {
-		repo.userOrientate.LinkStructureRoles = append(repo.userOrientate.LinkStructureRoles, &linkStructureRole{
+
+		u := &userRolesRelation{
+			UserId:      repo.config.UserId,
 			StructureId: functionStructureId,
 			Roles:       adminRoles,
-		})
+			CreateAt:    time.Now().UnixNano(),
+		}
+
+		repo.userRolesRelation = append(repo.userRolesRelation, u)
+
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-roles-relation").Doc(u))
+
 	}
 
 	for _, v := range config.Data {

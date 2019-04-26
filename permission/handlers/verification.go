@@ -199,6 +199,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				//fmt.Println("function structure id", ccs.FunctionStructureId)
 				f, err := repo.SimplifiedLookupApi(appResp.FunctionStructure, rh.path)
 				if err != nil {
+					fmt.Println("find api", err)
 					fmt.Println("invalid api", rh.path)
 					return nil
 				}
@@ -354,8 +355,6 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			}
 
 		}
-
-		fmt.Println("context data nil")
 
 		return errstate.ErrRequest
 	})

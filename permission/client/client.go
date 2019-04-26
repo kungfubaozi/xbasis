@@ -9,3 +9,7 @@ import (
 func NewVerificationClient(client client.Client) gs_ext_service_permission.VerificationService {
 	return gs_ext_service_permission.NewVerificationService(gs_commons_constants.ExtPermissionVerification, client)
 }
+
+func NewAccessibleClient(client client.Client) gs_ext_service_permission.AccessibleService {
+	return gs_ext_service_permission.NewAccessibleService(gs_commons_constants.ExtAccessibleVerification, client)
+}

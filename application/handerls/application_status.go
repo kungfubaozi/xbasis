@@ -2,6 +2,7 @@ package applicationhanderls
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/commons/constants"
@@ -28,6 +29,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 
 		a, err := repo.FindByClientId(in.ClientId)
 		if err != nil {
+			fmt.Println("find app info err", err)
 			return errstate.ErrInvalidClientId
 		}
 

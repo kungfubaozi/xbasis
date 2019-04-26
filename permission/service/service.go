@@ -49,6 +49,8 @@ func StartService() {
 			safetyclient.NewBlacklistClient(m.Client()),
 			authenticationcli.NewAuthClient(m.Client()), client, log))
 
+		gs_ext_service_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, log))
+
 		errc <- m.Run()
 	}()
 

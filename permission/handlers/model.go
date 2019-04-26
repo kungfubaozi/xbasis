@@ -41,11 +41,18 @@ type structure struct {
 	Type         int64  `bson:"type" json:"type"` //user or function structure
 }
 
-type userOrientate struct {
-	CreateAt            int64                 `bson:"create_at" json:"create_at"`
-	UserId              string                `bson:"user_id" json:"user_id"`
-	LinkStructureRoles  []*linkStructureRole  `bson:"link_structure_roles" json:"link_structure_roles"`
-	LinkStructureGroups []*linkStructureGroup `bson:"link_structure_groups" json:"link_structure_groups"`
+type userRolesRelation struct {
+	CreateAt    int64    `bson:"create_at" json:"create_at"`
+	UserId      string   `bson:"user_id" json:"user_id"`
+	Roles       []string `bson:"roles" json:"roles"`
+	StructureId string   `bson:"structure_id" json:"structure_id"`
+}
+
+type userGroupsRelation struct {
+	CreateAt    int64    `bson:"create_at" json:"create_at"`
+	UserId      string   `bson:"user_id" json:"user_id"`
+	StructureId string   `bson:"structure_id" json:"structure_id"`
+	BindGroupId []string `bson:"bind_group_id" json:"bind_group_id"` //用户在同一结构下可能会在多个组内
 }
 
 type userGroup struct {

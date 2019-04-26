@@ -142,6 +142,8 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 
 		if app.State.Ok {
 
+			fmt.Println("push")
+
 			//can't jump to the main application
 			if app.Type == gs_commons_constants.AppTypeRoute {
 				return errstate.ErrRequest
@@ -170,8 +172,11 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 			//The application to be transferred must have the following two structures
 			if len(app.FunctionStructure) > 0 && len(app.UserStructure) > 0 {
 
+				fmt.Println("functionStructureId", app.FunctionStructure)
+				fmt.Println("userId", auth.User)
+
 				// check permission
-				c, err := svc.Client.Count("gs_user_ort", map[string]interface{}{"link_structure_roles.structure_id": app.FunctionStructure, "user_id": auth.User})
+				c, err := svc.Client.Count("gs-user-ort", map[string]interface{}{"link_structure_roles.structure_id": app.FunctionStructure, "user_id": auth.User})
 				if err != nil {
 					return nil
 				}

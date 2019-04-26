@@ -12,6 +12,7 @@ const (
 
 const (
 	ExtPermissionVerification = "gs.ext.svc.permission.verification"
+	ExtAccessibleVerification = "gs.ext.svc.permission.accessible"
 	ExtUserService            = "gs.ext.svc.user"
 	ExtSafetyService          = "gs.ext.svc.safety"
 	ExtApplicationService     = "gs.ext.svc.application"

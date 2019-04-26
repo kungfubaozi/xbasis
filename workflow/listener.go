@@ -20,3 +20,9 @@ type TEListener struct {
 	ExecutionListeners []string `bson:"execution_listeners" json:"execution_listeners"`
 	TaskListeners      []string `bson:"task_listeners" json:"task_listeners"`
 }
+
+type FlowTaskFunc interface {
+}
+
+type FlowExecutionFunc interface {
+}

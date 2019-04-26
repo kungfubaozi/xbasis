@@ -126,9 +126,8 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				//response token
 				out.AccessToken = s1.AccessToken
 				out.RefreshToken = s1.RefreshToken
-				out.State = errstate.Success
 
-				return nil
+				return errstate.Success
 			}
 			return eiup()
 		}

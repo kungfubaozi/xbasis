@@ -28,7 +28,7 @@ func (repo *initializeRepo) AddUserApp() {
 }
 
 func (repo *initializeRepo) AddManageApp() {
-	app := repo.getApp(repo.config.ManageAppId, "Gsmanage", gs_commons_constants.AppTypeManage)
+	app := repo.getApp(repo.config.ManageAppId, "Gsadmin", gs_commons_constants.AppTypeManage)
 	repo.setStructure(repo.config.ManageFSId, repo.config.ManageUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
