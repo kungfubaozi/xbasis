@@ -8,6 +8,8 @@ It is generated from these files:
 	pb/instance.proto
 
 It has these top-level messages:
+	SubmitRequest
+	SubmitResponse
 	ContinueRequest
 	ContinueResponse
 	RestartRequest
@@ -24,6 +26,7 @@ package gs_service_workflow
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
+import _ "github.com/golang/protobuf/ptypes/any"
 import _ "konekko.me/gosion/commons/dto"
 
 import (
@@ -61,6 +64,7 @@ type InstanceService interface {
 	Restart(ctx context.Context, in *RestartRequest, opts ...client.CallOption) (*RestartResponse, error)
 	// 继续执行
 	Continue(ctx context.Context, in *ContinueRequest, opts ...client.CallOption) (*ContinueResponse, error)
+	Submit(ctx context.Context, in *SubmitRequest, opts ...client.CallOption) (*SubmitResponse, error)
 }
 
 type instanceService struct {
@@ -131,6 +135,16 @@ func (c *instanceService) Continue(ctx context.Context, in *ContinueRequest, opt
 	return out, nil
 }
 
+func (c *instanceService) Submit(ctx context.Context, in *SubmitRequest, opts ...client.CallOption) (*SubmitResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.Submit", in)
+	out := new(SubmitResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Instance service
 
 type InstanceHandler interface {
@@ -144,6 +158,7 @@ type InstanceHandler interface {
 	Restart(context.Context, *RestartRequest, *RestartResponse) error
 	// 继续执行
 	Continue(context.Context, *ContinueRequest, *ContinueResponse) error
+	Submit(context.Context, *SubmitRequest, *SubmitResponse) error
 }
 
 func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...server.HandlerOption) error {
@@ -153,6 +168,7 @@ func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...serv
 		Stop(ctx context.Context, in *StopRequest, out *StopResponse) error
 		Restart(ctx context.Context, in *RestartRequest, out *RestartResponse) error
 		Continue(ctx context.Context, in *ContinueRequest, out *ContinueResponse) error
+		Submit(ctx context.Context, in *SubmitRequest, out *SubmitResponse) error
 	}
 	type Instance struct {
 		instance
@@ -183,4 +199,8 @@ func (h *instanceHandler) Restart(ctx context.Context, in *RestartRequest, out *
 
 func (h *instanceHandler) Continue(ctx context.Context, in *ContinueRequest, out *ContinueResponse) error {
 	return h.InstanceHandler.Continue(ctx, in, out)
+}
+
+func (h *instanceHandler) Submit(ctx context.Context, in *SubmitRequest, out *SubmitResponse) error {
+	return h.InstanceHandler.Submit(ctx, in, out)
 }

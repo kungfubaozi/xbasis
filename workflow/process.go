@@ -22,7 +22,7 @@ type process struct {
 	DecisionTasks []*decisionTask `bson:"decision_tasks" json:"decision_tasks"`
 	//send tasks
 	SendTasks []*sendTask `bson:"send_tasks" json:"send_tasks"`
-
+	//version control
 	Version int64 `bson:"version" json:"version"`
 }
 
@@ -50,7 +50,7 @@ func (pi *processes) getProcess(id string) (*process, error) {
 	return nil, errors.New("not found")
 }
 
-func (pi *processes) next() {
+func (pi *processes) next(i *instance) {
 
 }
 

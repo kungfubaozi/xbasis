@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package gs.service.workflow;
 
+import "google/protobuf/any.proto";
 import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Instance {
@@ -21,6 +22,16 @@ service Instance {
     //继续执行
     rpc Continue (ContinueRequest) returns (ContinueResponse);
 
+    rpc Submit (SubmitRequest) returns (SubmitResponse);
+}
+
+message SubmitRequest {
+    string instanceId = 1;
+    map<string, google.protobuf.Any> data = 2;
+}
+
+message SubmitResponse {
+    gs.commons.dto.State state = 1;
 }
 
 message ContinueRequest {

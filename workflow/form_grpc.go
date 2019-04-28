@@ -8,6 +8,7 @@ import (
 )
 
 type formService struct {
+	runtime *runtime
 }
 
 func (svc *formService) CreatePlaceholder(ctx context.Context, in *gs_service_workflow.CreatePlaceholderRequest, out *gs_service_workflow.CreatePlaceholderResponse) error {

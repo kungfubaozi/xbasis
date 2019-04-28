@@ -16,3 +16,7 @@ func NewRuntime(session *mgo.Session) *runtime {
 func (rt *runtime) Add() {
 
 }
+
+func (rt *runtime) GetForm() {
+
+}
