@@ -70,6 +70,7 @@ type httpTask struct {
 	RequestURL         string      `bson:"request_url" json:"request_url"`         //请求地址
 	RequestHeaders     []string    `json:"request_headers"`                        //请求头
 	RequestTimeout     int64       `json:"request_timeout" bson:"request_timeout"` //请求超时时间
+	RequestBody        interface{} `bson:"request_body" json:"request_body"`
 	ResponseScript     int64       `bson:"response_script" json:"response_script"`
 	SaveResponseAsJson bool        `bson:"save_response_as_json" json:"save_response_as_json"`
 }
@@ -84,6 +85,9 @@ type sendTask struct {
 	Basic     *basicModel `bson:"basic" json:"basic"`
 	Listeners *TEListener `bson:"listeners" json:"listeners"`
 	UserIds   []string    `bson:"user_ids" json:"user_ids"`
+}
+
+type grpcTask struct {
 }
 
 type mailTask struct {

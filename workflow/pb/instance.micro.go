@@ -2,18 +2,29 @@
 // source: pb/instance.proto
 
 /*
-Package gs_workflow is a generated protocol buffer package.
+Package gs_service_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/instance.proto
 
 It has these top-level messages:
+	ContinueRequest
+	ContinueResponse
+	RestartRequest
+	RestartResponse
+	StopRequest
+	StopResponse
+	GetAllInstancesRequest
+	GetAllInstancesResponse
+	GetMyLaunchInstancesRequest
+	GetMyLaunchInstancesResponse
 */
-package gs_workflow
+package gs_service_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
+import _ "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -40,6 +51,16 @@ var _ server.Option
 // Client API for Instance service
 
 type InstanceService interface {
+	// 我发起的所有实例（流程）
+	GetMyLaunchInstances(ctx context.Context, in *GetMyLaunchInstancesRequest, opts ...client.CallOption) (*GetMyLaunchInstancesResponse, error)
+	// 所有实例
+	GetAllInstances(ctx context.Context, in *GetAllInstancesRequest, opts ...client.CallOption) (*GetAllInstancesResponse, error)
+	// 停止
+	Stop(ctx context.Context, in *StopRequest, opts ...client.CallOption) (*StopResponse, error)
+	// 重新开始
+	Restart(ctx context.Context, in *RestartRequest, opts ...client.CallOption) (*RestartResponse, error)
+	// 继续执行
+	Continue(ctx context.Context, in *ContinueRequest, opts ...client.CallOption) (*ContinueResponse, error)
 }
 
 type instanceService struct {
@@ -52,7 +73,7 @@ func NewInstanceService(name string, c client.Client) InstanceService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.workflow"
+		name = "gs.service.workflow"
 	}
 	return &instanceService{
 		c:    c,
@@ -60,13 +81,78 @@ func NewInstanceService(name string, c client.Client) InstanceService {
 	}
 }
 
+func (c *instanceService) GetMyLaunchInstances(ctx context.Context, in *GetMyLaunchInstancesRequest, opts ...client.CallOption) (*GetMyLaunchInstancesResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.GetMyLaunchInstances", in)
+	out := new(GetMyLaunchInstancesResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *instanceService) GetAllInstances(ctx context.Context, in *GetAllInstancesRequest, opts ...client.CallOption) (*GetAllInstancesResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.GetAllInstances", in)
+	out := new(GetAllInstancesResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *instanceService) Stop(ctx context.Context, in *StopRequest, opts ...client.CallOption) (*StopResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.Stop", in)
+	out := new(StopResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *instanceService) Restart(ctx context.Context, in *RestartRequest, opts ...client.CallOption) (*RestartResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.Restart", in)
+	out := new(RestartResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *instanceService) Continue(ctx context.Context, in *ContinueRequest, opts ...client.CallOption) (*ContinueResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.Continue", in)
+	out := new(ContinueResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Instance service
 
 type InstanceHandler interface {
+	// 我发起的所有实例（流程）
+	GetMyLaunchInstances(context.Context, *GetMyLaunchInstancesRequest, *GetMyLaunchInstancesResponse) error
+	// 所有实例
+	GetAllInstances(context.Context, *GetAllInstancesRequest, *GetAllInstancesResponse) error
+	// 停止
+	Stop(context.Context, *StopRequest, *StopResponse) error
+	// 重新开始
+	Restart(context.Context, *RestartRequest, *RestartResponse) error
+	// 继续执行
+	Continue(context.Context, *ContinueRequest, *ContinueResponse) error
 }
 
 func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...server.HandlerOption) error {
 	type instance interface {
+		GetMyLaunchInstances(ctx context.Context, in *GetMyLaunchInstancesRequest, out *GetMyLaunchInstancesResponse) error
+		GetAllInstances(ctx context.Context, in *GetAllInstancesRequest, out *GetAllInstancesResponse) error
+		Stop(ctx context.Context, in *StopRequest, out *StopResponse) error
+		Restart(ctx context.Context, in *RestartRequest, out *RestartResponse) error
+		Continue(ctx context.Context, in *ContinueRequest, out *ContinueResponse) error
 	}
 	type Instance struct {
 		instance
@@ -77,4 +163,24 @@ func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...serv
 
 type instanceHandler struct {
 	InstanceHandler
+}
+
+func (h *instanceHandler) GetMyLaunchInstances(ctx context.Context, in *GetMyLaunchInstancesRequest, out *GetMyLaunchInstancesResponse) error {
+	return h.InstanceHandler.GetMyLaunchInstances(ctx, in, out)
+}
+
+func (h *instanceHandler) GetAllInstances(ctx context.Context, in *GetAllInstancesRequest, out *GetAllInstancesResponse) error {
+	return h.InstanceHandler.GetAllInstances(ctx, in, out)
+}
+
+func (h *instanceHandler) Stop(ctx context.Context, in *StopRequest, out *StopResponse) error {
+	return h.InstanceHandler.Stop(ctx, in, out)
+}
+
+func (h *instanceHandler) Restart(ctx context.Context, in *RestartRequest, out *RestartResponse) error {
+	return h.InstanceHandler.Restart(ctx, in, out)
+}
+
+func (h *instanceHandler) Continue(ctx context.Context, in *ContinueRequest, out *ContinueResponse) error {
+	return h.InstanceHandler.Continue(ctx, in, out)
 }

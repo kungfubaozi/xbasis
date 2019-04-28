@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package gs.workflow;
-
-service Runtime {
-
-}

@@ -6,7 +6,6 @@ import (
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
-	"time"
 )
 
 func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
@@ -19,10 +18,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 
 		if c == 0 {
 			structureRepo := &structureRepo{session: session, Client: client}
-			repo := initializeRepo{session: session, bulk: client.GetElasticClient().Bulk(), structure: structureRepo, userOrientate: &userOrientate{
-				UserId:   config.UserId,
-				CreateAt: time.Now().UnixNano(),
-			}, config: config, id: gs_commons_generator.NewIDG()}
+			repo := &initializeRepo{session: session, bulk: client.GetElasticClient().Bulk(), structure: structureRepo, config: config, id: gs_commons_generator.NewIDG()}
 			repo.AddManageApp()
 			repo.AddRouteApp()
 			repo.AddSafeApp()

@@ -152,7 +152,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 
 		repo.userRolesRelation = append(repo.userRolesRelation, u)
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-roles-relation").Doc(u))
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-roles-relation").Type("_doc").Doc(u))
 
 	}
 

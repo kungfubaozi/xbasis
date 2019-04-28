@@ -1,51 +1,18 @@
 package workflow
 
-import "konekko.me/gosion/commons/generator"
+import "gopkg.in/mgo.v2"
 
 type runtime struct {
-	script    *luaScript
-	instances map[string]*instance
-	count     int64
-	timer     *Timer
-	id        gs_commons_generator.IDGenerator
+	processes *processes
 }
 
-func NewRuntime() *runtime {
-	return &runtime{
-		script:    newScript(),
-		instances: make(map[string]*instance),
-		count:     0,
-		timer:     newTimer(),
-		id:        gs_commons_generator.NewIDG(),
+func NewRuntime(session *mgo.Session) *runtime {
+	r := &runtime{
+		processes: &processes{processes: make(map[string]*process), session: session.Clone()},
 	}
+	return r
 }
 
-func (r *runtime) Initialize() {
-	r.loadProcess()
-	r.buildInstance()
-	r.start()
-}
+func (rt *runtime) Add() {
 
-//load form db
-func (r *runtime) loadProcess() {
-
-}
-
-func (r *runtime) buildInstance() {
-
-}
-
-func (r *runtime) checkProcess() {
-
-}
-
-func (r *runtime) start() {
-
-}
-
-func (r *runtime) run(i *instance) {
-	i.id = r.id.Get()
-	i.script = r.script
-	r.instances[i.id] = i
-	go i.Start()
 }

@@ -72,12 +72,11 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		var uai userAuthorizeInfo
 		var tokenApp *gs_ext_service_application.GetAppClientStatusResponse
 
-		if claims.Token.ClientId != auth.ClientId {
+		if in.Share && claims.Token.ClientId != auth.ClientId {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				//check token side application status
-
 				a, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 					ClientId: claims.Token.ClientId,
 				})

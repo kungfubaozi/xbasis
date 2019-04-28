@@ -1,5 +1,11 @@
 package workflow
 
+import (
+	"github.com/pkg/errors"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+)
+
 type process struct {
 	Id           string `bson:"_id" json:"id"`
 	Name         string `bson:"name" json:"name"`
@@ -16,12 +22,42 @@ type process struct {
 	DecisionTasks []*decisionTask `bson:"decision_tasks" json:"decision_tasks"`
 	//send tasks
 	SendTasks []*sendTask `bson:"send_tasks" json:"send_tasks"`
+
+	Version int64 `bson:"version" json:"version"`
 }
 
-func (p *process) ToInstance() (*instance, error) {
-	i := &instance{}
+//流程实例
+//用来控制实例的走向等
+type processes struct {
+	processes map[string]*process
+	session   *mgo.Session
 }
 
-func newProcess(p *process) {
+func (pi *processes) getProcess(id string) (*process, error) {
+	if len(pi.processes) > 0 {
+		p := pi.processes[id]
+		if p == nil {
+			var process *process
+			err := pi.session.DB("gs_workflow").C("processes").Find(bson.M{"_id": id}).One(process)
+			if err != nil {
+				return nil, err
+			}
+			pi.processes[id] = process
+			p = process
+		}
+		return p, nil
+	}
+	return nil, errors.New("not found")
+}
 
+func (pi *processes) next() {
+
+}
+
+func (pi *processes) update(id string) {
+
+}
+
+func (pi *processes) close() {
+	pi.session.Close()
 }
