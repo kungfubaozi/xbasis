@@ -13,3 +13,12 @@ type instance struct {
 func (i *instance) next() {
 
 }
+
+func (i *instance) getIndexTask() {
+
+}
+
+//is the corresponding node completed?
+func (i *instance) checkNodeCompleted(node string) {
+
+}

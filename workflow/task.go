@@ -1,17 +1,21 @@
 package workflow
 
-type ConnectionType int64
+type ConnectType int64
 
 const (
-	FTUserTask ConnectionType = iota
+	FTUserTask ConnectType = iota
 
 	FTHttpTask
 
 	FTDecisionTask
 
-	FTStartEvent
+	FTSendTask
 
-	FTHeader
+	FTGRPCTask
+
+	FTMailTask
+
+	FTStartEvent
 
 	FTTimerStartEvent
 
@@ -42,22 +46,21 @@ type basicModel struct {
 }
 
 type sequenceFlow struct {
-	Basic       *basicModel    `bson:"basic" json:"basic"`
-	Listeners   *TEListener    `bson:"listeners" json:"listeners"`
-	Script      string         `bson:"script" json:"script"`
-	DefaultFlow bool           `bson:"default_flow" json:"default_flow"`
-	Start       string         `bson:"start" json:"start"`
-	StartType   ConnectionType `bson:"start_type" json:"start_type"`
-	End         string         `bson:"end" json:"end"`
-	EndType     ConnectionType `bson:"end_type" json:"end_type"`
-	Priority    int64          `bson:"priority" json:"priority"`
+	Basic       *basicModel `bson:"basic" json:"basic"`
+	Listeners   *TEListener `bson:"listeners" json:"listeners"`
+	Script      string      `bson:"script" json:"script"`
+	DefaultFlow bool        `bson:"default_flow" json:"default_flow"`
+	Start       string      `bson:"start" json:"start"`
+	StartType   ConnectType `bson:"start_type" json:"start_type"`
+	End         string      `bson:"end" json:"end"`
+	EndType     ConnectType `bson:"end_type" json:"end_type"`
+	Priority    int64       `bson:"priority" json:"priority"`
 }
 
 type userTask struct {
 	Basic                   *basicModel `bson:"basic" json:"basic"`
 	Listeners               *TEListener `bson:"listeners" json:"listeners"`
 	FormRef                 string      `bson:"form_ref" json:"form_ref"`
-	Priority                int64       `json:"priority" bson:"priority"`
 	Assignments             []string    `json:"assignments" bson:"assignments"`
 	AssignmentType          int64       `bson:"assignment_type" json:"assignment_type"`
 	AllowOriginatorFinished bool        `bson:"allow_originator_finished" json:"allow_originator_finished"` //允许创建人取消流程
