@@ -118,3 +118,6 @@ type typeFieldValue struct {
 	Key    string
 	Values []interface{}
 }
+
+type form struct {
+}

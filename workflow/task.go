@@ -3,39 +3,39 @@ package workflow
 type ConnectType int64
 
 const (
-	FTUserTask ConnectType = iota
+	CTUserTask ConnectType = iota
 
-	FTHttpTask
+	CTHttpTask
 
-	FTDecisionTask
+	CTDecisionTask
 
-	FTSendTask
+	CTSendTask
 
-	FTGRPCTask
+	CTGRPCTask
 
-	FTMailTask
+	CTMailTask
 
-	FTStartEvent
+	CTStartEvent
 
-	FTTimerStartEvent
+	CTTimerStartEvent
 
-	FTMessageStartEvent
+	CTMessageStartEvent
 
-	FTEndEvent
+	CTEndEvent
 
-	FTEndErrorEvent
+	CTEndErrorEvent
 
-	FTEndCancelEvent
+	CTEndCancelEvent
 
-	FTTerminateEvent
+	CTTerminateEvent
 
-	FTExclusiveGateway
+	CTExclusiveGateway
 
-	FTParallelGateway
+	CTParallelGateway
 
-	FTInclusiveGateway
+	CTInclusiveGateway
 
-	FTEventGateway
+	CTEventGateway
 )
 
 type basicModel struct {
@@ -46,7 +46,7 @@ type basicModel struct {
 }
 
 type sequenceFlow struct {
-	Basic       *basicModel `bson:"basic" json:"basic"`
+	*basicModel
 	Listeners   *TEListener `bson:"listeners" json:"listeners"`
 	Script      string      `bson:"script" json:"script"`
 	DefaultFlow bool        `bson:"default_flow" json:"default_flow"`
@@ -58,7 +58,7 @@ type sequenceFlow struct {
 }
 
 type userTask struct {
-	Basic                   *basicModel `bson:"basic" json:"basic"`
+	*basicModel
 	Listeners               *TEListener `bson:"listeners" json:"listeners"`
 	FormRef                 string      `bson:"form_ref" json:"form_ref"`
 	Assignments             []string    `json:"assignments" bson:"assignments"`
@@ -67,7 +67,7 @@ type userTask struct {
 }
 
 type httpTask struct {
-	Basic              *basicModel `bson:"basic" json:"basic"`
+	*basicModel
 	Listeners          *TEListener `bson:"listeners" json:"listeners"`
 	RequestMethod      int64       `json:"request_method" bson:"request_method"`   //请求方法
 	RequestURL         string      `bson:"request_url" json:"request_url"`         //请求地址
@@ -79,13 +79,13 @@ type httpTask struct {
 }
 
 type decisionTask struct {
-	Basic          *basicModel `bson:"basic" json:"basic"`
+	*basicModel
 	Listeners      *TEListener `bson:"listeners" json:"listeners"`
 	TableReference string      `json:"table_reference" bson:"table_reference"`
 }
 
 type sendTask struct {
-	Basic     *basicModel `bson:"basic" json:"basic"`
+	*basicModel
 	Listeners *TEListener `bson:"listeners" json:"listeners"`
 	UserIds   []string    `bson:"user_ids" json:"user_ids"`
 }
