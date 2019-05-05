@@ -12,8 +12,6 @@ func CreatePool(addr string) (*redis.Pool, error) {
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", addr)
 
-			fmt.Println("conn", err)
-
 			if err != nil {
 				return nil, err
 			}

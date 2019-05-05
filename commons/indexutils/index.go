@@ -30,22 +30,23 @@ func (cli *Client) AddData(index string, v interface{}) (string, error) {
 	return "", nil
 }
 
-func (cli *Client) QueryAll(index string, kvs map[string]interface{}, result interface{}, includes ...string) (bool, error) {
-	ok, v, err := cli._queryFirst(index, kvs, includes...)
-	if err != nil {
-		fmt.Println("query first err", err)
-		return false, err
-	}
-	if ok {
-		err = json.Unmarshal(*v.Source, result)
-		if err != nil {
-			fmt.Println("json Unmarshal err", err)
-			return false, err
-		}
-		return true, nil
-	}
-	return false, nil
-}
+//
+//func (cli *Client) QueryAll(index string, kvs map[string]interface{}, result interface{}, includes ...string) (bool, error) {
+//	ok, v, err := cli._queryFirst(index, kvs, includes...)
+//	if err != nil {
+//		fmt.Println("query first err", err)
+//		return false, err
+//	}
+//	if ok {
+//		err = json.Unmarshal(*v.Source, result)
+//		if err != nil {
+//			fmt.Println("json Unmarshal err", err)
+//			return false, err
+//		}
+//		return true, nil
+//	}
+//	return false, nil
+//}
 
 func (cli *Client) QueryFirst(index string, kvs map[string]interface{}, result interface{}, includes ...string) (bool, error) {
 	ok, v, err := cli._queryFirst(index, kvs, includes...)
