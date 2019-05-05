@@ -7,7 +7,7 @@ type Gateway interface {
 }
 
 func NewExclusiveGateway() Gateway {
-	return &exclusiveGateway{}
+	return &ExclusiveGateway{}
 }
 
 func NewparallerGateway() Gateway {

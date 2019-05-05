@@ -14,6 +14,10 @@ type Event interface {
 	Do(ctx context.Context, value interface{})
 }
 
+func NewStartEvent() Event {
+	return &startEvent{}
+}
+
 func NewMessageStartEvent() Event {
 	return &messageStartEvent{}
 }

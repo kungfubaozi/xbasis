@@ -27,9 +27,60 @@ type Modules interface {
 }
 
 func New(session *mgo.Session, pool *redis.Pool, client *indexutils.Client, log *gslogrus.Logger) Modules {
-	return &core{session: session,
-		pool:      pool,
-		client:    client,
-		log:       log,
-		pipelines: make(map[string]process.Pipeline)}
+	return &core{shutdown: make(chan error), session: session, pool: pool, client: client, log: log}
+}
+
+type core struct {
+	session  *mgo.Session
+	pool     *redis.Pool
+	client   *indexutils.Client
+	log      *gslogrus.Logger
+	shutdown chan error
+	ri       *runtime
+	hi       history.Interface
+	pi       process.Interface
+	ii       instance.Interface
+}
+
+func (c *core) Run() error {
+	go func() {
+		c.init()
+		c.start()
+	}()
+	return <-c.shutdown
+}
+
+func (c *core) History() history.Interface {
+	return c.hi
+}
+
+func (c *core) Processes() process.Interface {
+	return c.pi
+}
+
+func (c *core) Instances() instance.Interface {
+	return c.ii
+}
+
+func (c *core) Runtime() Runtime {
+	return c.ri
+}
+
+func (c *core) init() {
+	c.ri = &runtime{
+		shutdown:  c.shutdown,
+		pipelines: make(map[string]process.Pipeline),
+	}
+	c.pi = &process.Processes{Callback: func(pip process.Pipeline) {
+		c.ri.pipelines[pip.Id()] = pip
+	}, Session: c.session, Pool: c.pool, Client: c.client}
+	c.ii = &instance.Instances{Session: c.session, Pool: c.pool, Client: c.client}
+	c.hi = &history.History{}
+	c.ri.hi = c.hi
+	c.ri.ii = c.ii
+	c.ri.pi = c.pi
+}
+
+func (c *core) start() {
+
 }

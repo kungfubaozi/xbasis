@@ -22,13 +22,16 @@ type Interface interface {
 	Status(instanceId string) (int64, error)
 
 	//is finished
-	Finished(instanceId string) (bool, error)
+	IsFinished(instanceId string, nodeId string) (bool, error)
 
 	//nodes running the current instance
 	CurrentProcess(instanceId string)
 
 	//new instance
 	New(ins *Instance) error
+
+	//更新实例当前进行的节点
+	UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) error
 
 	FindRequireUserProcessingInstances(userId string, pageIndex, pageSize int64)
 
@@ -39,6 +42,10 @@ type Instances struct {
 	Session *mgo.Session
 	Pool    *redis.Pool
 	Client  *indexutils.Client
+}
+
+func (i *Instances) UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) error {
+	panic("implement me")
 }
 
 func (i *Instances) IsUserRequireProcessingThatNode(userId string, nodeId string) {
@@ -57,7 +64,7 @@ func (i *Instances) Status(instanceId string) (int64, error) {
 	panic("implement me")
 }
 
-func (i *Instances) Finished(instanceId string) (bool, error) {
+func (i *Instances) IsFinished(instanceId string, nodeId string) (bool, error) {
 	panic("implement me")
 }
 

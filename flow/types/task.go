@@ -1,5 +1,7 @@
 package types
 
+import "context"
+
 type ConnectType int64
 
 const (
@@ -40,6 +42,20 @@ const (
 	CTParallelGateway
 
 	CTInclusiveGateway
-
-	CTEventGateway
 )
+
+type TypeTasks interface {
+	ExclusiveGateway()
+
+	ParallelGateway()
+
+	InclusiveGateway()
+
+	StartEvent()
+
+	EndEvent()
+
+	UserTask()
+
+	Do(ctx context.Context, instanceId, nodeId string, ct ConnectType, value map[string]interface{})
+}
