@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package gs.service.workflow;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Process {
+
+    //启动一个流程
+    rpc Launch (LaunchRequest) returns (LaunchResponse);
+
+    //创建
+    rpc Create (CreateRequest) returns (CreateResponse);
+
+    //构建
+    rpc Build (BuildRequest) returns (BuildResponse);
+
+    //删除
+    rpc Delete (DeleteRequest) returns (DeleteResponse);
+
+    //更新
+    rpc Update (UpdateRequest) returns (UpdateResponse);
+
+    //开启生产
+    rpc Open (OpenRequest) returns (OpenResponse);
+
+    //详情
+    rpc Detail (DetailRequest) returns (DetailResponse);
+
+    //获取流程图
+    rpc GetImage (GetImageRequest) returns (GetImageResponse);
+}
+
+message DetailRequest {
+    string processId = 1;
+}
+
+message DetailResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message GetImageRequest {
+    string processId = 1;
+}
+
+message GetImageResponse {
+    gs.commons.dto.State state = 1;
+    string url = 2;
+}
+
+message CreateRequest {
+    string key = 1;
+    string name = 2;
+    string desc = 3;
+    string appId = 4;
+}
+
+message CreateResponse {
+    gs.commons.dto.State state = 1;
+    string processId = 2;
+}
+
+message BuildRequest {
+    string processId = 1;
+}
+
+message BuildResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message DeleteRequest {
+    string processId = 1;
+}
+
+message DeleteResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message UpdateRequest {
+    string processId = 1;
+    string name = 2;
+    string desc = 3;
+}
+
+message UpdateResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message OpenRequest {
+    string processId = 1;
+}
+
+message OpenResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message LaunchRequest {
+    string key = 1; //name or id
+}
+
+message LaunchResponse {
+    gs.commons.dto.State state = 1;
+}
