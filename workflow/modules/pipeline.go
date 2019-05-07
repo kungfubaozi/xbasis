@@ -10,6 +10,7 @@ type pipeline struct {
 	id         string
 	name       string
 	flows      map[string][]*models.SequenceFlow
+	parallels  map[string][]string //与对应的parallelGateway关联的task节点
 	startEvent interface{}
 	startType  types.ConnectType
 	endEvents  map[string]*models.TypeEvent
@@ -21,6 +22,7 @@ type pipeline struct {
 type node struct {
 	id   string
 	ct   types.ConnectType
+	key  string
 	data interface{}
 }
 
@@ -32,6 +34,8 @@ type Pipeline interface {
 	Dump()
 
 	Flows(nodeId string) ([]*models.SequenceFlow, error)
+
+	FindEndConnectNodes(id string) []string
 }
 
 func (p *pipeline) append(n *node) {
@@ -61,4 +65,8 @@ func (p *pipeline) Flows(nodeId string) ([]*models.SequenceFlow, error) {
 		return nil, types.ErrNil
 	}
 	return f, nil
+}
+
+func (p *pipeline) FindEndConnectNodes(id string) []string {
+	return p.parallels[id]
 }

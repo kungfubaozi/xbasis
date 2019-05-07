@@ -11,10 +11,6 @@ type LuaScript struct {
 	l *lua.LState
 }
 
-func (s *LuaScript) Test() {
-
-}
-
 func NewScript() *LuaScript {
 	s := &LuaScript{}
 	s.l = lua.NewState()
@@ -23,7 +19,7 @@ func NewScript() *LuaScript {
 
 func (l *LuaScript) Run(script string, value map[string]interface{}) (bool, error) {
 	if len(script) > 5 {
-		code := fmt.Sprintf("function test(flow) %s end", script)
+		code := fmt.Sprintf("function test(flow) return %s end", script)
 		table := l.l.NewTable()
 		for k, v := range value {
 			kind := reflect.TypeOf(v).Kind()
@@ -31,10 +27,14 @@ func (l *LuaScript) Run(script string, value map[string]interface{}) (bool, erro
 				l.l.SetTable(table, lua.LString(k), lua.LBool(v.(bool)))
 			} else if kind == reflect.String {
 				l.l.SetTable(table, lua.LString(k), lua.LString(v.(string)))
-			} else if kind == reflect.Int32 {
-				l.l.SetTable(table, lua.LString(k), lua.LNumber(v.(int32)))
 			} else if kind == reflect.Int64 {
 				l.l.SetTable(table, lua.LString(k), lua.LNumber(v.(int64)))
+			} else if kind == reflect.Int32 {
+				l.l.SetTable(table, lua.LString(k), lua.LNumber(v.(int32)))
+			} else if kind == reflect.Float64 {
+				l.l.SetTable(table, lua.LString(k), lua.LNumber(v.(float64)))
+			} else if kind == reflect.Float32 {
+				l.l.SetTable(table, lua.LString(k), lua.LNumber(v.(float32)))
 			}
 		}
 		l.l.DoString(code)

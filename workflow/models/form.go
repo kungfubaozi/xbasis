@@ -13,6 +13,7 @@ type TypeForm struct {
 
 type TypeField struct {
 	Id         string          `bson:"id" json:"id"`
+	Index      int64           `bson:"index" json:"index"`
 	Name       string          `bson:"name" json:"name"`
 	Type       types.FiledType `json:"type" bson:"type"`
 	FieldText  string          `bson:"field_text" json:"field_text"`
@@ -33,9 +34,16 @@ type SelectViewProperties struct {
 	DefaultValues []interface{} `bson:"default_values" json:"default_values"`
 }
 
+type NumberViewProperties struct {
+	Max          interface{} `bson:"max" json:"max"`
+	Min          interface{} `bson:"min" json:"min"`
+	DefaultValue interface{} `bson:"default_value" json:"default_value"`
+	Decimal      bool        `bson:"decimal" json:"decimal"` //是否为小数
+}
+
 type EditViewProperties struct {
-	MaxLength    int64       `bson:"max_length" json:"max_length"`
-	MinLength    int64       `bson:"min_length" json:"min_length"`
+	MaxLength    int         `bson:"max_length" json:"max_length"`
+	MinLength    int         `bson:"min_length" json:"min_length"`
 	DefaultValue interface{} `bson:"default_value" json:"default_value"`
 	Regx         string      `bson:"regx" json:"regx"` //正则匹配
 }
@@ -55,10 +63,13 @@ type SpaceViewProperties struct {
 
 type SubmitForm struct {
 	*Info
-	FormId         string      `bson:"form_id" json:"form_id"`
-	SubmitByUserId string      `bson:"submit_by_user_id" json:"submit_by_user_id"`
-	SubmitAtFlow   string      `bson:"submit_at_flow" json:"submit_at_flow"`
-	Data           interface{} `bson:"data" json:"data"`
+	FormId     string `bson:"form_id" json:"form_id"`
+	InstanceId string `bson:"instance_id" json:"instance_id"`
+	NodeId     string `bson:"node_id" json:"node_id"`
+	Data       string `bson:"data" json:"data"`
+}
+
+type RadioGroupViewProperties struct {
 }
 
 //sha1(userId+formId+propId)

@@ -19,8 +19,6 @@ const (
 
 	CTStorageTask
 
-	CTDataCache
-
 	CTStartEvent
 
 	CTTimerStartEvent

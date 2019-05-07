@@ -3,6 +3,8 @@ package modules
 import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/models"
@@ -14,17 +16,21 @@ type IInstance interface {
 	//current status
 	Status(instanceId string) (int64, error)
 
+	IsStarted(instanceId string) (bool, error)
+
 	//is finished
 	IsFinished(instanceId string, nodeId string) (bool, error)
 
 	//nodes running the current instance
 	CurrentProcess(instanceId string)
 
-	//new instance
+	//开始新的实例
 	New(ins *models.Instance) error
 
+	HasPermission() error
+
 	//更新实例当前进行的节点
-	UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) error
+	UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) (*gs_commons_dto.State, error)
 
 	FindRequireUserProcessingInstances(userId string, pageIndex, pageSize int64)
 
@@ -36,6 +42,11 @@ type instances struct {
 	pool    *redis.Pool
 	client  *indexutils.Client
 	log     *gslogrus.Logger
+	id      gs_commons_generator.IDGenerator
+}
+
+func (i *instances) HasPermission() error {
+	panic("implement me")
 }
 
 func (i *instances) FindById(instanceId string) (*models.Instance, error) {
@@ -43,6 +54,10 @@ func (i *instances) FindById(instanceId string) (*models.Instance, error) {
 }
 
 func (i *instances) Status(instanceId string) (int64, error) {
+	panic("implement me")
+}
+
+func (i *instances) IsStarted(instanceId string) (bool, error) {
 	panic("implement me")
 }
 
@@ -58,7 +73,7 @@ func (i *instances) New(ins *models.Instance) error {
 	panic("implement me")
 }
 
-func (i *instances) UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) error {
+func (i *instances) UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) (*gs_commons_dto.State, error) {
 	panic("implement me")
 }
 
@@ -69,4 +84,3 @@ func (i *instances) FindRequireUserProcessingInstances(userId string, pageIndex,
 func (i *instances) IsUserRequireProcessingThatNode(userId string, nodeId string) {
 	panic("implement me")
 }
-

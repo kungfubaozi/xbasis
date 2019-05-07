@@ -30,7 +30,6 @@ type Tasks struct {
 	UserTasks     []*UserTask     `bson:"user_tasks" json:"user_tasks"`
 	ApiTasks      []*ApiTask      `bson:"api_tasks" json:"api_tasks"`
 	DecisionTasks []*DecisionTask `bson:"decision_tasks" json:"decision_tasks"`
-	GRPCTasks     []*GRPCTask     `bson:"grpc_tasks" json:"grpc_tasks"`
 	HttpTasks     []*HttpTask     `bson:"http_tasks" json:"http_tasks"`
 	MailTasks     []*MailTask     `bson:"mail_tasks" json:"mail_tasks"`
 	NotifyTasks   []*NotifyTask   `bson:"notify_tasks" json:"notify_tasks"`

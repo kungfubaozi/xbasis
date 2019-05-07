@@ -9,6 +9,7 @@ import (
 type Instance struct {
 	Id           string   `bson:"_id" json:"id"`
 	Name         string   `bson:"name" json:"name"`
+	AppId        string   `bson:"app_id" json:"app_id"`
 	Originator   string   `bson:"originator" json:"originator"` //发起人
 	ProcessId    string   `bson:"process_id" json:"process_id"` //对应的流程
 	CreateAt     int64    `bson:"create_at" json:"create_at"`

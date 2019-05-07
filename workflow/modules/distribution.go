@@ -2,50 +2,50 @@ package modules
 
 import (
 	"context"
+	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/workflow/flowstate"
+	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/types"
 )
 
 type distribution interface {
 	Data() interface{}
 
-	Do(ctx context.Context, instanceId string, node *node, ct types.ConnectType, value interface{})
+	Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (*gs_commons_dto.State, error)
 
-	ExclusiveGateway()
+	ExclusiveGateway() (*gs_commons_dto.State, error)
 
-	ParallelGateway()
+	ParallelGateway() (*gs_commons_dto.State, error)
 
-	InclusiveGateway()
+	InclusiveGateway() (*gs_commons_dto.State, error)
 
-	StartEvent()
+	StartEvent() (*gs_commons_dto.State, error)
 
-	EndEvent()
+	EndEvent() (*gs_commons_dto.State, error)
 
-	UserTask()
+	UserTask() (*gs_commons_dto.State, error)
 
-	TriggerStartEvent()
+	NotifyTask() (*gs_commons_dto.State, error)
+
+	TriggerStartEvent() (*gs_commons_dto.State, error)
 
 	Restore()
 }
 
-func distribute(ct types.ConnectType, t distribution) {
+func distribute(ct types.ConnectType, t distribution) (*gs_commons_dto.State, error) {
 	switch ct {
 	case types.CTStartEvent:
-		t.StartEvent()
-		break
+		return t.StartEvent()
 	case types.CTEndEvent:
-		t.EndEvent()
-		break
+		return t.EndEvent()
 	case types.CTUserTask:
-		t.UserTask()
-		break
+		return t.UserTask()
 	case types.CTExclusiveGateway:
-		t.ExclusiveGateway()
-		break
+		return t.ExclusiveGateway()
 	case types.CTParallelGateway:
-		t.ParallelGateway()
-		break
+		return t.ParallelGateway()
 	case types.CTInclusiveGateway:
-		t.InclusiveGateway()
-		break
+		return t.InclusiveGateway()
 	}
+	return flowstate.ErrUnsupportedConnectType, nil
 }

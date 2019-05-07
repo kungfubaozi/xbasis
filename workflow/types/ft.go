@@ -1,54 +1,55 @@
 package types
 
-
 type FiledType int64
 
 const (
-	VTTitleView FiledType = iota
+	FTTitleView FiledType = iota
 
 	//int32 int64 float32 float64
-	VTNumberView
+	FTNumberView
 
 	//string
-	VTEditView
+	FTEditView
 
 	//time
-	VTTimeView
+	FTTimeView
 
 	//select user
-	VTUserSelectView
+	FTUserSelectView
 
 	//select user group
-	VTUserGroupSelectView
+	FTUserGroupSelectView
 
 	//value value(number, string, user) select
-	VTValueSelectView
+	FTValueSelectView
 
 	//encrypt string
-	VTPasswordView
+	FTPasswordView
 
 	//single select(dropdown)
-	VTDropdownView
+	FTDropdownView
 
 	//upload file
-	VTFileView
+	FTFileView
 
 	//a href
-	VTALinkView
+	FTALinkView
 
 	//line
-	VTLineView
+	FTLineView
 
 	//top left right bottom space(margin)
-	VTSpaceView
+	FTSpaceView
 
 	//face check(self)
-	VTSelfFaceView
+	FTSelfFaceView
 
 	//user sign
-	VTDrawView
+	FTDrawView
 
 	//validate code(email, phone)
-	VTValidateCodeView
-)
+	FTValidateCodeView
 
+	//radio group view
+	FTRadioGroupView
+)
