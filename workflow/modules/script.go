@@ -2,9 +2,8 @@ package modules
 
 import (
 	"context"
-	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/gslogrus"
-	"konekko.me/gosion/workflow/flowstate"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/script"
 	"konekko.me/gosion/workflow/types"
@@ -19,50 +18,54 @@ type flowscript struct {
 	instance *models.Instance
 }
 
+func (f *flowscript) ApiStartEvent() (context.Context, *flowerr.Error) {
+	panic("implement me")
+}
+
 func (f *flowscript) Data() interface{} {
 	panic("implement me")
 }
 
-func (f *flowscript) Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (*gs_commons_dto.State, error) {
+func (f *flowscript) Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
 	f.values = value
 	f.ctx = ctx
 	f.instance = instance
-	return distribute(ct, f)
+	return distribute(ctx, ct, f)
 }
 
-func (f *flowscript) ExclusiveGateway() (*gs_commons_dto.State, error) {
-	return flowstate.NextFlow, nil
+func (f *flowscript) ExclusiveGateway() (context.Context, *flowerr.Error) {
+	return f.ctx, flowerr.NextFlow
 }
 
-func (f *flowscript) ParallelGateway() (*gs_commons_dto.State, error) {
-	return flowstate.NextFlow, nil
+func (f *flowscript) ParallelGateway() (context.Context, *flowerr.Error) {
+	return f.ctx, flowerr.NextFlow
 }
 
-func (f *flowscript) InclusiveGateway() (*gs_commons_dto.State, error) {
-	return flowstate.NextFlow, nil
+func (f *flowscript) InclusiveGateway() (context.Context, *flowerr.Error) {
+	return f.ctx, flowerr.NextFlow
 }
 
-func (f *flowscript) StartEvent() (*gs_commons_dto.State, error) {
+func (f *flowscript) StartEvent() (context.Context, *flowerr.Error) {
 	return f.do()
 }
 
-func (f *flowscript) EndEvent() (*gs_commons_dto.State, error) {
+func (f *flowscript) EndEvent() (context.Context, *flowerr.Error) {
 	return f.do()
 }
 
-func (f *flowscript) UserTask() (*gs_commons_dto.State, error) {
+func (f *flowscript) UserTask() (context.Context, *flowerr.Error) {
 	return f.do()
 }
 
-func (f *flowscript) NotifyTask() (*gs_commons_dto.State, error) {
+func (f *flowscript) NotifyTask() (context.Context, *flowerr.Error) {
 	return f.do()
 }
 
-func (f *flowscript) TriggerStartEvent() (*gs_commons_dto.State, error) {
+func (f *flowscript) TriggerStartEvent() (context.Context, *flowerr.Error) {
 	return f.do()
 }
 
-func (f *flowscript) do() (*gs_commons_dto.State, error) {
+func (f *flowscript) do() (context.Context, *flowerr.Error) {
 	flow := f.values[0].(*models.SequenceFlow)
 	data, err := f.modules.Form().LoadNodeDataToStore(f.ctx, f.instance.Id, flow.Start)
 	if err != nil {
@@ -74,10 +77,10 @@ func (f *flowscript) do() (*gs_commons_dto.State, error) {
 			return nil, err
 		}
 		if !ok {
-			return flowstate.FlowScriptFalse, nil
+			return f.ctx, flowerr.ScriptFalse
 		}
 	}
-	return flowstate.FlowScriptTrue, nil
+	return f.ctx, flowerr.ScriptTrue
 }
 
 func (f *flowscript) Restore() {

@@ -2,8 +2,7 @@ package modules
 
 import (
 	"context"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/workflow/flowstate"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/types"
 )
@@ -11,28 +10,30 @@ import (
 type distribution interface {
 	Data() interface{}
 
-	Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (*gs_commons_dto.State, error)
+	Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error)
 
-	ExclusiveGateway() (*gs_commons_dto.State, error)
+	ExclusiveGateway() (context.Context, *flowerr.Error)
 
-	ParallelGateway() (*gs_commons_dto.State, error)
+	ParallelGateway() (context.Context, *flowerr.Error)
 
-	InclusiveGateway() (*gs_commons_dto.State, error)
+	InclusiveGateway() (context.Context, *flowerr.Error)
 
-	StartEvent() (*gs_commons_dto.State, error)
+	StartEvent() (context.Context, *flowerr.Error)
 
-	EndEvent() (*gs_commons_dto.State, error)
+	EndEvent() (context.Context, *flowerr.Error)
 
-	UserTask() (*gs_commons_dto.State, error)
+	ApiStartEvent() (context.Context, *flowerr.Error)
 
-	NotifyTask() (*gs_commons_dto.State, error)
+	UserTask() (context.Context, *flowerr.Error)
 
-	TriggerStartEvent() (*gs_commons_dto.State, error)
+	NotifyTask() (context.Context, *flowerr.Error)
+
+	TriggerStartEvent() (context.Context, *flowerr.Error)
 
 	Restore()
 }
 
-func distribute(ct types.ConnectType, t distribution) (*gs_commons_dto.State, error) {
+func distribute(ctx context.Context, ct types.ConnectType, t distribution) (context.Context, *flowerr.Error) {
 	switch ct {
 	case types.CTStartEvent:
 		return t.StartEvent()
@@ -47,5 +48,5 @@ func distribute(ct types.ConnectType, t distribution) (*gs_commons_dto.State, er
 	case types.CTInclusiveGateway:
 		return t.InclusiveGateway()
 	}
-	return flowstate.ErrUnsupportedConnectType, nil
+	return ctx, flowerr.ErrUnsupportedConnectType
 }

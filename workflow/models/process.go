@@ -17,6 +17,7 @@ type Process struct {
 	EndEvents    []*TypeEvent    `bson:"end_events" json:"end_events"`
 	Version      int64           `bson:"version" json:"version"`
 	Status       int64           `bson:"status" json:"status"`
+	Title        string          `bson:"title" json:"title"`
 }
 
 type TypeEvent struct {

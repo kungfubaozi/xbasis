@@ -1,9 +1,9 @@
 package script
 
 import (
-	"errors"
 	"fmt"
 	"github.com/yuin/gopher-lua"
+	"konekko.me/gosion/workflow/flowerr"
 	"reflect"
 )
 
@@ -17,7 +17,7 @@ func NewScript() *LuaScript {
 	return s
 }
 
-func (l *LuaScript) Run(script string, value map[string]interface{}) (bool, error) {
+func (l *LuaScript) Run(script string, value map[string]interface{}) (bool, *flowerr.Error) {
 	if len(script) > 5 {
 		code := fmt.Sprintf("function test(flow) return %s end", script)
 		table := l.l.NewTable()
@@ -43,12 +43,12 @@ func (l *LuaScript) Run(script string, value map[string]interface{}) (bool, erro
 			NRet:    1,
 			Protect: true,
 		}, table); err != nil {
-			return false, err
+			return false, flowerr.FromError(err)
 		}
 		ret := l.l.Get(-1)
 		l.l.Pop(1)
 		if ret.Type() != lua.LTBool {
-			return false, errors.New("result value error.")
+			return false, flowerr.ErrScriptResult
 		}
 		return ret.String() == "true", nil
 	}

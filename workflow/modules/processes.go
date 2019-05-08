@@ -7,6 +7,7 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/types"
 )
@@ -23,7 +24,7 @@ type IProcesses interface {
 
 	LoadAll()
 
-	FindNode(instanceId, nodeId string) (interface{}, error)
+	FindNode(instanceId, nodeId string) (interface{}, *flowerr.Error)
 }
 
 type processes struct {
@@ -36,7 +37,7 @@ type processes struct {
 	id       gs_commons_generator.IDGenerator
 }
 
-func (pro *processes) FindNode(instanceId, nodeId string) (interface{}, error) {
+func (pro *processes) FindNode(instanceId, nodeId string) (interface{}, *flowerr.Error) {
 	panic("implement me")
 }
 

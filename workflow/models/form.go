@@ -12,14 +12,16 @@ type TypeForm struct {
 }
 
 type TypeField struct {
-	Id         string          `bson:"id" json:"id"`
-	Index      int64           `bson:"index" json:"index"`
-	Name       string          `bson:"name" json:"name"`
-	Type       types.FiledType `json:"type" bson:"type"`
-	FieldText  string          `bson:"field_text" json:"field_text"`
-	Properties interface{}     `bson:"properties" json:"properties"`
-	Require    bool            `bson:"require" json:"require"`
-	Label      string          `bson:"label" json:"label"`
+	Id             string          `bson:"id" json:"id"`
+	Index          int64           `bson:"index" json:"index"` //位置
+	Name           string          `bson:"name" json:"name"`
+	Type           types.FiledType `json:"type" bson:"type"`
+	FieldText      string          `bson:"field_text" json:"field_text"`
+	Properties     interface{}     `bson:"properties" json:"properties"`
+	Require        bool            `bson:"require" json:"require"`
+	Label          string          `bson:"label" json:"label"`
+	Readonly       bool            `bson:"readonly" json:"readonly"`               //只读
+	GenerateScript string          `bson:"generate_script" json:"generate_script"` //生成脚本
 }
 
 type TimeViewProperties struct {

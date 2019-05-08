@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/micro/go-micro/metadata"
-	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/workflow/flowstate"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/types"
 )
 
 type IRuntime interface {
-	Submit(ctx context.Context, instanceId, nodeId string, value map[string]interface{}) (*gs_commons_dto.State, error)
+	Submit(ctx context.Context, instanceId, nodeId string, value map[string]interface{}) *flowerr.Error
 
 	RunningProcessSize() int
 }
@@ -39,7 +38,7 @@ func createRuntime(shutdown chan error, log *gslogrus.Logger) (AddProcessToPipel
 	}, r
 }
 
-func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value map[string]interface{}) (*gs_commons_dto.State, error) {
+func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value map[string]interface{}) *flowerr.Error {
 	data, ok := metadata.FromContext(ctx1)
 	if ok {
 		ctx := context.Background()
@@ -48,10 +47,10 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 
 		i, err := r.modules.Instance().FindById(instanceId)
 		if err != nil {
-			if err == types.ErrNil {
-				return flowstate.ErrInvalidInstance, nil
+			if err == flowerr.ErrNil {
+				return flowerr.ErrInvalidInstance
 			}
-			return errstate.ErrRequest, nil
+			return err
 		}
 
 		//get pipeline
@@ -62,27 +61,21 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 
 			node, err := pipe.GetNode(nodeId)
 
-			//执行的node类型不能是除Event/Task之外的类型
-			switch node.ct {
-			case types.CTInclusiveGateway, types.CTExclusiveGateway, types.CTParallelGateway:
-				return errstate.ErrRequest, nil
-			}
-
 			if v == nodeId {
 
 				if err != nil {
-					return errstate.ErrRequest, nil
+					return flowerr.ErrRequest
 				}
 				//这里检查的node类型只有event和task，gateway不在考虑范围内，因为currentNodes不会包含gateway类型的node
 				//check submit node data and finished that node
 				r, err := r.processing.Do(ctx, i, node, node.ct, value)
+				ctx = r
 				if err != nil {
-					return r, err
-				}
-				if r.Code == types.NFNextFlow { //next flow
-					size++
-				} else {
-					return r, nil
+					if err == flowerr.NextFlow {
+						size++
+					} else {
+						return err
+					}
 				}
 			}
 			//
@@ -136,7 +129,7 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 	}
 }
 
-func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.Instance, pipe Pipeline, nodeId string) ([]string, *gs_commons_dto.State, error) {
+func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.Instance, pipe Pipeline, nodeId string) ([]string, *flowerr.Error) {
 	var ns []string
 	if len(currentNodes) > 0 {
 		ns = append(ns, currentNodes...)

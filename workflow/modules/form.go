@@ -5,23 +5,22 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/types"
 	"time"
 )
 
 type IForm interface {
-	FindById(id string) (*models.TypeForm, error)
+	FindById(id string) (*models.TypeForm, *flowerr.Error)
 
-	Submit(ctx context.Context, instanceId, nodeId, formId string, value map[string]interface{}) (*gs_commons_dto.State, error)
+	Submit(ctx context.Context, instanceId, nodeId, formId string, value map[string]interface{}) *flowerr.Error
 
 	//load key.form
-	LoadNodeDataToStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, error)
+	LoadNodeDataToStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, *flowerr.Error)
 }
 
 type form struct {
@@ -32,11 +31,11 @@ type form struct {
 	id      gs_commons_generator.IDGenerator
 }
 
-func (f *form) Submit(ctx context.Context, instanceId, nodeId, formId string, value map[string]interface{}) (*gs_commons_dto.State, error) {
+func (f *form) Submit(ctx context.Context, instanceId, nodeId, formId string, value map[string]interface{}) *flowerr.Error {
 	user := getWrapperUser(ctx)
 	b, err := msgpack.Marshal(value)
 	if err != nil {
-		return nil, err
+		return flowerr.FromError(err)
 	}
 
 	s := &models.SubmitForm{
@@ -53,33 +52,33 @@ func (f *form) Submit(ctx context.Context, instanceId, nodeId, formId string, va
 
 	ok, err := f.client.AddData(types.IndexSubmitForm, s)
 	if err != nil {
-		return nil, err
+		return flowerr.FromError(err)
 	}
 	if len(ok) > 0 {
 		err := f.session.DB(types.DBFlow).C(types.GetSubmitFormCollection(instanceId, nodeId)).Insert(s)
 		if err != nil {
-			return nil, err
+			return flowerr.FromError(err)
 		}
-		return errstate.Success, nil
+		return nil
 	}
-	return errstate.ErrSystem, nil
+	return flowerr.ErrUnknow
 }
 
-func (f *form) FindById(id string) (*models.TypeForm, error) {
+func (f *form) FindById(id string) (*models.TypeForm, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (f *form) LoadNodeDataToStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, error) {
+func (f *form) LoadNodeDataToStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, *flowerr.Error) {
 	var s *models.SubmitForm
 	ok, err := f.client.QueryFirst(types.IndexSubmitForm, map[string]interface{}{"instance_id": instanceId, "node_id": nodeId}, &s)
 	if err != nil {
-		return nil, err
+		return nil, flowerr.FromError(err)
 	}
 	if ok {
 		m := make(map[string]interface{})
 		err = msgpack.Unmarshal([]byte(s.Data), m)
 		if err != nil {
-			return nil, err
+			return nil, flowerr.FromError(err)
 		}
 		return m, nil
 	}

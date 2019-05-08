@@ -2,10 +2,8 @@ package modules
 
 import (
 	"context"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/gslogrus"
-	"konekko.me/gosion/workflow/flowstate"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/script"
 	"konekko.me/gosion/workflow/types"
@@ -24,6 +22,11 @@ type nextflow struct {
 	ctx      context.Context
 	instance *models.Instance
 	script   distribution
+	gon      bool
+}
+
+func (n *nextflow) ApiStartEvent() (context.Context, *flowerr.Error) {
+	panic("implement me")
 }
 
 type nextstatus struct {
@@ -31,36 +34,37 @@ type nextstatus struct {
 	currentNodes []string
 }
 
-func (n *nextflow) Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (*gs_commons_dto.State, error) {
+func (n *nextflow) Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
 	n.values = value
 	n.node = node
 	n.ctx = ctx
 	n.instance = instance
 	n.status = &nextstatus{}
-	return distribute(ct, n)
+	return distribute(ctx, ct, n)
 }
 
 func (n *nextflow) Data() interface{} {
 	return n.status
 }
 
-func (n *nextflow) ExclusiveGateway() (*gs_commons_dto.State, error) {
+func (n *nextflow) ExclusiveGateway() (context.Context, *flowerr.Error) {
 	flow := n.flow()
-	state, err := n.script.Do(n.ctx, n.instance, n.node, flow.StartType, n.values[0])
+	ctx, err := n.script.Do(n.ctx, n.instance, n.node, flow.StartType, n.values[0])
 	if err != nil {
 		return nil, err
 	}
-	if state.Code == types.NFNextFlow {
+	if err == flowerr.NextFlow {
 		n.again(flow.End)
 	}
-	return state, nil
+	return ctx, nil
 }
 
+//先判断所有与当前ParallelGateway关联的所有task是否完成
 //等待关联节点完成
-func (n *nextflow) ParallelGateway() (*gs_commons_dto.State, error) {
+func (n *nextflow) ParallelGateway() (context.Context, *flowerr.Error) {
 	tasks := n.parallel()
 	if tasks == nil {
-		return flowstate.ErrNode, nil
+		return n.ctx, flowerr.ErrNode
 	}
 	size := 0
 	var err error
@@ -93,33 +97,45 @@ func (n *nextflow) ParallelGateway() (*gs_commons_dto.State, error) {
 	} else {
 		n.next() //没有完成当前任务，设置当前gateway为currentNode等待完成
 	}
-	return errstate.Success, nil
+	return n.ctx, nil
 }
 
-func (n *nextflow) InclusiveGateway() (*gs_commons_dto.State, error) {
-	panic("implement me")
+func (n *nextflow) InclusiveGateway() (context.Context, *flowerr.Error) {
+	flow := n.flow()
+	ctx, err := n.script.Do(n.ctx, n.instance, n.node, flow.StartType, n.values[0])
+	if err != nil {
+		return nil, err
+	}
+	if err == flowerr.NextFlow {
+		n.again(flow.End)
+	} else if err == flowerr.ScriptTrue {
+		n.next()
+	} else if err == flowerr.ScriptFalse {
+
+	}
+	return ctx, nil
 }
 
 //Unsupported, is wrong!
-func (n *nextflow) TriggerStartEvent() (*gs_commons_dto.State, error) {
-	return flowstate.ErrNode, nil
+func (n *nextflow) TriggerStartEvent() (context.Context, *flowerr.Error) {
+	return n.ctx, flowerr.ErrNode
 }
 
 //Unsupported, is wrong!
-func (n *nextflow) StartEvent() (*gs_commons_dto.State, error) {
-	return flowstate.ErrNode, nil
+func (n *nextflow) StartEvent() (context.Context, *flowerr.Error) {
+	return n.ctx, flowerr.ErrNode
 }
 
-func (n *nextflow) EndEvent() (*gs_commons_dto.State, error) {
+func (n *nextflow) EndEvent() (context.Context, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (n *nextflow) NotifyTask() (*gs_commons_dto.State, error) {
+func (n *nextflow) NotifyTask() (context.Context, *flowerr.Error) {
 	panic("implement me")
 }
 
 //just notify users
-func (n *nextflow) UserTask() (*gs_commons_dto.State, error) {
+func (n *nextflow) UserTask() (context.Context, *flowerr.Error) {
 	n.next()
 	e := n.node.data.(*models.UserTask)
 	//notify

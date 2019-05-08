@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 )
 
@@ -17,7 +17,7 @@ type IHistory interface {
 	GetInstanceOperateHistory(instanceId string)
 
 	//记录操作历史
-	Record(ctx context.Context, data *models.History) (*gs_commons_dto.State, error)
+	Record(ctx context.Context, data *models.History) *flowerr.Error
 }
 
 type history struct {
@@ -28,7 +28,7 @@ type history struct {
 	log     *gslogrus.Logger
 }
 
-func (h *history) Record(ctx context.Context, data *models.History) (*gs_commons_dto.State, error) {
+func (h *history) Record(ctx context.Context, data *models.History) *flowerr.Error {
 	panic("implement me")
 }
 

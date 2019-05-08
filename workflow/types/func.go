@@ -1,5 +1,8 @@
 package types
 
-import "konekko.me/gosion/commons/dto"
+import (
+	"context"
+	"konekko.me/gosion/workflow/flowerr"
+)
 
-type StateCallback func() (*gs_commons_dto.State, error)
+type ErrCallback func() (context.Context, *flowerr.Error)

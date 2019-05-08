@@ -3,34 +3,34 @@ package modules
 import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 )
 
 type IInstance interface {
-	FindById(instanceId string) (*models.Instance, error)
+	FindById(instanceId string) (*models.Instance, *flowerr.Error)
 
 	//current status
-	Status(instanceId string) (int64, error)
+	Status(instanceId string) (int64, *flowerr.Error)
 
-	IsStarted(instanceId string) (bool, error)
+	IsStarted(instanceId string) (bool, *flowerr.Error)
 
 	//is finished
-	IsFinished(instanceId string, nodeId string) (bool, error)
+	IsFinished(instanceId string, nodeId string) (bool, *flowerr.Error)
 
 	//nodes running the current instance
 	CurrentProcess(instanceId string)
 
 	//开始新的实例
-	New(ins *models.Instance) error
+	New(ins *models.Instance) *flowerr.Error
 
-	HasPermission() error
+	HasPermission() *flowerr.Error
 
 	//更新实例当前进行的节点
-	UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) (*gs_commons_dto.State, error)
+	UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) *flowerr.Error
 
 	FindRequireUserProcessingInstances(userId string, pageIndex, pageSize int64)
 
@@ -45,23 +45,23 @@ type instances struct {
 	id      gs_commons_generator.IDGenerator
 }
 
-func (i *instances) HasPermission() error {
+func (i *instances) HasPermission() *flowerr.Error {
 	panic("implement me")
 }
 
-func (i *instances) FindById(instanceId string) (*models.Instance, error) {
+func (i *instances) FindById(instanceId string) (*models.Instance, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (i *instances) Status(instanceId string) (int64, error) {
+func (i *instances) Status(instanceId string) (int64, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (i *instances) IsStarted(instanceId string) (bool, error) {
+func (i *instances) IsStarted(instanceId string) (bool, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (i *instances) IsFinished(instanceId string, nodeId string) (bool, error) {
+func (i *instances) IsFinished(instanceId string, nodeId string) (bool, *flowerr.Error) {
 	panic("implement me")
 }
 
@@ -69,11 +69,11 @@ func (i *instances) CurrentProcess(instanceId string) {
 	panic("implement me")
 }
 
-func (i *instances) New(ins *models.Instance) error {
+func (i *instances) New(ins *models.Instance) *flowerr.Error {
 	panic("implement me")
 }
 
-func (i *instances) UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) (*gs_commons_dto.State, error) {
+func (i *instances) UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) *flowerr.Error {
 	panic("implement me")
 }
 

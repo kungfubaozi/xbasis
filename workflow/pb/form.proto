@@ -19,6 +19,17 @@ service Form {
     rpc UpdateFieldProps (UpdateFieldPropsRequest) returns (UpdateFieldPropsResponse);
 
     rpc GetAllTypeFields (GetAllTypeFieldsRequest) returns (GetAllTypeFieldsResponse);
+
+    //检查form的filed value是否符合
+    rpc CheckFiledValue (CheckFiledValueRequest) returns (CheckFieldValueResponse);
+}
+
+message CheckFiledValueRequest {
+
+}
+
+message CheckFieldValueResponse {
+
 }
 
 message GetAllTypeFieldsRequest {
