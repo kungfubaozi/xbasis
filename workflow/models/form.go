@@ -9,6 +9,7 @@ type TypeForm struct {
 	CreateUserId string       `json:"create_user_id" bson:"create_user_id"`
 	Require      bool         `bson:"require" json:"require"`
 	Fields       []*TypeField `bson:"fields" json:"fields"`
+	Encryption   bool         `bson:"encryption" json:"encryption"`
 }
 
 type TypeField struct {
@@ -28,6 +29,9 @@ type TimeViewProperties struct {
 	DefaultNow bool  `bson:"default_now" json:"default_now"`
 	MaxTime    int64 `bson:"max_time" json:"max_time"`
 	MinTime    int64 `bson:"min_time" json:"min_time"`
+}
+
+type TypeFiledStyleProperties struct {
 }
 
 type SelectViewProperties struct {
@@ -69,9 +73,8 @@ type SubmitForm struct {
 	InstanceId string `bson:"instance_id" json:"instance_id"`
 	NodeId     string `bson:"node_id" json:"node_id"`
 	Data       string `bson:"data" json:"data"`
-}
-
-type RadioGroupViewProperties struct {
+	//ForwardCT  types.ConnectType `bson:"forward_ct" json:"forward_ct"`
+	//BackwardCT types.ConnectType `bson:"backward_ct" json:"backward_ct"`
 }
 
 //sha1(userId+formId+propId)

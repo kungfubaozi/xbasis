@@ -10,7 +10,7 @@ import (
 type distribution interface {
 	Data() interface{}
 
-	Do(ctx context.Context, instance *models.Instance, node *node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error)
+	Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error)
 
 	ExclusiveGateway() (context.Context, *flowerr.Error)
 

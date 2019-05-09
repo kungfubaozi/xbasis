@@ -1,4 +1,4 @@
-package modules
+package runtime
 
 import (
 	"fmt"
@@ -7,68 +7,56 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/workflow/distribute"
+	"konekko.me/gosion/workflow/modules"
 	"konekko.me/gosion/workflow/script"
 )
 
-type Modules interface {
-	History() IHistory
-
-	Instance() IInstance
-
-	Process() IProcesses
-
-	Runtime() IRuntime
-
-	Form() IForm
-
-	User() IUser
-}
-
 type Workflow struct {
-	modules *modules
+	modules *workflow
 }
 
-type modules struct {
+type workflow struct {
 	shutdown chan error
 	session  *mgo.Session
 	pool     *redis.Pool
 	client   *indexutils.Client
 	log      *gslogrus.Logger
 	//
-	ri IRuntime
-	hi IHistory
-	ii IInstance
-	pi IProcesses
-	fi IForm
-	ui IUser
+	ri modules.IRuntime
+	hi modules.IHistory
+	ii modules.IInstance
+	pi modules.IProcesses
+	fi modules.IForm
+	ui modules.IUser
 }
 
-func (m *modules) User() IUser {
+func (m *workflow) User() modules.IUser {
 	panic("implement me")
 }
 
-func (m *modules) History() IHistory {
+func (m *workflow) History() modules.IHistory {
 	return m.hi
 }
 
-func (m *modules) Instance() IInstance {
+func (m *workflow) Instance() modules.IInstance {
 	return m.ii
 }
 
-func (m *modules) Process() IProcesses {
+func (m *workflow) Process() modules.IProcesses {
 	return m.pi
 }
 
-func (m *modules) Runtime() IRuntime {
+func (m *workflow) Runtime() modules.IRuntime {
 	return m.ri
 }
 
-func (m *modules) Form() IForm {
+func (m *workflow) Form() modules.IForm {
 	return m.fi
 }
 
 func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Client, log *gslogrus.Logger) *Workflow {
-	return &Workflow{&modules{
+	return &Workflow{&workflow{
 		shutdown: make(chan error),
 		pool:     pool,
 		session:  session,
@@ -78,15 +66,17 @@ func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Clien
 }
 
 func (w *Workflow) Run() error {
+	fmt.Println("Goflow starting...")
 	id := gs_commons_generator.NewIDG()
 	m := w.modules
 	callback, r := createRuntime(m.shutdown, m.log)
 	p := &processes{
-		session: m.session.Clone(),
-		pool:    m.pool,
-		id:      id,
-		log:     m.log,
-		client:  m.client,
+		session:  m.session.Clone(),
+		pool:     m.pool,
+		id:       id,
+		log:      m.log,
+		relation: distribute.NewRelation(),
+		client:   m.client,
 	}
 	h := &history{
 		session: m.session.Clone(),
@@ -120,8 +110,9 @@ func (w *Workflow) Run() error {
 	m.pi = p
 	m.fi = f
 	r.modules = m
-	r.processing = newProcessing(m, m.log)
-	r.next = newNextflow(m, m.log, script.NewScript())
+	r.dataGetter = distribute.NewDataGetter(m, m.log)
+	r.processing = distribute.NewProcessing(m, m.log)
+	r.next = distribute.NewNextflow(m, m.log, script.NewScript())
 	m.pi.SetCallback(callback)
 	fmt.Println("Goflow initialize ok...")
 	//加载所有流程
@@ -129,6 +120,6 @@ func (w *Workflow) Run() error {
 	return <-m.shutdown
 }
 
-func (w *Workflow) Modules() Modules {
+func (w *Workflow) Modules() modules.Modules {
 	return w.modules
 }

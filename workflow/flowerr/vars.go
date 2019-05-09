@@ -12,6 +12,14 @@ var ErrNode = err(303, "err node")
 
 var NextFlow = err(304, "next flow")
 
+var ErrNoDownwardProcess = err(305, "no downward process")
+
+var ErrFindSubmitForm = err(306, "err find submit form")
+
+var ErrInvalidGatewayScript = err(307, "err invalid gateway flow script")
+
+var ErrConnectWithExclusiveGateWaySize = err(308, "err connect with ExclusiveGateWay size > 1")
+
 var ScriptTrue = err(401, "script pass check")
 
 var ScriptFalse = err(402, "script no passing")

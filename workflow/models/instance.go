@@ -4,6 +4,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/workflow/types"
 )
 
 type Instance struct {
@@ -20,4 +21,11 @@ type Instances struct {
 	Session *mgo.Session
 	Pool    *redis.Pool
 	Client  *indexutils.Client
+}
+
+type Node struct {
+	Id   string
+	CT   types.ConnectType
+	Key  string
+	Data interface{}
 }

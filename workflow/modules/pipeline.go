@@ -1,72 +1,20 @@
 package modules
 
 import (
-	"github.com/davecgh/go-spew/spew"
+	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/types"
 )
 
-type pipeline struct {
-	id         string
-	name       string
-	flows      map[string][]*models.SequenceFlow
-	parallels  map[string][]string //与对应的parallelGateway关联的task节点
-	startEvent interface{}
-	startType  types.ConnectType
-	endEvents  map[string]*models.TypeEvent
-	expireAt   int64
-	nodes      map[string]*node
-	version    int64
-}
-
-type node struct {
-	id   string
-	ct   types.ConnectType
-	key  string
-	data interface{}
-}
-
 type Pipeline interface {
-	GetNode(nodeId string) (*node, error)
+	GetNode(nodeId string) (*models.Node, *flowerr.Error)
 
 	Id() string
 
 	Dump()
 
-	Flows(nodeId string) ([]*models.SequenceFlow, error)
+	Flows(nodeId string) ([]*models.SequenceFlow, *flowerr.Error)
 
-	FindEndConnectNodes(id string) []string
-}
+	FindParallelNodes(id string) []string
 
-func (p *pipeline) append(n *node) {
-	p.nodes[n.id] = n
-}
-
-func (p *pipeline) GetNode(nodeId string) (*node, error) {
-	node := p.nodes[nodeId]
-	if node != nil {
-		return nil, types.ErrNil
-	}
-	return node, nil
-}
-
-func (p *pipeline) Id() string {
-	return p.id
-}
-
-func (p *pipeline) Dump() {
-	spew.Dump(p)
-}
-
-//finder node start id as flow
-func (p *pipeline) Flows(nodeId string) ([]*models.SequenceFlow, error) {
-	f := p.flows[nodeId]
-	if f != nil {
-		return nil, types.ErrNil
-	}
-	return f, nil
-}
-
-func (p *pipeline) FindEndConnectNodes(id string) []string {
-	return p.parallels[id]
+	GetNodeBackwardRelations(id string) []*models.NodeBackwardRelation
 }

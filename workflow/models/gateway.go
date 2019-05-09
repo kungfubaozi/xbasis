@@ -2,6 +2,7 @@ package models
 
 //排他网关
 //寻找第一条符合条件的流向
+//如果没有符合的，那么就去走默认的flow
 type ExclusiveGateway struct {
 	*Info
 }

@@ -14,3 +14,14 @@ type SequenceFlow struct {
 	EndType     types.ConnectType `bson:"end_type" json:"end_type"`
 	Priority    int64             `bson:"priority" json:"priority"`
 }
+
+type NextStatus struct {
+	Again        string
+	CurrentNodes []string
+}
+
+type NodeBackwardRelation struct {
+	Id  string
+	Key string
+	CT  types.ConnectType
+}
