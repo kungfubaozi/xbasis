@@ -2,6 +2,8 @@ package flowerr
 
 var ErrUnknow = err(101, "")
 
+var ErrSecretKey = err(102, "")
+
 var ErrRequest = err(201, "")
 
 var ErrNil = err(301, "nil")

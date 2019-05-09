@@ -2,6 +2,7 @@ package distribute
 
 import (
 	"context"
+	"fmt"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
@@ -89,6 +90,14 @@ func (f *flowscript) do() *flowerr.Error {
 		value := f.ctx.Value(node.Key)
 		if value != nil {
 			data = value.(map[string]interface{})
+			d := make(map[string]interface{})
+			for k, v := range data {
+				d[fmt.Sprintf("%s.%s", node.Key, k)] = v
+			}
+
+			//in script: flow['yourNodeKey.yourNeedParam']
+
+			data = d
 		}
 		if data == nil {
 			return flowerr.ErrFindSubmitForm

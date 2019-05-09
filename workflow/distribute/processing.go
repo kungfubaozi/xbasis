@@ -189,7 +189,7 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 			}
 			go func() {
 				defer wg.Done()
-				resp(f.modules.Form().Submit(f.ctx, f.instance.Id, f.node.Id, formId, f.sd))
+				resp(f.modules.Form().Submit(f.ctx, f.instance.Id, f.node.Id, formId, form.Encryption, f.sd))
 			}()
 
 			go func() {

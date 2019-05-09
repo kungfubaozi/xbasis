@@ -152,7 +152,7 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 				return nil, err
 			}
 			//获取节点提交的数据
-			c, err := r.getSubmitData(ctx, f.Start, pipe)
+			c, err := r.getSubmitData(i, ctx, f.Start, pipe)
 			if err != nil {
 				return nil, err
 			}
@@ -181,10 +181,10 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 }
 
 //不同于其他的是，此操作是向前查找
-func (r *runtime) getSubmitData(ctx context.Context, fromNodeId string, pipe modules.Pipeline) (context.Context, *flowerr.Error) {
+func (r *runtime) getSubmitData(i *models.Instance, ctx context.Context, fromNodeId string, pipe modules.Pipeline) (context.Context, *flowerr.Error) {
 	nodes := pipe.GetNodeBackwardRelations(fromNodeId)
 	for _, v := range nodes {
-		ctx1, err := r.dataGetter.Do(ctx, nil, nil, v.CT, v)
+		ctx1, err := r.dataGetter.Do(ctx, i, nil, v.CT, v)
 		if err != nil {
 			return nil, err
 		}

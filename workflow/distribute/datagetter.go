@@ -14,66 +14,78 @@ type dataGetter struct {
 	finished map[string]bool
 	log      *gslogrus.Logger
 	values   []interface{}
-	node     *models.Node
 	ctx      context.Context
 	instance *models.Instance
-	pipe     modules.Pipeline
+	rn       *models.NodeBackwardRelation
 }
 
 func (f *dataGetter) Data() interface{} {
 	panic("implement me")
 }
 
-func (f *dataGetter) Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
+func (f *dataGetter) Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, values ...interface{}) (context.Context, *flowerr.Error) {
 	f.ctx = ctx
-	f.node = node
 	f.instance = instance
-	f.pipe = value[0].(modules.Pipeline)
+	f.values = values
 	return handler(ctx, ct, f)
 }
 
+func (f *dataGetter) relation() *models.NodeBackwardRelation {
+	return f.values[0].(*models.NodeBackwardRelation)
+}
+
 func (f *dataGetter) exclusiveGateway() *flowerr.Error {
-	panic("implement me")
+	return nil
 }
 
 func (f *dataGetter) parallelGateway() *flowerr.Error {
-	panic("implement me")
+	return nil
 }
 
 func (f *dataGetter) inclusiveGateway() *flowerr.Error {
-	panic("implement me")
+	return nil
 }
 
 func (f *dataGetter) startEvent() *flowerr.Error {
-	panic("implement me")
+	return f.loadData()
 }
 
 func (f *dataGetter) endEvent() *flowerr.Error {
-	panic("implement me")
+	return nil
 }
 
 func (f *dataGetter) apiStartEvent() *flowerr.Error {
-	panic("implement me")
+	return f.loadData()
 }
 
 func (f *dataGetter) userTask() *flowerr.Error {
-	panic("implement me")
+	return f.loadData()
 }
 
 func (f *dataGetter) notifyTask() *flowerr.Error {
-	panic("implement me")
+	return nil
 }
 
 func (f *dataGetter) triggerStartEvent() *flowerr.Error {
-	panic("implement me")
+	return nil
 }
 
 func (f *dataGetter) context(ctx context.Context) context.Context {
-	panic("implement me")
+	return f.ctx
 }
 
 func (f *dataGetter) metadata(key, data interface{}) {
-	panic("implement me")
+	f.ctx = context.WithValue(f.ctx, key, data)
+}
+
+func (f *dataGetter) loadData() *flowerr.Error {
+	d := f.relation()
+	data, err := f.modules.Form().LoadNodeDataToStore(f.ctx, f.instance.Id, d.Id)
+	if err != nil {
+		return err
+	}
+	f.metadata(d.Key, data)
+	return nil
 }
 
 func (f *dataGetter) Restore() {

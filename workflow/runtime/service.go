@@ -66,7 +66,7 @@ func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Clien
 }
 
 func (w *Workflow) Run() error {
-	fmt.Println("Goflow starting...")
+	fmt.Println("starting...")
 	id := gs_commons_generator.NewIDG()
 	m := w.modules
 	callback, r := createRuntime(m.shutdown, m.log)
@@ -93,11 +93,12 @@ func (w *Workflow) Run() error {
 		client:  m.client,
 	}
 	f := &form{
-		session: m.session.Clone(),
-		pool:    m.pool,
-		log:     m.log,
-		id:      id,
-		client:  m.client,
+		session:   m.session.Clone(),
+		pool:      m.pool,
+		log:       m.log,
+		id:        id,
+		secretKey: "6333614dc0c7452eb3b29bed26a8580a",
+		client:    m.client,
 	}
 	u := &user{
 		log:    m.log,
@@ -114,7 +115,7 @@ func (w *Workflow) Run() error {
 	r.processing = distribute.NewProcessing(m, m.log)
 	r.next = distribute.NewNextflow(m, m.log, script.NewScript())
 	m.pi.SetCallback(callback)
-	fmt.Println("Goflow initialize ok...")
+	fmt.Println("initialize ok...")
 	//加载所有流程
 	m.pi.LoadAll()
 	return <-m.shutdown

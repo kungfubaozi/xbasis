@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
@@ -15,18 +16,31 @@ import (
 )
 
 type form struct {
-	session *mgo.Session
-	pool    *redis.Pool
-	client  *indexutils.Client
-	log     *gslogrus.Logger
-	id      gs_commons_generator.IDGenerator
+	session   *mgo.Session
+	pool      *redis.Pool
+	client    *indexutils.Client
+	log       *gslogrus.Logger
+	id        gs_commons_generator.IDGenerator
+	secretKey string
 }
 
-func (f *form) Submit(ctx context.Context, instanceId, nodeId, formId string, value map[string]interface{}) *flowerr.Error {
+func (f *form) Submit(ctx context.Context, instanceId, nodeId, formId string, encryption bool, value map[string]interface{}) *flowerr.Error {
 	user := getWrapperUser(ctx)
+
 	b, err := msgpack.Marshal(value)
 	if err != nil {
 		return flowerr.FromError(err)
+	}
+
+	if encryption {
+		if len(f.secretKey) == 0 {
+			return flowerr.ErrSecretKey
+		}
+		s, err := encrypt.AESEncrypt(b, []byte(f.secretKey))
+		if err != nil {
+			return flowerr.FromError(err)
+		}
+		b = []byte(s)
 	}
 
 	s := &models.SubmitForm{
@@ -35,6 +49,7 @@ func (f *form) Submit(ctx context.Context, instanceId, nodeId, formId string, va
 			CreateAt:     time.Now().UnixNano(),
 			CreateUserId: user.Token.UserId,
 		},
+		Encryption: encryption,
 		FormId:     formId,
 		NodeId:     nodeId,
 		Data:       string(b),
@@ -67,6 +82,13 @@ func (f *form) LoadNodeDataToStore(ctx context.Context, instanceId, nodeId strin
 	}
 	if ok {
 		m := make(map[string]interface{})
+		if s.Encryption {
+			b, err := encrypt.AESDecrypt(s.Data, []byte(f.secretKey))
+			if err != nil {
+				return nil, flowerr.FromError(err)
+			}
+			s.Data = b
+		}
 		err = msgpack.Unmarshal([]byte(s.Data), m)
 		if err != nil {
 			return nil, flowerr.FromError(err)

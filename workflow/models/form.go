@@ -73,6 +73,7 @@ type SubmitForm struct {
 	InstanceId string `bson:"instance_id" json:"instance_id"`
 	NodeId     string `bson:"node_id" json:"node_id"`
 	Data       string `bson:"data" json:"data"`
+	Encryption bool   `bson:"encryption" json:"encryption"`
 	//ForwardCT  types.ConnectType `bson:"forward_ct" json:"forward_ct"`
 	//BackwardCT types.ConnectType `bson:"backward_ct" json:"backward_ct"`
 }
