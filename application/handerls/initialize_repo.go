@@ -21,28 +21,28 @@ type initializeRepo struct {
 }
 
 func (repo *initializeRepo) AddUserApp() {
-	app := repo.getApp(repo.config.UserAppId, "Gsuser", gs_commons_constants.AppTypeUser)
+	app := repo.getApp(repo.config.UserAppId, "GouserService", gs_commons_constants.AppTypeUser)
 	repo.setStructure(repo.config.UserAppFSId, repo.config.UserAppUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) AddManageApp() {
-	app := repo.getApp(repo.config.ManageAppId, "Gsadmin", gs_commons_constants.AppTypeManage)
+	app := repo.getApp(repo.config.ManageAppId, "GoadminService", gs_commons_constants.AppTypeManage)
 	repo.setStructure(repo.config.ManageFSId, repo.config.ManageUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) AddRouteApp() {
-	app := repo.getApp(repo.config.RouteAppId, "Gsroute", gs_commons_constants.AppTypeRoute)
+	app := repo.getApp(repo.config.RouteAppId, "GorouteService", gs_commons_constants.AppTypeRoute)
 	repo.setStructure(repo.config.RouteAppFSId, repo.config.RouteAppUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) AddSafeApp() {
-	app := repo.getApp(repo.config.SafeAppId, "Gssafe", gs_commons_constants.AppTypeSafe)
+	app := repo.getApp(repo.config.SafeAppId, "GosafeService", gs_commons_constants.AppTypeSafe)
 	repo.setStructure(repo.config.SafeAppFSId, repo.config.SafeAppUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)

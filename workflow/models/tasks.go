@@ -8,6 +8,7 @@ type ApiTask struct {
 	RequestMethod types.HttpRequestMethod `bson:"request_method" json:"request_method"`
 }
 
+//决策
 type DecisionTask struct {
 	*Info
 }

@@ -31,7 +31,7 @@ func (svc *securityService) Get(ctx context.Context, in *gs_ext_service_safety.G
 		if len(in.UserId) == 0 {
 			return nil
 		}
-		state := errstate.Success
+		out.State = errstate.Success
 		//resp := func(s *gs_commons_dto.State) {
 		//		//	if state.Ok {
 		//		//		state = s
@@ -56,7 +56,7 @@ func (svc *securityService) Get(ctx context.Context, in *gs_ext_service_safety.G
 		//}()
 
 		out.Current = gs_commons_constants.UserStateOfClear
-		return state
+		return nil
 	})
 }
 

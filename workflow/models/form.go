@@ -18,7 +18,7 @@ type TypeField struct {
 	Name           string          `bson:"name" json:"name"`
 	Type           types.FiledType `json:"type" bson:"type"`
 	FieldText      string          `bson:"field_text" json:"field_text"`
-	Properties     interface{}     `bson:"properties" json:"properties"`
+	Properties     []byte          `bson:"properties" json:"properties"`
 	Require        bool            `bson:"require" json:"require"`
 	Label          string          `bson:"label" json:"label"`
 	Readonly       bool            `bson:"readonly" json:"readonly"`               //只读

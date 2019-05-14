@@ -21,11 +21,19 @@ type appInfo struct {
 }
 
 type appSetting struct {
-	Enabled     int64  `bson:"enabled" json:"enabled"`
-	SyncUserURL string `bson:"sync_user_url" json:"sync_user_url"` //sync new user to your application database
-	RedirectURL string `bson:"redirect_url" json:"redirect_url"`
-	Quarantine  int64  `bson:"quarantine" json:"quarantine"` //create local self database
-	MustSync    bool   `bson:"must_sync" json:"must_sync"`
+	Enabled       int64                 `bson:"enabled" json:"enabled"`
+	SyncUserURL   string                `bson:"sync_user_url" json:"sync_user_url"` //sync new user to your application database
+	RedirectURL   string                `bson:"redirect_url" json:"redirect_url"`
+	Quarantine    int64                 `bson:"quarantine" json:"quarantine"`
+	MustSync      bool                  `bson:"must_sync" json:"must_sync"`
+	AllowNewUsers *allowNewUsersToEnter `bson:"allow_new_users" json:"allow_new_users"` //允许新用户登录，如果允许那么会把默认的structure下的group/role设置给新进入的用户
+}
+
+type allowNewUsersToEnter struct {
+	Enabled          bool     `bson:"enabled" json:"enabled"`
+	DefaultStructure string   `bson:"default_structure" json:"default_structure"`
+	DefaultGroup     string   `bson:"default_group" json:"default_group"`
+	DefaultRole      []string `bson:"default_role" json:"default_role"`
 }
 
 type appClient struct {

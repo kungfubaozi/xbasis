@@ -19,7 +19,7 @@ import (
 
 func StartService() {
 
-	errc := make(chan error, 2)
+	errc := make(chan error, 3)
 
 	configuration := &gs_commons_config.GosionConfiguration{}
 
@@ -48,6 +48,14 @@ func StartService() {
 			session, applicationclient.NewStatusClient(m.Client()),
 			safetyclient.NewBlacklistClient(m.Client()),
 			authenticationcli.NewAuthClient(m.Client()), client, log))
+
+		errc <- m.Run()
+	}()
+
+	go func() {
+		m := microservice.NewService(gs_commons_constants.ExtAccessibleVerification, false)
+
+		log := gslogrus.New(gs_commons_constants.ExtAccessibleVerification, client)
 
 		gs_ext_service_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, log))
 

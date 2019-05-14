@@ -119,3 +119,12 @@ type simplifiedFunction struct {
 	Roles          []string `json:"roles" bson:"roles"`
 	Share          bool     `bson:"share" json:"share"`
 }
+
+//结构联系
+type structureRelation struct {
+	Id                string `bson:"_id" json:"id"`
+	RelationType      int64  `bson:"relation_type" json:"relation_type"`
+	CreateAt          int64  `bson:"create_at" json:"create_at"`
+	CreateUserId      string `bson:"create_user_id" json:"create_user_id"`
+	TargetStructureId string `bson:"target_structure_id" json:"target_structure_id"`
+}

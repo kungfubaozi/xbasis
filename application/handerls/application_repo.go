@@ -2,7 +2,6 @@ package applicationhanderls
 
 import (
 	"errors"
-	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/indexutils"
@@ -20,8 +19,6 @@ func (repo *applicationRepo) FindAll() ([]*appInfo, error) {
 }
 
 func (repo *applicationRepo) findAppInfo(key, value string) (*appInfo, error) {
-	fmt.Println("find app info")
-
 	var info appInfo
 	ok, err := repo.QueryFirst("gs-applications", map[string]interface{}{key: value}, &info)
 	if err != nil {

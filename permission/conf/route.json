@@ -44,26 +44,22 @@
       "functions": [
         {
           "api": "/login/withAccount",
-          "share": true,
           "name": "LoginWithAccount"
         },
         {
           "api": "/login/withValidateCode",
           "name": "LoginWithValidateCode",
-          "share": true,
           "auth_type": [
             352
           ]
         },
         {
           "api": "/login/withQRCode",
-          "name": "LoginWithQRCode",
-          "share": true
+          "name": "LoginWithQRCode"
         },
         {
           "api": "/register/new",
           "name": "Register",
-          "share": true,
           "auth_type": [
             352
           ]
@@ -71,7 +67,6 @@
         {
           "api": "/oauth/login",
           "name": "OAuthLogin",
-          "share": true,
           "auth_type": [
             5632,
             352
@@ -80,7 +75,6 @@
         {
           "api": "/grant/yes",
           "name": "AuthorizationConfirmation",
-          "share": true,
           "auth_type": [
             5632
           ]
@@ -88,7 +82,6 @@
         {
           "api": "/authorization/sync",
           "name": "Authorization",
-          "share": true,
           "auth_type": [
             5632
           ]

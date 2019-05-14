@@ -4,7 +4,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/types"
 )
 
 type pipeline struct {
@@ -12,8 +11,7 @@ type pipeline struct {
 	name              string
 	flows             map[string][]*models.SequenceFlow //flows的key是对应节点的start
 	parallels         map[string][]string               //与对应的parallelGateway关联的task节点
-	startEvent        interface{}
-	startType         types.ConnectType
+	starEvent         *models.Node
 	endEvents         map[string]*models.TypeEvent
 	expireAt          int64
 	nodes             map[string]*models.Node

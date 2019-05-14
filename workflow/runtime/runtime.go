@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/micro/go-micro/metadata"
+	"github.com/samuel/go-zookeeper/zk"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/workflow/distribute"
@@ -16,28 +17,27 @@ import (
 type runtime struct {
 	modules    modules.Modules
 	shutdown   chan error
-	pipelines  map[string]modules.Pipeline
+	pipelines  modules.Pipelines
 	processing distribute.Handler
 	next       distribute.Handler
 	dataGetter distribute.Handler
 	log        *gslogrus.Logger
-}
-
-func createRuntime(shutdown chan error, log *gslogrus.Logger) (modules.AddProcessToPipelineCallback, *runtime) {
-	r := &runtime{
-		shutdown:  shutdown,
-		log:       log,
-		pipelines: make(map[string]modules.Pipeline),
-	}
-	return func(pip modules.Pipeline) {
-		r.pipelines[pip.Id()] = pip
-	}, r
+	conn       *zk.Conn
 }
 
 func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value map[string]interface{}) *flowerr.Error {
 	data, ok := metadata.FromContext(ctx1)
 	if ok {
 
+		//lock instanceId
+		path := fmt.Sprintf("lock-%s", instanceId)
+		_, e := r.conn.Create(path, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermCreate))
+		if e != nil {
+			return flowerr.FromError(e)
+		}
+		defer r.conn.Delete(path, 0)
+
+		//progress...
 		ctx := context.Background()
 		user := gs_commons_wrapper.GetData(data)
 		ctx = context.WithValue(ctx, "auth", user)
@@ -51,7 +51,10 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 		}
 
 		//get pipeline
-		pipe := r.pipelines[i.ProcessId]
+		pipe, e := r.pipelines.Get(i.ProcessId)
+		if err != nil {
+			return flowerr.FromError(e)
+		}
 
 		size := 0
 		for _, v := range i.CurrentNodes {

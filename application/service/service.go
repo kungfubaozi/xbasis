@@ -8,6 +8,7 @@ import (
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
+	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
 )
@@ -46,7 +47,9 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.ExtApplicationService, true)
 		s.Init()
 
-		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(client))
+		log := gslogrus.New(gs_commons_constants.ExtApplicationService, client)
+
+		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(client, pool, log))
 
 		gs_ext_service_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(client, session))
 

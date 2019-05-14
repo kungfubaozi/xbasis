@@ -18,3 +18,9 @@ type Pipeline interface {
 
 	GetNodeBackwardRelations(id string) []*models.NodeBackwardRelation
 }
+
+type Pipelines interface {
+	Get(processId string) (Pipeline, error)
+
+	Update(processId string) error
+}

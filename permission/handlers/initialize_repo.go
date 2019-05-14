@@ -85,11 +85,11 @@ func (repo *initializeRepo) SaveAndClose() {
 	if repo.bulk != nil && repo.bulk.NumberOfActions() > 0 {
 		db := repo.session.DB("gs_permission")
 		if repo.userRolesRelation != nil && len(repo.userRolesRelation) > 0 {
-			check(db.C(fmt.Sprintf("user_roles_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userRolesRelation))
+			check(db.C(fmt.Sprintf("user_roles_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userRolesRelation...))
 		}
 
 		if repo.userGroupsRelation != nil && len(repo.userGroupsRelation) > 0 {
-			check(db.C(fmt.Sprintf("user_groups_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userGroupsRelation))
+			check(db.C(fmt.Sprintf("user_groups_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userGroupsRelation...))
 		}
 
 		if len(repo.userRoles) > 0 {

@@ -64,22 +64,25 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		state := errstate.Success
 
 		resp := func(s *gs_commons_dto.State) {
-			if state.Ok {
+			if state.Ok && s != nil {
 				state = s
 			}
 		}
 
-		var uai userAuthorizeInfo
+		var uai *userAuthorizeInfo
 		var tokenApp *gs_ext_service_application.GetAppClientStatusResponse
 
+		//应用检查(当为分享功能时，需要检查token内使用的clientId是否为当前应用的id)
 		if in.Share && claims.Token.ClientId != auth.ClientId {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
+
 				//check token side application status
 				a, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
 					ClientId: claims.Token.ClientId,
 				})
+
 				if err != nil {
 					resp(errstate.ErrSystem)
 					return
@@ -96,6 +99,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 			}()
 		}
 
+		//token检查
 		go func() {
 			defer wg.Done()
 
@@ -133,16 +137,20 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 		}()
 
+		//安全检查
 		go func() {
 			defer wg.Done()
+
 			s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{UserId: claims.Token.UserId})
 			if err != nil {
 				resp(errstate.ErrSystem)
 				return
 			}
+
 			resp(s.State)
 		}()
 
+		//功能权限检查
 		go func() {
 			defer wg.Done()
 
@@ -176,17 +184,21 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		wg.Wait()
 
 		if state.Ok {
-			if len(uai.UserId) == 0 {
+
+			if uai == nil || len(uai.UserId) == 0 {
 				return errstate.ErrSystem
 			}
+
 			out.State = state
 			out.UserId = claims.Token.UserId
 			out.ClientPlatform = uai.Platform
 			out.ClientId = uai.ClientId
 			out.AppId = claims.Token.AppId
 			out.Relation = claims.Token.Relation
-			out.AppType = tokenApp.Type
-			return errstate.Success
+			if tokenApp != nil {
+				out.AppType = tokenApp.Type
+			}
+			return nil
 		}
 
 		return state

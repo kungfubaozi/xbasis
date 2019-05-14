@@ -50,6 +50,8 @@ func (svc *verificationService) GetRepo() *functionRepo {
 	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
+var whiteApiList = []string{"/authentication/router/refresh"}
+
 //application verify
 //ip, userDevice blacklist verify
 //api exists and authType verify
@@ -196,19 +198,31 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				repo := svc.GetRepo()
 				defer repo.Close()
 
-				//fmt.Println("function structure id", ccs.FunctionStructureId)
-				f, err := repo.SimplifiedLookupApi(appResp.FunctionStructure, rh.path)
-				if err != nil {
-					fmt.Println("find api", err)
-					fmt.Println("invalid api", rh.path)
-					return nil
+				var f *simplifiedFunction
+				var err error
+				for _, v := range whiteApiList {
+					if v == rh.path {
+						f = &simplifiedFunction{
+							AuthTypes: []int64{},
+						}
+						break
+					}
 				}
+				if f == nil {
+					//fmt.Println("function structure id", ccs.FunctionStructureId)
+					f, err = repo.SimplifiedLookupApi(appResp.FunctionStructure, rh.path)
+					if err != nil {
+						fmt.Println("find api", err)
+						fmt.Println("invalid api", rh.path)
+						return nil
+					}
 
-				//grant platform
-				if f.GrantPlatforms != nil && len(f.GrantPlatforms) > 0 {
-					for _, v := range f.GrantPlatforms {
-						if v == appResp.ClientPlatform {
-							return errstate.ErrRequest
+					//grant platform
+					if f.GrantPlatforms != nil && len(f.GrantPlatforms) > 0 {
+						for _, v := range f.GrantPlatforms {
+							if v == appResp.ClientPlatform {
+								return errstate.ErrRequest
+							}
 						}
 					}
 				}
@@ -291,6 +305,10 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 									AppId:    status.AppId,
 									Relation: status.Relation,
 									AppType:  status.AppType,
+								}
+
+								if !f.Share {
+									out.Token.AppType = appResp.Type
 								}
 
 								userId = status.UserId

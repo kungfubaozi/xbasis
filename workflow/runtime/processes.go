@@ -10,17 +10,14 @@ import (
 	"konekko.me/gosion/workflow/distribute"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/modules"
 	"konekko.me/gosion/workflow/types"
 )
 
 type processes struct {
-	callback modules.AddProcessToPipelineCallback
 	session  *mgo.Session
 	pool     *redis.Pool
 	log      *gslogrus.Logger
 	client   *indexutils.Client
-	size     int64
 	relation distribute.Handler
 	id       gs_commons_generator.IDGenerator
 }
@@ -33,189 +30,178 @@ func (pro *processes) Reassignment() {
 	panic("implement me")
 }
 
-func (pro *processes) LoadAll() {
-	fmt.Println("Goflow start load all process...")
-	fmt.Println("load done, process size", pro.size)
-}
-
-func (pro *processes) SetCallback(callback modules.AddProcessToPipelineCallback) {
-	if pro.callback == nil {
-		pro.callback = callback
-	}
-}
-
 func (pro *processes) AddProcess(p *models.Process) {
-	if pro.callback != nil {
-		pip := &pipeline{
-			id:        p.Id,
-			name:      p.Name,
-			endEvents: make(map[string]*models.TypeEvent),
-			flows:     make(map[string][]*models.SequenceFlow),
-		}
-		if p.StartEvent != nil {
-			pip.startEvent = p.StartEvent.Event
-			pip.startType = p.StartEvent.Type
-		} else {
-			panic("no start event")
-		}
-		if p.EndEvents != nil && len(p.EndEvents) > 0 {
-			for _, v := range p.EndEvents {
-				if len(v.Id) == 0 {
-					panic("err id")
-				}
-				pip.endEvents[v.Id] = v
-			}
-		} else {
-			panic("no end event")
-		}
-
-		backflows := make(map[string][]*temporary)
-
-		if p.Tasks != nil {
-			if len(p.Tasks.StorageTasks) > 0 {
-				for _, v := range p.Tasks.StorageTasks {
-					n := &models.Node{
-						Id:   v.Id,
-						Key:  v.Key,
-						Data: v,
-						CT:   types.CTStorageTask,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Tasks.NotifyTasks) > 0 {
-				for _, v := range p.Tasks.NotifyTasks {
-					n := &models.Node{
-						Id:   v.Id,
-						Key:  v.Key,
-						Data: v,
-						CT:   types.CTSendTask,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Tasks.MailTasks) > 0 {
-				for _, v := range p.Tasks.MailTasks {
-					n := &models.Node{
-						Id: v.Id, Key: v.Key,
-						Data: v,
-						CT:   types.CTMailTask,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Tasks.HttpTasks) > 0 {
-				for _, v := range p.Tasks.HttpTasks {
-					n := &models.Node{
-						Id: v.Id, Key: v.Key,
-						Data: v,
-						CT:   types.CTHttpTask,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Tasks.DecisionTasks) > 0 {
-				for _, v := range p.Tasks.DecisionTasks {
-					n := &models.Node{
-						Id: v.Id, Key: v.Key,
-						Data: v,
-						CT:   types.CTDecisionTask,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Tasks.UserTasks) > 0 {
-				for _, v := range p.Tasks.UserTasks {
-					n := &models.Node{
-						Id: v.Id, Key: v.Key,
-						Data: v,
-						CT:   types.CTUserTask,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Tasks.ApiTasks) > 0 {
-				for _, v := range p.Tasks.ApiTasks {
-					n := &models.Node{
-						Id: v.Id, Key: v.Key,
-						Data: v,
-						CT:   types.CTApiTask,
-					}
-					pip.append(n)
-				}
-			}
-		}
-
-		if p.Gateways != nil {
-			if len(p.Gateways.Exclusives) > 0 {
-				for _, v := range p.Gateways.Exclusives {
-					n := &models.Node{Key: v.Key,
-						CT:   types.CTExclusiveGateway,
-						Id:   v.Id,
-						Data: v,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Gateways.Inclusive) > 0 {
-				for _, v := range p.Gateways.Inclusive {
-					n := &models.Node{Key: v.Key,
-						CT:   types.CTInclusiveGateway,
-						Id:   v.Id,
-						Data: v,
-					}
-					pip.append(n)
-				}
-			}
-			if len(p.Gateways.Parallels) > 0 {
-				for _, v := range p.Gateways.Parallels {
-					n := &models.Node{Key: v.Key,
-						CT:   types.CTParallelGateway,
-						Id:   v.Id,
-						Data: v,
-					}
-					pip.append(n)
-				}
-			}
-		}
-
-		if len(p.Flows) > 0 {
-			for _, v := range p.Flows {
-				//正向
-				f := pip.flows[v.Start]
-				if f == nil {
-					pip.flows[v.Start] = []*models.SequenceFlow{v}
-					continue
-				}
-				pip.flows[v.Start] = append(f, v)
-
-				//把流程转换方向
-				bf := backflows[v.End]
-
-				t := &temporary{
-					start:     v.End,
-					key:       v.Key,
-					end:       v.Start,
-					startType: v.EndType,
-					endType:   v.EndType,
-				}
-
-				if bf == nil {
-					backflows[v.End] = []*temporary{t}
-					continue
-				}
-				backflows[v.End] = append(bf, t)
-			}
-		}
-
-		if len(backflows) > 0 {
-			pro.backRelation(pip, backflows)
-		}
-
-		pro.size++
-		fmt.Println("load process", pip.id)
-		pro.callback(pip)
+	pip := &pipeline{
+		id:        p.Id,
+		name:      p.Name,
+		endEvents: make(map[string]*models.TypeEvent),
+		flows:     make(map[string][]*models.SequenceFlow),
 	}
+	if p.StartEvent != nil {
+		pip.starEvent = &models.Node{
+			CT:   p.StartEvent.Type,
+			Id:   p.StartEvent.Id,
+			Key:  p.StartEvent.Key,
+			Data: p.StartEvent.Event,
+		}
+	} else {
+		panic("no start event")
+	}
+	if p.EndEvents != nil && len(p.EndEvents) > 0 {
+		for _, v := range p.EndEvents {
+			if len(v.Id) == 0 {
+				panic("err id")
+			}
+			pip.endEvents[v.Id] = v
+		}
+	} else {
+		panic("no end event")
+	}
+
+	backflows := make(map[string][]*temporary)
+
+	if p.Tasks != nil {
+		if len(p.Tasks.StorageTasks) > 0 {
+			for _, v := range p.Tasks.StorageTasks {
+				n := &models.Node{
+					Id:   v.Id,
+					Key:  v.Key,
+					Data: v,
+					CT:   types.CTStorageTask,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Tasks.NotifyTasks) > 0 {
+			for _, v := range p.Tasks.NotifyTasks {
+				n := &models.Node{
+					Id:   v.Id,
+					Key:  v.Key,
+					Data: v,
+					CT:   types.CTSendTask,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Tasks.MailTasks) > 0 {
+			for _, v := range p.Tasks.MailTasks {
+				n := &models.Node{
+					Id: v.Id, Key: v.Key,
+					Data: v,
+					CT:   types.CTMailTask,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Tasks.HttpTasks) > 0 {
+			for _, v := range p.Tasks.HttpTasks {
+				n := &models.Node{
+					Id: v.Id, Key: v.Key,
+					Data: v,
+					CT:   types.CTHttpTask,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Tasks.DecisionTasks) > 0 {
+			for _, v := range p.Tasks.DecisionTasks {
+				n := &models.Node{
+					Id: v.Id, Key: v.Key,
+					Data: v,
+					CT:   types.CTDecisionTask,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Tasks.UserTasks) > 0 {
+			for _, v := range p.Tasks.UserTasks {
+				n := &models.Node{
+					Id: v.Id, Key: v.Key,
+					Data: v,
+					CT:   types.CTUserTask,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Tasks.ApiTasks) > 0 {
+			for _, v := range p.Tasks.ApiTasks {
+				n := &models.Node{
+					Id: v.Id, Key: v.Key,
+					Data: v,
+					CT:   types.CTApiTask,
+				}
+				pip.append(n)
+			}
+		}
+	}
+
+	if p.Gateways != nil {
+		if len(p.Gateways.Exclusives) > 0 {
+			for _, v := range p.Gateways.Exclusives {
+				n := &models.Node{Key: v.Key,
+					CT:   types.CTExclusiveGateway,
+					Id:   v.Id,
+					Data: v,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Gateways.Inclusive) > 0 {
+			for _, v := range p.Gateways.Inclusive {
+				n := &models.Node{Key: v.Key,
+					CT:   types.CTInclusiveGateway,
+					Id:   v.Id,
+					Data: v,
+				}
+				pip.append(n)
+			}
+		}
+		if len(p.Gateways.Parallels) > 0 {
+			for _, v := range p.Gateways.Parallels {
+				n := &models.Node{Key: v.Key,
+					CT:   types.CTParallelGateway,
+					Id:   v.Id,
+					Data: v,
+				}
+				pip.append(n)
+			}
+		}
+	}
+
+	if len(p.Flows) > 0 {
+		for _, v := range p.Flows {
+			//正向
+			f := pip.flows[v.Start]
+			if f == nil {
+				pip.flows[v.Start] = []*models.SequenceFlow{v}
+				continue
+			}
+			pip.flows[v.Start] = append(f, v)
+
+			//把流程转换方向
+			bf := backflows[v.End]
+
+			t := &temporary{
+				start:     v.End,
+				key:       v.Key,
+				end:       v.Start,
+				startType: v.EndType,
+				endType:   v.EndType,
+			}
+
+			if bf == nil {
+				backflows[v.End] = []*temporary{t}
+				continue
+			}
+			backflows[v.End] = append(bf, t)
+		}
+	}
+
+	if len(backflows) > 0 {
+		pro.backRelation(pip, backflows)
+	}
+
+	fmt.Println("load process", pip.id)
 }
 
 type temporary struct {

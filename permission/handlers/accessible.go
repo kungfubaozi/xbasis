@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -23,6 +24,8 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 
 		log := svc.WithHeaders(auth.TraceId, auth.ClientId, auth.IP, "", auth.UserAgent, auth.UserDevice)
 
+		fmt.Println("log")
+
 		ok, err := svc.Client.QueryFirst("gs-user-roles-relation",
 			map[string]interface{}{"structure_id": in.StructureId, "user_id": in.UserId}, &userroles, "roles")
 		if err != nil || !ok {
@@ -34,16 +37,20 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 				"functionStructure": in.StructureId,
 			}).Error("find roles by userId err.")
 
+			fmt.Println("relation find")
+
 			return errstate.ErrRequest
 		}
 
-		userRoles := userroles["roles"].([]string)
+		userRoles := userroles["roles"].([]interface{})
+
+		fmt.Println("roles", userRoles)
 
 		if userRoles != nil && len(userRoles) > 0 && len(in.FunctionRoles) > 0 {
 			roles := make(map[string]string)
 			ok := false
 			for _, v := range userRoles {
-				roles[v] = "ok"
+				roles[v.(string)] = "ok"
 			}
 			for _, v := range in.FunctionRoles {
 				if roles[v] == "ok" {

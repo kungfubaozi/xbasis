@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
@@ -32,7 +33,7 @@ type workflow struct {
 }
 
 func (m *workflow) User() modules.IUser {
-	panic("implement me")
+	return m.ui
 }
 
 func (m *workflow) History() modules.IHistory {
@@ -65,11 +66,10 @@ func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Clien
 	}}
 }
 
-func (w *Workflow) Run() error {
+func (w *Workflow) Run(zookeeperURL string) error {
 	fmt.Println("starting...")
 	id := gs_commons_generator.NewIDG()
 	m := w.modules
-	callback, r := createRuntime(m.shutdown, m.log)
 	p := &processes{
 		session:  m.session.Clone(),
 		pool:     m.pool,
@@ -104,20 +104,22 @@ func (w *Workflow) Run() error {
 		log:    m.log,
 		client: m.client,
 	}
+	r := &runtime{
+		log:      m.log,
+		shutdown: m.shutdown,
+		conn:     gs_commons_config.NewConnect(zookeeperURL),
+	}
 	m.ui = u
 	m.ii = i
 	m.hi = h
-	m.ri = r
 	m.pi = p
 	m.fi = f
+	r.pipelines = newPipelines(m.session.Clone(), m.log, m.pool)
 	r.modules = m
 	r.dataGetter = distribute.NewDataGetter(m, m.log)
 	r.processing = distribute.NewProcessing(m, m.log)
 	r.next = distribute.NewNextflow(m, m.log, script.NewScript())
-	m.pi.SetCallback(callback)
 	fmt.Println("initialize ok...")
-	//加载所有流程
-	m.pi.LoadAll()
 	return <-m.shutdown
 }
 
