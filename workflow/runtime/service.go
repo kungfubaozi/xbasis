@@ -30,6 +30,7 @@ type workflow struct {
 	pi modules.IProcesses
 	fi modules.IForm
 	ui modules.IUser
+	si modules.IStore
 }
 
 func (m *workflow) User() modules.IUser {
@@ -109,16 +110,21 @@ func (w *Workflow) Run(zookeeperURL string) error {
 		shutdown: m.shutdown,
 		conn:     gs_commons_config.NewConnect(zookeeperURL),
 	}
+	s := &store{
+		log:    m.log,
+		client: m.client,
+	}
 	m.ui = u
 	m.ii = i
 	m.hi = h
 	m.pi = p
 	m.fi = f
+	m.si = s
 	r.pipelines = newPipelines(m.session.Clone(), m.log, m.pool)
 	r.modules = m
 	r.dataGetter = distribute.NewDataGetter(m, m.log)
 	r.processing = distribute.NewProcessing(m, m.log)
-	r.next = distribute.NewNextflow(m, m.log, script.NewScript())
+	r.next = distribute.NewNextflow(m, m.log, script.NewScript(), m.pool)
 	fmt.Println("initialize ok...")
 	return <-m.shutdown
 }

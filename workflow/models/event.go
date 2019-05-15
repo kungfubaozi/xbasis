@@ -25,6 +25,10 @@ type EndEvent struct {
 	*NodeEvent
 }
 
+type StartDecisionEvent struct {
+	*NodeEvent
+}
+
 //忽略NodeEvent设置的权限
 type CancelEndEvent struct {
 	*NodeEvent

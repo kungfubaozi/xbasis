@@ -19,6 +19,26 @@ type dataGetter struct {
 	rn       *models.NodeBackwardRelation
 }
 
+func (f *dataGetter) eventGateway() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) timerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) messageStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) cancelEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) terminateEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
 func (f *dataGetter) Data() interface{} {
 	panic("implement me")
 }

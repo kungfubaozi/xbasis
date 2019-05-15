@@ -135,40 +135,45 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 	if len(currentNodes) > 0 {
 		ns = append(ns, currentNodes...)
 	}
+	//nodeId是当前执行node
 	flows, err := pipe.Flows(nodeId)
 	if err != nil {
 		return nil, err
 	}
+
+	//处理的是当前节后后面的所有节点, 不是当前node
 	for _, f := range flows {
 		//需要注意的是，不加入网关会忽略flow上的script
 		//需要注意的是，不加入网关会忽略flow上的script
 		//需要注意的是，不加入网关会忽略flow上的script
 
 		var connects interface{}
-		switch f.EndType {
-		case types.CTParallelGateway: //当是ParallelGateway时，需要获取与之关联的task节点
-			connects = pipe.FindParallelNodes(f.End)
-			break
-		case types.CTExclusiveGateway, types.CTInclusiveGateway: //获取所有flow start与当前节点连接的
-			connects, err = pipe.Flows(f.Start)
+		//如果是网关则获取与之相连的所有节点
+		if f.EndType == types.CTParallelGateway || f.EndType == types.CTExclusiveGateway || f.EndType == types.CTInclusiveGateway {
+			connects, err = pipe.Flows(f.End)
 			if err != nil {
 				return nil, err
 			}
-			//获取节点提交的数据
+		}
+
+		if f.EndType == types.CTInclusiveGateway || f.EndType == types.CTExclusiveGateway {
+			//获取节点提交的数据，向前查找
 			c, err := r.getSubmitData(i, ctx, f.Start, pipe)
 			if err != nil {
 				return nil, err
 			}
 			//新的context
 			ctx = c
-			break
 		}
+
 		//获取当前flow末尾连线的节点
 		n, err := pipe.GetNode(f.End)
 		if err != nil {
 			return nil, err
 		}
-		ctx, err = r.next.Do(ctx, i, n, f.EndType, f, connects)
+
+		//处理节点
+		ctx, err = r.next.Do(ctx, i, n, n.CT, f, connects)
 		if err != nil {
 			return nil, err
 		}

@@ -11,6 +11,26 @@ type relation struct {
 	values []interface{}
 }
 
+func (f *relation) eventGateway() *flowerr.Error {
+	return flowerr.NextFlow
+}
+
+func (f *relation) timerStartEvent() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) messageStartEvent() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) cancelEndEvent() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) terminateEndEvent() *flowerr.Error {
+	return nil
+}
+
 func (f *relation) Data() interface{} {
 	panic("implement me")
 }

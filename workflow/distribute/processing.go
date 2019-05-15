@@ -23,6 +23,26 @@ type processing struct {
 	value    interface{}
 }
 
+func (f *processing) eventGateway() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) timerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) messageStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) cancelEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) terminateEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
 func (f *processing) Data() interface{} {
 	panic("implement me")
 }

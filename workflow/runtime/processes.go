@@ -32,13 +32,13 @@ func (pro *processes) Reassignment() {
 
 func (pro *processes) AddProcess(p *models.Process) {
 	pip := &pipeline{
-		id:        p.Id,
-		name:      p.Name,
-		endEvents: make(map[string]*models.TypeEvent),
-		flows:     make(map[string][]*models.SequenceFlow),
+		ProcessId:     p.Id,
+		Name:          p.Name,
+		EndEvents:     make(map[string]*models.TypeEvent),
+		SequenceFlows: make(map[string][]*models.SequenceFlow),
 	}
 	if p.StartEvent != nil {
-		pip.starEvent = &models.Node{
+		pip.StartEvent = &models.Node{
 			CT:   p.StartEvent.Type,
 			Id:   p.StartEvent.Id,
 			Key:  p.StartEvent.Key,
@@ -52,7 +52,7 @@ func (pro *processes) AddProcess(p *models.Process) {
 			if len(v.Id) == 0 {
 				panic("err id")
 			}
-			pip.endEvents[v.Id] = v
+			pip.EndEvents[v.Id] = v
 		}
 	} else {
 		panic("no end event")
@@ -171,12 +171,12 @@ func (pro *processes) AddProcess(p *models.Process) {
 	if len(p.Flows) > 0 {
 		for _, v := range p.Flows {
 			//正向
-			f := pip.flows[v.Start]
+			f := pip.SequenceFlows[v.Start]
 			if f == nil {
-				pip.flows[v.Start] = []*models.SequenceFlow{v}
+				pip.SequenceFlows[v.Start] = []*models.SequenceFlow{v}
 				continue
 			}
-			pip.flows[v.Start] = append(f, v)
+			pip.SequenceFlows[v.Start] = append(f, v)
 
 			//把流程转换方向
 			bf := backflows[v.End]
@@ -201,7 +201,7 @@ func (pro *processes) AddProcess(p *models.Process) {
 		pro.backRelation(pip, backflows)
 	}
 
-	fmt.Println("load process", pip.id)
+	fmt.Println("load process", pip.ProcessId)
 }
 
 type temporary struct {
@@ -214,7 +214,7 @@ type temporary struct {
 
 func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*temporary) *flowerr.Error {
 	relations := make(map[string][]*models.NodeBackwardRelation)
-	for _, v := range pip.nodes {
+	for _, v := range pip.Nodes {
 		flows := backflows[v.Id]
 		var nrs []*models.NodeBackwardRelation
 		for _, v1 := range flows {
@@ -226,7 +226,7 @@ func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*tempor
 		}
 		relations[v.Id] = nrs
 	}
-	pip.backwardRelations = relations
+	pip.BackwardRelations = relations
 	return nil
 }
 

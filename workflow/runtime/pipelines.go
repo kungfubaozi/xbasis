@@ -27,13 +27,13 @@ func (p *pipelines) Get(processId string) (modules.Pipeline, error) {
 	v, err := p.c.Get([]byte(processId))
 	var pipe *pipeline
 	conn := p.pool.Get()
-	version, err := redis.Int64(conn.Do("hget", "processes_ver", processId))
+	version, err := redis.Int64(conn.Do("hget", "pro_vers", processId))
 	if err != nil {
 		return nil, err
 	}
 
 	getNewVersion := func() error {
-		err = p.session.DB("gs-flow").C("pipelines").Find(bson.M{"process_id": processId}).One(&pipe)
+		err = p.session.DB("gs-flow").C("pipelines").Find(bson.M{"_id": processId}).One(&pipe)
 		if err != nil {
 			return err
 		}
@@ -68,7 +68,7 @@ func (p *pipelines) Get(processId string) (modules.Pipeline, error) {
 		if err != nil {
 			return nil, err
 		}
-		if version != pipe.version {
+		if version != pipe.Version {
 			err = getNewVersion()
 			if err != nil {
 				return nil, err

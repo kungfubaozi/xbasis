@@ -18,17 +18,27 @@ type Handler interface {
 
 	inclusiveGateway() *flowerr.Error
 
+	eventGateway() *flowerr.Error
+
 	startEvent() *flowerr.Error
+
+	timerStartEvent() *flowerr.Error
+
+	apiStartEvent() *flowerr.Error
+
+	messageStartEvent() *flowerr.Error
+
+	triggerStartEvent() *flowerr.Error
 
 	endEvent() *flowerr.Error
 
-	apiStartEvent() *flowerr.Error
+	cancelEndEvent() *flowerr.Error
+
+	terminateEndEvent() *flowerr.Error
 
 	userTask() *flowerr.Error
 
 	notifyTask() *flowerr.Error
-
-	triggerStartEvent() *flowerr.Error
 
 	context(ctx context.Context) context.Context
 

@@ -20,3 +20,13 @@ type InclusiveGateway struct {
 type ParallelGateway struct {
 	*Info
 }
+
+//事件网关
+type EventGateway struct {
+	*Info
+	Type       int64       `bson:"type" json:"type"`
+	Properties interface{} `bson:"properties" json:"properties"`
+}
+
+type TimerEventProperties struct {
+}

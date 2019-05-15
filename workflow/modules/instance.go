@@ -13,9 +13,6 @@ type IInstance interface {
 
 	IsStarted(instanceId string) (bool, *flowerr.Error)
 
-	//is finished
-	IsFinished(instanceId string, nodeId string) (bool, *flowerr.Error)
-
 	//nodes running the current instance
 	CurrentProcess(instanceId string)
 

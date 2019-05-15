@@ -34,10 +34,6 @@ func (i *instances) IsStarted(instanceId string) (bool, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (i *instances) IsFinished(instanceId string, nodeId string) (bool, *flowerr.Error) {
-	panic("implement me")
-}
-
 func (i *instances) CurrentProcess(instanceId string) {
 	panic("implement me")
 }

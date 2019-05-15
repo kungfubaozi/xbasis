@@ -20,6 +20,22 @@ type flowscript struct {
 	instance *models.Instance
 }
 
+func (f *flowscript) timerStartEvent() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) messageStartEvent() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) cancelEndEvent() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) terminateEndEvent() *flowerr.Error {
+	return f.do()
+}
+
 func (f *flowscript) Data() interface{} {
 	panic("implement me")
 }
@@ -31,16 +47,28 @@ func (f *flowscript) Do(ctx context.Context, instance *models.Instance, node *mo
 	return handler(ctx, ct, f)
 }
 
+func (f *flowscript) nextflow() *flowerr.Error {
+	err := f.do()
+	if err != nil && err == flowerr.ScriptTrue {
+		return flowerr.NextFlow
+	}
+	return err
+}
+
+func (f *flowscript) eventGateway() *flowerr.Error {
+	return f.nextflow()
+}
+
 func (f *flowscript) exclusiveGateway() *flowerr.Error {
-	return flowerr.NextFlow
+	return f.nextflow()
 }
 
 func (f *flowscript) parallelGateway() *flowerr.Error {
-	return flowerr.NextFlow
+	return f.nextflow()
 }
 
 func (f *flowscript) inclusiveGateway() *flowerr.Error {
-	return flowerr.NextFlow
+	return f.nextflow()
 }
 
 func (f *flowscript) startEvent() *flowerr.Error {

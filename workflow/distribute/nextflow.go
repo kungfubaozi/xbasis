@@ -2,26 +2,47 @@ package distribute
 
 import (
 	"context"
+	"github.com/garyburd/redigo/redis"
+	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/modules"
 	"konekko.me/gosion/workflow/script"
 	"konekko.me/gosion/workflow/types"
-	"sync"
 )
 
 type nextflow struct {
-	modules  modules.Modules
-	finished map[string]bool
-	log      *gslogrus.Logger
-	values   []interface{}
-	status   *models.NextStatus
-	node     *models.Node
-	ctx      context.Context
-	instance *models.Instance
-	script   Handler
-	gon      bool
+	modules            modules.Modules
+	finished           map[string]bool
+	log                *gslogrus.Logger
+	values             []interface{}
+	status             *models.NextStatus
+	node               *models.Node
+	ctx                context.Context
+	instance           *models.Instance
+	script             Handler
+	gon                bool
+	ignoreNodes        []string
+	ignoreNodesChanged bool
+	pool               *redis.Pool
+	conn               redis.Conn
+}
+
+func (f *nextflow) timerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *nextflow) messageStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *nextflow) cancelEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *nextflow) terminateEndEvent() *flowerr.Error {
+	panic("implement me")
 }
 
 func (f *nextflow) Data() interface{} {
@@ -34,12 +55,44 @@ func (f *nextflow) Do(ctx context.Context, instance *models.Instance, node *mode
 	f.ctx = ctx
 	f.instance = instance
 	f.status = &models.NextStatus{}
+	if f.conn == nil {
+		f.conn = f.pool.Get()
+	}
+	if f.ignoreNodes == nil {
+		v, err := redis.Bytes(f.conn.Do("get", instance.Id))
+		if err != nil && err == redis.ErrNil {
+			err = nil
+			f.ignoreNodes = []string{}
+		}
+		if err != nil {
+			return ctx, flowerr.FromError(err)
+		}
+		err = msgpack.Unmarshal(v, f.ignoreNodes)
+		if err != nil {
+			return ctx, flowerr.FromError(err)
+		}
+		if f.ignoreNodes == nil {
+			f.ignoreNodes = []string{}
+		}
+	}
 	return handler(ctx, ct, f)
 }
 
-//如果到此网关会获取与当前关联的节点
-func (f *nextflow) exclusiveGateway() *flowerr.Error {
-	flow := f.values[0].(*models.SequenceFlow)
+func (f *nextflow) updateIgnoreNodes() *flowerr.Error {
+	if len(f.ignoreNodes) > 0 {
+		v, err := msgpack.Marshal(f.ignoreNodes)
+		if err != nil {
+			return flowerr.FromError(err)
+		}
+		_, err = f.conn.Do("set", f.instance.Id, v)
+		if err != nil {
+			return flowerr.FromError(err)
+		}
+	}
+	return nil
+}
+
+func (f *nextflow) flows(callback func([]*models.SequenceFlow) *flowerr.Error) *flowerr.Error {
 	var flows []*models.SequenceFlow
 	v := f.values[1]
 	if v != nil {
@@ -48,92 +101,52 @@ func (f *nextflow) exclusiveGateway() *flowerr.Error {
 	if flows == nil || len(flows) == 0 {
 		return flowerr.ErrNode
 	}
-	var defNode string
-	for _, f1 := range flows {
-		if f1.DefaultFlow && len(defNode) == 0 { //默认节点
-			defNode = f1.End
+	return callback(flows)
+}
+
+func (f *nextflow) eventGateway() *flowerr.Error {
+	panic("implement me")
+}
+
+//排他网关
+func (f *nextflow) exclusiveGateway() *flowerr.Error {
+	return f.flows(func(flows []*models.SequenceFlow) *flowerr.Error {
+		var defNode string
+		for _, v := range flows {
+			if v.DefaultFlow && len(defNode) == 0 { //默认节点
+				defNode = v.End
+			}
+			//check script
 		}
-		ctx, err := f.script.Do(f.ctx, f.instance, f.node, flow.StartType, f1)
-		f.context(ctx)
-		if err != nil {
-			return err
-		}
-		if err == flowerr.NextFlow {
-			f.again(flow.End)
+		if len(defNode) > 0 {
+			f.again(defNode)
 			return nil
 		}
-	}
-	if len(defNode) > 0 {
-		f.again(defNode)
-		return nil
-	}
-	return flowerr.ErrNoDownwardProcess
+		return flowerr.ErrNoDownwardProcess
+	})
 }
 
+//并行网关
 func (f *nextflow) parallelGateway() *flowerr.Error {
-	var tasks []string
-	v := f.values[1]
-	if v != nil {
-		tasks = v.([]string)
-	}
-	if tasks == nil {
-		return flowerr.ErrNode
-	}
-	size := 0
-	var err *flowerr.Error
-	e := func(er *flowerr.Error) {
-		if err == nil {
-			err = er
-		}
-	}
-	var wg sync.WaitGroup
-	wg.Add(len(tasks))
-	for _, v := range tasks {
-		go func() {
-			defer wg.Done()
-			ok, err := f.modules.Instance().IsFinished(f.instance.Id, v)
-			if err != nil {
-				e(err)
-				return
-			}
-			if ok {
-				size++
-			}
-		}()
-	}
-	wg.Wait()
-	if err != nil {
-		return err
-	}
-	if size == len(tasks) {
-		f.again(f.flow().End) //如果关联的task都完成了，那么继续下一步流程
-	} else {
-		f.next(f.node.Id) //没有完成当前任务，设置当前gateway为currentNode等待完成
-	}
-	return nil
+	return f.flows(func(flows []*models.SequenceFlow) *flowerr.Error {
+
+	})
 }
 
+//包容网关
+//此为nextflow控制
+//执行所有满足条件的flow
 func (f *nextflow) inclusiveGateway() *flowerr.Error {
-	flow := f.flow()
-	ctx, err := f.script.Do(f.ctx, f.instance, f.node, flow.StartType, f.values[0])
-	f.context(ctx)
-	if err != nil {
-		return err
-	}
-	if err == flowerr.NextFlow {
-		f.again(flow.End)
-	} else if err == flowerr.ScriptTrue {
-		f.next(f.node.Id)
-	} else if err == flowerr.ScriptFalse {
+	return f.flows(func(flows []*models.SequenceFlow) *flowerr.Error {
 
-	}
-	return nil
+	})
 }
 
 func (f *nextflow) startEvent() *flowerr.Error {
 	panic("implement me")
 }
 
+//如果到endevent会停止所有instance的交互
 func (f *nextflow) endEvent() *flowerr.Error {
 	panic("implement me")
 }
@@ -184,8 +197,11 @@ func (f *nextflow) flow() *models.SequenceFlow {
 func (f *nextflow) Restore() {
 	f.status = nil
 	f.finished = make(map[string]bool)
+	f.ignoreNodes = nil
+	f.conn.Close()
+	f.ignoreNodesChanged = false
 }
 
-func NewNextflow(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript) Handler {
-	return &nextflow{modules: modules, log: log, script: newScript(modules, log, script)}
+func NewNextflow(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript, pool *redis.Pool) Handler {
+	return &nextflow{modules: modules, log: log, script: newScript(modules, log, script), pool: pool}
 }
