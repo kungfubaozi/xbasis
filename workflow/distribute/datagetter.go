@@ -17,6 +17,11 @@ type dataGetter struct {
 	ctx      context.Context
 	instance *models.Instance
 	rn       *models.NodeBackwardRelation
+	data     map[string]interface{}
+}
+
+func (f *dataGetter) SetCommandFunc(call types.CommandDataGetter) {
+	panic("implement me")
 }
 
 func (f *dataGetter) eventGateway() *flowerr.Error {
@@ -54,14 +59,6 @@ func (f *dataGetter) relation() *models.NodeBackwardRelation {
 	return f.values[0].(*models.NodeBackwardRelation)
 }
 
-func (f *dataGetter) exclusiveGateway() *flowerr.Error {
-	return nil
-}
-
-func (f *dataGetter) parallelGateway() *flowerr.Error {
-	return nil
-}
-
 func (f *dataGetter) inclusiveGateway() *flowerr.Error {
 	return nil
 }
@@ -94,8 +91,11 @@ func (f *dataGetter) context(ctx context.Context) context.Context {
 	return f.ctx
 }
 
-func (f *dataGetter) metadata(key, data interface{}) {
-	f.ctx = context.WithValue(f.ctx, key, data)
+func (f *dataGetter) metadata(key string, data interface{}) {
+	if f.data == nil {
+		f.data = make(map[string]interface{})
+	}
+	f.data[key] = data
 }
 
 func (f *dataGetter) loadData() *flowerr.Error {
@@ -109,7 +109,7 @@ func (f *dataGetter) loadData() *flowerr.Error {
 }
 
 func (f *dataGetter) Restore() {
-	panic("implement me")
+	f.data = nil
 }
 
 //作用是查找节点提交的数据

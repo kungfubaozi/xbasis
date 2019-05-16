@@ -20,6 +20,10 @@ type flowscript struct {
 	instance *models.Instance
 }
 
+func (f *flowscript) SetCommandFunc(call types.CommandDataGetter) {
+	panic("implement me")
+}
+
 func (f *flowscript) timerStartEvent() *flowerr.Error {
 	return f.do()
 }
@@ -53,18 +57,6 @@ func (f *flowscript) nextflow() *flowerr.Error {
 		return flowerr.NextFlow
 	}
 	return err
-}
-
-func (f *flowscript) eventGateway() *flowerr.Error {
-	return f.nextflow()
-}
-
-func (f *flowscript) exclusiveGateway() *flowerr.Error {
-	return f.nextflow()
-}
-
-func (f *flowscript) parallelGateway() *flowerr.Error {
-	return f.nextflow()
 }
 
 func (f *flowscript) inclusiveGateway() *flowerr.Error {
@@ -102,7 +94,7 @@ func (f *flowscript) context(ctx context.Context) context.Context {
 	return f.ctx
 }
 
-func (f *flowscript) metadata(key, data interface{}) {
+func (f *flowscript) metadata(key string, data interface{}) {
 	f.ctx = context.WithValue(f.ctx, key, data)
 }
 

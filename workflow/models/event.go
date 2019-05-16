@@ -8,6 +8,7 @@ type NodeEvent struct {
 	Id                 string   `bson:"id" json:"id"`
 	Name               string   `bson:"name" json:"name"`
 	Desc               string   `bson:"desc" json:"desc"`
+	Key                string   `bson:"key" json:"key"`
 	CreateAt           int64    `bson:"create_at" json:"create_at"`
 	ExecutionListeners []string `bson:"execution_listeners" json:"execution_listeners"`
 	UserRoles          []string `bson:"user_roles" json:"user_roles"`

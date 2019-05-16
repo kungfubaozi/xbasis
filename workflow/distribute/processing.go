@@ -23,7 +23,7 @@ type processing struct {
 	value    interface{}
 }
 
-func (f *processing) eventGateway() *flowerr.Error {
+func (f *processing) SetCommandFunc(call types.CommandDataGetter) {
 	panic("implement me")
 }
 
@@ -53,16 +53,6 @@ func (f *processing) Do(ctx context.Context, instance *models.Instance, node *mo
 	f.node = node
 	f.ctx = ctx
 	return handler(ctx, ct, f)
-}
-
-//执行的node类型不能是除Event/Task之外的类型
-func (f *processing) exclusiveGateway() *flowerr.Error {
-	panic("implement me")
-}
-
-//执行的node类型不能是除Event/Task之外的类型
-func (f *processing) parallelGateway() *flowerr.Error {
-	panic("implement me")
 }
 
 //执行的node类型不能是除Event/Task之外的类型
@@ -124,7 +114,7 @@ func (f *processing) context(ctx context.Context) context.Context {
 	return f.ctx
 }
 
-func (f *processing) metadata(key, data interface{}) {
+func (f *processing) metadata(key string, data interface{}) {
 	f.ctx = context.WithValue(f.ctx, key, data)
 }
 

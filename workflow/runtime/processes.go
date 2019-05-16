@@ -30,12 +30,16 @@ func (pro *processes) Reassignment() {
 	panic("implement me")
 }
 
+//TODO 修复反向连接的问题
 func (pro *processes) AddProcess(p *models.Process) {
 	pip := &pipeline{
-		ProcessId:     p.Id,
-		Name:          p.Name,
-		EndEvents:     make(map[string]*models.TypeEvent),
-		SequenceFlows: make(map[string][]*models.SequenceFlow),
+		ProcessId:         p.Id,
+		Name:              p.Name,
+		EndEvents:         make(map[string]*models.TypeEvent),
+		SequenceFlows:     make(map[string][]*models.SequenceFlow),
+		Nodes:             make(map[string]*models.Node),
+		Parallels:         make(map[string][]string),
+		BackwardRelations: make(map[string][]*models.NodeBackwardRelation),
 	}
 	if p.StartEvent != nil {
 		pip.StartEvent = &models.Node{
@@ -44,6 +48,7 @@ func (pro *processes) AddProcess(p *models.Process) {
 			Key:  p.StartEvent.Key,
 			Data: p.StartEvent.Event,
 		}
+		pip.append(pip.StartEvent)
 	} else {
 		panic("no start event")
 	}
@@ -53,6 +58,11 @@ func (pro *processes) AddProcess(p *models.Process) {
 				panic("err id")
 			}
 			pip.EndEvents[v.Id] = v
+			pip.append(&models.Node{
+				CT:  v.Type,
+				Id:  v.Id,
+				Key: v.Key,
+			})
 		}
 	} else {
 		panic("no end event")
@@ -136,30 +146,10 @@ func (pro *processes) AddProcess(p *models.Process) {
 	}
 
 	if p.Gateways != nil {
-		if len(p.Gateways.Exclusives) > 0 {
-			for _, v := range p.Gateways.Exclusives {
-				n := &models.Node{Key: v.Key,
-					CT:   types.CTExclusiveGateway,
-					Id:   v.Id,
-					Data: v,
-				}
-				pip.append(n)
-			}
-		}
 		if len(p.Gateways.Inclusive) > 0 {
 			for _, v := range p.Gateways.Inclusive {
 				n := &models.Node{Key: v.Key,
 					CT:   types.CTInclusiveGateway,
-					Id:   v.Id,
-					Data: v,
-				}
-				pip.append(n)
-			}
-		}
-		if len(p.Gateways.Parallels) > 0 {
-			for _, v := range p.Gateways.Parallels {
-				n := &models.Node{Key: v.Key,
-					CT:   types.CTParallelGateway,
 					Id:   v.Id,
 					Data: v,
 				}
@@ -172,10 +162,7 @@ func (pro *processes) AddProcess(p *models.Process) {
 		for _, v := range p.Flows {
 			//正向
 			f := pip.SequenceFlows[v.Start]
-			if f == nil {
-				pip.SequenceFlows[v.Start] = []*models.SequenceFlow{v}
-				continue
-			}
+			v.Key = pip.Nodes[v.Start].Key
 			pip.SequenceFlows[v.Start] = append(f, v)
 
 			//把流程转换方向
@@ -186,13 +173,9 @@ func (pro *processes) AddProcess(p *models.Process) {
 				key:       v.Key,
 				end:       v.Start,
 				startType: v.EndType,
-				endType:   v.EndType,
+				endType:   v.StartType,
 			}
 
-			if bf == nil {
-				backflows[v.End] = []*temporary{t}
-				continue
-			}
 			backflows[v.End] = append(bf, t)
 		}
 	}
@@ -202,6 +185,7 @@ func (pro *processes) AddProcess(p *models.Process) {
 	}
 
 	fmt.Println("load process", pip.ProcessId)
+
 }
 
 type temporary struct {
@@ -214,19 +198,21 @@ type temporary struct {
 
 func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*temporary) *flowerr.Error {
 	relations := make(map[string][]*models.NodeBackwardRelation)
+	fmt.Println("size", len(pip.Nodes))
 	for _, v := range pip.Nodes {
-		flows := backflows[v.Id]
+
 		var nrs []*models.NodeBackwardRelation
-		for _, v1 := range flows {
-			rs, err := pro.loopFind(v1.start, backflows)
-			if err != nil {
-				return err
-			}
-			nrs = append(nrs, rs...)
+
+		rs, err := pro.loopFind(v.Id, backflows)
+		if err != nil {
+			return err
 		}
+		nrs = append(nrs, rs...)
+
 		relations[v.Id] = nrs
 	}
 	pip.BackwardRelations = relations
+
 	return nil
 }
 
@@ -235,7 +221,7 @@ func (pro *processes) loopFind(nodeId string, backflows map[string][]*temporary)
 	v := backflows[nodeId]
 	for _, r := range v {
 		//在部分节点上和节点连接的数量有限制
-		_, err := pro.relation.Do(nil, nil, nil, r.startType, len(v))
+		_, err := pro.relation.Do(nil, nil, nil, r.endType, len(v))
 		if err == nil {
 			res = append(res, &models.NodeBackwardRelation{
 				Id:  r.end,
@@ -243,7 +229,7 @@ func (pro *processes) loopFind(nodeId string, backflows map[string][]*temporary)
 				CT:  r.endType,
 			})
 		} else if err == flowerr.NextFlow {
-			s, err := pro.loopFind(r.start, backflows)
+			s, err := pro.loopFind(r.end, backflows)
 			if err != nil {
 				return nil, err
 			}

@@ -12,6 +12,7 @@ import (
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/modules"
 	"konekko.me/gosion/workflow/types"
+	"sync"
 )
 
 type runtime struct {
@@ -67,8 +68,6 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 					return flowerr.ErrRequest
 				}
 
-				//这里检查的node类型只有event和task，gateway不在考虑范围内，因为currentNodes不会包含gateway类型的node
-				//check submit node data and finished that node
 				r, err := r.processing.Do(ctx, i, node, node.CT, value)
 
 				ctx = r
@@ -80,23 +79,38 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 					}
 				}
 			}
-			//
-			////check finished node
-			//ok, err := r.modules.Instance().IsFinished(instanceId, v)
-			//if err != nil {
-			//	return errstate.ErrRequest, nil
-			//}
-			//
-			//if ok {
-			//	nextNodes = append(nextNodes, v)
-			//	size++
-			//}
 
 		}
 
 		r.processing.Restore()
 
 		r.next.Restore()
+
+		r.next.SetCommandFunc(func(command types.GetterCommand, values ...interface{}) (interface{}, *flowerr.Error) {
+			switch command {
+			case types.GCBackwardRelations:
+				return pipe.GetNodeBackwardRelations(values[0].(string)), nil
+			case types.GCNodeFlows:
+				connects, err := pipe.Flows(values[0].(string))
+				if err != nil {
+					return nil, err
+				}
+				return connects, err
+			case types.GCNodeSubmitData:
+				data, err := r.getSubmitData(i, context.Background(), values[0].(string), pipe)
+				if err != nil {
+					return nil, err
+				}
+				return data, nil
+			case types.GCNode:
+				node, err := pipe.GetNode(values[0].(string))
+				if err != nil {
+					return nil, err
+				}
+				return node, nil
+			}
+			return nil, flowerr.ErrNil
+		})
 
 		//if size == len(i.CurrentNodes) {
 		//next node
@@ -143,28 +157,6 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 
 	//处理的是当前节后后面的所有节点, 不是当前node
 	for _, f := range flows {
-		//需要注意的是，不加入网关会忽略flow上的script
-		//需要注意的是，不加入网关会忽略flow上的script
-		//需要注意的是，不加入网关会忽略flow上的script
-
-		var connects interface{}
-		//如果是网关则获取与之相连的所有节点
-		if f.EndType == types.CTParallelGateway || f.EndType == types.CTExclusiveGateway || f.EndType == types.CTInclusiveGateway {
-			connects, err = pipe.Flows(f.End)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if f.EndType == types.CTInclusiveGateway || f.EndType == types.CTExclusiveGateway {
-			//获取节点提交的数据，向前查找
-			c, err := r.getSubmitData(i, ctx, f.Start, pipe)
-			if err != nil {
-				return nil, err
-			}
-			//新的context
-			ctx = c
-		}
 
 		//获取当前flow末尾连线的节点
 		n, err := pipe.GetNode(f.End)
@@ -172,8 +164,7 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 			return nil, err
 		}
 
-		//处理节点
-		ctx, err = r.next.Do(ctx, i, n, n.CT, f, connects)
+		ctx, err = r.next.Do(ctx, i, n, n.CT, f)
 		if err != nil {
 			return nil, err
 		}
@@ -189,16 +180,25 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 }
 
 //不同于其他的是，此操作是向前查找
-func (r *runtime) getSubmitData(i *models.Instance, ctx context.Context, fromNodeId string, pipe modules.Pipeline) (context.Context, *flowerr.Error) {
+func (r *runtime) getSubmitData(i *models.Instance, ctx context.Context, fromNodeId string, pipe modules.Pipeline) (interface{}, *flowerr.Error) {
 	nodes := pipe.GetNodeBackwardRelations(fromNodeId)
-	for _, v := range nodes {
-		ctx1, err := r.dataGetter.Do(ctx, i, nil, v.CT, v)
-		if err != nil {
-			return nil, err
+	var err *flowerr.Error
+	resp := func(e *flowerr.Error) {
+		if err == nil {
+			err = e
 		}
-		ctx = ctx1
 	}
-	return ctx, nil
+	var wg sync.WaitGroup
+	wg.Add(len(nodes))
+	for _, v := range nodes {
+		go func() {
+			defer wg.Done()
+			_, err := r.dataGetter.Do(ctx, i, nil, v.CT, v)
+			resp(err)
+		}()
+	}
+	wg.Wait()
+	return r.dataGetter.Data(), nil
 }
 
 func (r *runtime) RunningProcessSize() int {

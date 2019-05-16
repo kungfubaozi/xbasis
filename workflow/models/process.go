@@ -28,17 +28,18 @@ type TypeEvent struct {
 }
 
 type Tasks struct {
-	UserTasks     []*UserTask     `bson:"user_tasks" json:"user_tasks"`
-	ApiTasks      []*ApiTask      `bson:"api_tasks" json:"api_tasks"`
-	DecisionTasks []*DecisionTask `bson:"decision_tasks" json:"decision_tasks"`
-	HttpTasks     []*HttpTask     `bson:"http_tasks" json:"http_tasks"`
-	MailTasks     []*MailTask     `bson:"mail_tasks" json:"mail_tasks"`
-	NotifyTasks   []*NotifyTask   `bson:"notify_tasks" json:"notify_tasks"`
-	StorageTasks  []*StorageTask  `bson:"storage_tasks" json:"storage_tasks"`
+	UserTasks     []*UserTask      `bson:"user_tasks" json:"user_tasks"`
+	ApiTasks      []*ApiTask       `bson:"api_tasks" json:"api_tasks"`
+	DecisionTasks []*DecisionTask  `bson:"decision_tasks" json:"decision_tasks"`
+	HttpTasks     []*HttpTask      `bson:"http_tasks" json:"http_tasks"`
+	MailTasks     []*MailTask      `bson:"mail_tasks" json:"mail_tasks"`
+	NotifyTasks   []*NotifyTask    `bson:"notify_tasks" json:"notify_tasks"`
+	StorageTasks  []*StorageTask   `bson:"storage_tasks" json:"storage_tasks"`
+	AsyncCallTask []*AsyncCallTask `bson:"async_call_task" json:"async_call_task"`
+	TimerTask     []*TimerTask     `bson:"timer_task" json:"timer_task"`
+	EventTask     []*EventTask     `bson:"event_task" json:"event_task"`
 }
 
 type Gateways struct {
-	Exclusives []*ExclusiveGateway `bson:"exclusive" json:"exclusive"`
-	Inclusive  []*InclusiveGateway `bson:"inclusive" json:"inclusive"`
-	Parallels  []*ParallelGateway  `bson:"parallel" json:"parallel"`
+	Inclusive []*InclusiveGateway `bson:"inclusive" json:"inclusive"`
 }

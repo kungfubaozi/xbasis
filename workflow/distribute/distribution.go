@@ -8,17 +8,13 @@ import (
 )
 
 type Handler interface {
+	SetCommandFunc(call types.CommandDataGetter)
+
 	Data() interface{}
 
 	Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, values ...interface{}) (context.Context, *flowerr.Error)
 
-	exclusiveGateway() *flowerr.Error
-
-	parallelGateway() *flowerr.Error
-
 	inclusiveGateway() *flowerr.Error
-
-	eventGateway() *flowerr.Error
 
 	startEvent() *flowerr.Error
 
@@ -42,7 +38,7 @@ type Handler interface {
 
 	context(ctx context.Context) context.Context
 
-	metadata(key, data interface{})
+	metadata(key string, data interface{})
 
 	Restore()
 }
@@ -55,10 +51,6 @@ func handler(ctx context.Context, ct types.ConnectType, t Handler) (context.Cont
 		return t.context(nil), t.endEvent()
 	case types.CTUserTask:
 		return t.context(nil), t.userTask()
-	case types.CTExclusiveGateway:
-		return t.context(nil), t.exclusiveGateway()
-	case types.CTParallelGateway:
-		return t.context(nil), t.parallelGateway()
 	case types.CTInclusiveGateway:
 		return t.context(nil), t.inclusiveGateway()
 	}

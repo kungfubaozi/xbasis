@@ -10,6 +10,7 @@ import (
 	"konekko.me/gosion/workflow/modules"
 	"konekko.me/gosion/workflow/script"
 	"konekko.me/gosion/workflow/types"
+	"sync"
 )
 
 type nextflow struct {
@@ -27,6 +28,11 @@ type nextflow struct {
 	ignoreNodesChanged bool
 	pool               *redis.Pool
 	conn               redis.Conn
+	call               types.CommandDataGetter
+}
+
+func (f *nextflow) SetCommandFunc(call types.CommandDataGetter) {
+	f.call = call
 }
 
 func (f *nextflow) timerStartEvent() *flowerr.Error {
@@ -49,6 +55,9 @@ func (f *nextflow) Data() interface{} {
 	panic("implement me")
 }
 
+/**
+当前是进行下一步流程的规定和辨识, 并不设计具体的操作，如 Submit
+*/
 func (f *nextflow) Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
 	f.values = value
 	f.node = node
@@ -104,44 +113,125 @@ func (f *nextflow) flows(callback func([]*models.SequenceFlow) *flowerr.Error) *
 	return callback(flows)
 }
 
-func (f *nextflow) eventGateway() *flowerr.Error {
-	panic("implement me")
-}
-
-//排他网关
-func (f *nextflow) exclusiveGateway() *flowerr.Error {
-	return f.flows(func(flows []*models.SequenceFlow) *flowerr.Error {
-		var defNode string
-		for _, v := range flows {
-			if v.DefaultFlow && len(defNode) == 0 { //默认节点
-				defNode = v.End
-			}
-			//check script
-		}
-		if len(defNode) > 0 {
-			f.again(defNode)
-			return nil
-		}
-		return flowerr.ErrNoDownwardProcess
-	})
-}
-
-//并行网关
-func (f *nextflow) parallelGateway() *flowerr.Error {
-	return f.flows(func(flows []*models.SequenceFlow) *flowerr.Error {
-
-	})
-}
-
-//包容网关
-//此为nextflow控制
-//执行所有满足条件的flow
+//包容网关 所有满足的 没有走默认
+//在入口方面 包容网关只会等待将会被执行的入口顺序流
 func (f *nextflow) inclusiveGateway() *flowerr.Error {
-	return f.flows(func(flows []*models.SequenceFlow) *flowerr.Error {
+	gateway, ok := f.node.Data.(*models.InclusiveGateway)
+	if ok {
+		var flows []*models.SequenceFlow
+		var brsx []*models.NodeBackwardRelation
+		formData := false
+		var err *flowerr.Error
+		resp := func(e *flowerr.Error) {
+			if err == nil {
+				err = e
+			}
+		}
+		var wg sync.WaitGroup
+		wg.Add(2)
 
-	})
+		go func() {
+			defer wg.Done()
+			data, err := f.call(types.GCNodeFlows, f.node.Id)
+			if err != nil {
+				resp(err)
+				return
+			}
+			f, ok := data.([]*models.SequenceFlow)
+			if ok {
+				flows = f
+				return
+			}
+			resp(flowerr.ErrUnknow)
+		}()
+
+		go func() {
+			defer wg.Done()
+			bx, err := f.call(types.GCBackwardRelations, f.node.Id)
+			if err != nil {
+				resp(err)
+				return
+			}
+			data, ok := bx.([]*models.NodeBackwardRelation)
+			if ok {
+				brsx = data
+				return
+			}
+			resp(flowerr.ErrUnknow)
+		}()
+
+		wg.Wait()
+
+		if err != nil {
+			return err
+		}
+
+		//判断节点是否完成(反向关联的)
+		for _, v := range brsx {
+			//check finished
+		}
+
+		//next flow
+		var defNode *models.SequenceFlow
+		passCount := 0
+		for _, v := range flows {
+			if v.DefaultFlow && defNode == nil {
+				defNode = v
+			}
+			if len(v.Script) > 0 && !formData {
+				data, err := f.call(types.GCNodeSubmitData, f.node.Id)
+				if err != nil {
+					return err
+				}
+				f1, ok := data.(map[string]interface{})
+				if ok {
+					formData = true
+					for k, v1 := range f1 {
+						f.metadata(k, v1)
+					}
+				} else {
+					return flowerr.ErrUnknow
+				}
+			}
+			if len(v.Script) > 0 {
+				node, err := f.call(types.GCNode, v.End)
+				if err != nil {
+					return err
+				}
+				n, ok := node.(*models.Node)
+				if ok {
+					ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
+					if err != nil {
+						if err == flowerr.ScriptFalse {
+
+						} else if err == flowerr.ScriptTrue {
+							passCount++
+							f.next(v.End)
+							if gateway.Exclusive {
+								break
+							}
+						} else if err == flowerr.NextFlow {
+							f.again(v.End)
+						} else {
+							return err
+						}
+					}
+					f.context(ctx)
+				} else {
+					return flowerr.ErrNode
+				}
+			}
+		}
+		if passCount == 0 {
+			//run defNode
+
+		}
+	}
+
+	return flowerr.ErrNode
 }
 
+//如果nextflow跳转到开始节点，那么需要停止当前实例，
 func (f *nextflow) startEvent() *flowerr.Error {
 	panic("implement me")
 }

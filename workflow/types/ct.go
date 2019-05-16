@@ -33,9 +33,5 @@ const (
 
 	CTTerminateEvent
 
-	CTExclusiveGateway
-
-	CTParallelGateway
-
 	CTInclusiveGateway
 )

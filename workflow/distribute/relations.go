@@ -11,10 +11,6 @@ type relation struct {
 	values []interface{}
 }
 
-func (f *relation) eventGateway() *flowerr.Error {
-	return flowerr.NextFlow
-}
-
 func (f *relation) timerStartEvent() *flowerr.Error {
 	return nil
 }
@@ -44,18 +40,10 @@ func (f *relation) size() int {
 	return f.values[0].(int)
 }
 
-func (f *relation) exclusiveGateway() *flowerr.Error {
-	if f.size() > 1 {
-		return flowerr.ErrConnectWithExclusiveGateWaySize
-	}
-	return flowerr.NextFlow
-}
-
-func (f *relation) parallelGateway() *flowerr.Error {
-	return flowerr.NextFlow
-}
-
 func (f *relation) inclusiveGateway() *flowerr.Error {
+	//if f.size() == 1 {
+	//	return nil
+	//}
 	return flowerr.NextFlow
 }
 
