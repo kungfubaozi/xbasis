@@ -114,6 +114,7 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 
 		//if size == len(i.CurrentNodes) {
 		//next node
+		//下面处理的是，流程下一步该怎么走
 		var currentNodes []string
 		for _, v := range i.CurrentNodes {
 			//again的作用是: 当前的节点的另一端不是一个有效的task/event，需要再进行一次查询，直到出现有效的task/event

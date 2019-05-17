@@ -116,119 +116,148 @@ func (f *nextflow) flows(callback func([]*models.SequenceFlow) *flowerr.Error) *
 //包容网关 所有满足的 没有走默认
 //在入口方面 包容网关只会等待将会被执行的入口顺序流
 func (f *nextflow) inclusiveGateway() *flowerr.Error {
-	gateway, ok := f.node.Data.(*models.InclusiveGateway)
-	if ok {
-		var flows []*models.SequenceFlow
-		var brsx []*models.NodeBackwardRelation
-		formData := false
-		var err *flowerr.Error
-		resp := func(e *flowerr.Error) {
-			if err == nil {
-				err = e
-			}
-		}
-		var wg sync.WaitGroup
-		wg.Add(2)
-
-		go func() {
-			defer wg.Done()
-			data, err := f.call(types.GCNodeFlows, f.node.Id)
-			if err != nil {
-				resp(err)
-				return
-			}
-			f, ok := data.([]*models.SequenceFlow)
-			if ok {
-				flows = f
-				return
-			}
-			resp(flowerr.ErrUnknow)
-		}()
-
-		go func() {
-			defer wg.Done()
-			bx, err := f.call(types.GCBackwardRelations, f.node.Id)
-			if err != nil {
-				resp(err)
-				return
-			}
-			data, ok := bx.([]*models.NodeBackwardRelation)
-			if ok {
-				brsx = data
-				return
-			}
-			resp(flowerr.ErrUnknow)
-		}()
-
-		wg.Wait()
-
-		if err != nil {
-			return err
-		}
-
-		//判断节点是否完成(反向关联的)
-		for _, v := range brsx {
-			//check finished
-		}
-
-		//next flow
-		var defNode *models.SequenceFlow
-		passCount := 0
-		for _, v := range flows {
-			if v.DefaultFlow && defNode == nil {
-				defNode = v
-			}
-			if len(v.Script) > 0 && !formData {
-				data, err := f.call(types.GCNodeSubmitData, f.node.Id)
-				if err != nil {
-					return err
-				}
-				f1, ok := data.(map[string]interface{})
-				if ok {
-					formData = true
-					for k, v1 := range f1 {
-						f.metadata(k, v1)
-					}
-				} else {
-					return flowerr.ErrUnknow
+	finished, ok := f.finished[f.node.Id]
+	if !ok {
+		finished = false
+	}
+	if !finished { //检查是否完成
+		gateway, ok := f.node.Data.(*models.InclusiveGateway)
+		if ok {
+			var flows []*models.SequenceFlow
+			var brsx []*models.NodeBackwardRelation
+			var err *flowerr.Error
+			resp := func(e *flowerr.Error) {
+				if err == nil {
+					err = e
 				}
 			}
-			if len(v.Script) > 0 {
-				node, err := f.call(types.GCNode, v.End)
-				if err != nil {
-					return err
-				}
-				n, ok := node.(*models.Node)
-				if ok {
-					ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
+
+			var wg sync.WaitGroup
+			wg.Add(2)
+
+			//如果有条件提前拿数据
+			if gateway.ScriptFlows > 0 {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					data, err := f.call(types.GCNodeSubmitData, f.node.Id)
 					if err != nil {
-						if err == flowerr.ScriptFalse {
-
-						} else if err == flowerr.ScriptTrue {
-							passCount++
-							f.next(v.End)
-							if gateway.Exclusive {
-								break
-							}
-						} else if err == flowerr.NextFlow {
-							f.again(v.End)
-						} else {
-							return err
-						}
+						resp(err)
+						return
 					}
-					f.context(ctx)
-				} else {
-					return flowerr.ErrNode
+					f1, ok := data.(map[string]interface{})
+					if ok {
+						for k, v1 := range f1 {
+							f.metadata(k, v1)
+						}
+					} else {
+						resp(flowerr.ErrUnknow)
+					}
+				}()
+			}
+
+			go func() {
+				defer wg.Done()
+				data, err := f.call(types.GCNodeFlows, f.node.Id)
+				if err != nil {
+					resp(err)
+					return
+				}
+				f, ok := data.([]*models.SequenceFlow)
+				if ok {
+					flows = f
+					return
+				}
+				resp(flowerr.ErrUnknow)
+			}()
+
+			go func() {
+				defer wg.Done()
+				bx, err := f.call(types.GCBackwardRelations, f.node.Id)
+				if err != nil {
+					resp(err)
+					return
+				}
+				data, ok := bx.([]*models.NodeBackwardRelation)
+				if ok {
+					brsx = data
+					return
+				}
+				resp(flowerr.ErrUnknow)
+			}()
+
+			wg.Wait()
+
+			if err != nil {
+				return err
+			}
+
+			//判断节点是否完成(反向关联的), 主要用于等待未完成的任务
+			for _, v := range brsx {
+				//check finished
+
+			}
+
+			//next flow
+			var defNode *models.SequenceFlow
+			passCount := 0
+			size := 0
+			if !gateway.Exclusive {
+				size++
+			} else {
+				size = gateway.ScriptFlows
+			}
+			wg.Add(size)
+			for _, v := range flows {
+				if v.DefaultFlow && defNode == nil {
+					defNode = v
+				}
+				if len(v.Script) > 0 {
+					go func() {
+						defer wg.Done()
+						node, err := f.call(types.GCNode, v.End)
+						if err != nil {
+							resp(err)
+							return
+						}
+						n, ok := node.(*models.Node)
+						if ok {
+							ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
+							if err != nil {
+								if err == flowerr.ScriptFalse {
+
+								} else if err == flowerr.ScriptTrue {
+									passCount++
+									f.next(v.End)
+									if gateway.Exclusive {
+										break
+									}
+								} else if err == flowerr.NextFlow {
+									f.again(v.End)
+								} else {
+									return err
+								}
+							}
+							f.context(ctx)
+						} else {
+							return flowerr.ErrNode
+						}
+					}()
 				}
 			}
-		}
-		if passCount == 0 {
-			//run defNode
 
+			wg.Wait()
+
+			if passCount == 0 {
+				//run defNode
+
+			}
 		}
+
+		return flowerr.ErrNode
 	}
 
-	return flowerr.ErrNode
+	return nil
 }
 
 //如果nextflow跳转到开始节点，那么需要停止当前实例，
@@ -268,7 +297,7 @@ func (f *nextflow) context(ctx context.Context) context.Context {
 	return f.ctx
 }
 
-func (f *nextflow) metadata(key, data interface{}) {
+func (f *nextflow) metadata(key string, data interface{}) {
 	panic("implement me")
 }
 

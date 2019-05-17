@@ -184,6 +184,8 @@ func (pro *processes) AddProcess(p *models.Process) {
 		pro.backRelation(pip, backflows)
 	}
 
+	pro.condition(pip)
+
 	fmt.Println("load process", pip.ProcessId)
 
 }
@@ -194,6 +196,34 @@ type temporary struct {
 	key       string
 	startType types.ConnectType
 	endType   types.ConnectType
+}
+
+func (pro *processes) condition(pip *pipeline) {
+	for _, v := range pip.Nodes {
+		if v.CT == types.CTInclusiveGateway {
+			//get flow
+			flows, err := pip.Flows(v.Id)
+			if err == nil && len(flows) > 0 {
+				size := 0
+				for _, v1 := range flows {
+					if len(v1.Script) > 0 {
+						size++
+					}
+				}
+				//update target node
+				gateway, ok := v.Data.(*models.InclusiveGateway)
+				if ok {
+					gateway.ScriptFlows = size
+					pip.Nodes[v.Id] = &models.Node{
+						CT:   v.CT,
+						Key:  v.Key,
+						Data: gateway,
+						Id:   v.Id,
+					}
+				}
+			}
+		}
+	}
 }
 
 func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*temporary) *flowerr.Error {

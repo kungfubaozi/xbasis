@@ -12,6 +12,7 @@ type SequenceFlow struct {
 	StartType   types.ConnectType `bson:"start_type" json:"start_type"`
 	End         string            `bson:"end" json:"end"`
 	EndType     types.ConnectType `bson:"end_type" json:"end_type"`
+	Rollback    bool              `bson:"rollback" json:"rollback"` //rollback肯定是个具体的task. 不可能是Gateway
 	Priority    int64             `bson:"priority" json:"priority"`
 }
 

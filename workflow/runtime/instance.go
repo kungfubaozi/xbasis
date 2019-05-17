@@ -18,6 +18,10 @@ type instances struct {
 	id      gs_commons_generator.IDGenerator
 }
 
+func (i *instances) NamedStart(name string) *flowerr.Error {
+	panic("implement me")
+}
+
 func (i *instances) HasPermission() *flowerr.Error {
 	panic("implement me")
 }

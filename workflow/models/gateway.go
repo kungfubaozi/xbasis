@@ -5,5 +5,6 @@ package models
 //如果没有符合的，那么就去走默认的flow
 type InclusiveGateway struct {
 	*Info
-	Exclusive bool `bson:"exclusive" json:"exclusive"` //排他
+	Exclusive   bool `bson:"exclusive" json:"exclusive"` //排他
+	ScriptFlows int  `bson:"script_flows" json:"script_flows"`
 }

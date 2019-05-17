@@ -45,10 +45,14 @@ type TerminateEndEvent struct {
 	*NodeEvent
 }
 
+//API
+//是个单实例服务
+//每个API都可有可无表映射
 type ApiStartEvent struct {
 	*NodeEvent
-	Method  types.HttpRequestMethod `bson:"method" json:"method"`
-	FormRef string                  `bson:"form_ref" json:"form_ref"`
+	Path     string                  `bson:"path" json:"path"` // 请求地址
+	Method   types.HttpRequestMethod `bson:"method" json:"method"`
+	TableRef string                  `bson:"table_ref" json:"table_ref"` //表
 }
 
 //忽略NodeEvent设置的权限
