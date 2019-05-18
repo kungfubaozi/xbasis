@@ -14,6 +14,7 @@ import (
 
 type processing struct {
 	modules  modules.Modules
+	store    modules.IStore
 	instance *models.Instance
 	appId    string
 	ctx      context.Context
@@ -70,6 +71,8 @@ func (f *processing) startEvent() *flowerr.Error {
 		e := f.node.Data.(*models.StartEvent)
 		//检查form
 		return f.formCheck(e.FormRef, func() *flowerr.Error {
+			//状态初始化
+
 			//开始流程
 			return flowerr.NextFlow
 		})
@@ -189,7 +192,7 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 		if len(f.sd) > 0 {
 			//提交到form记录
 			var wg sync.WaitGroup
-			wg.Add(2)
+			wg.Add(3)
 			var s *flowerr.Error
 			resp := func(s1 *flowerr.Error) {
 				if s == nil {
@@ -210,16 +213,24 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 					Operate:    types.OPSubmitForm,
 				}))
 			}()
+
+			go func() {
+				defer wg.Done()
+			}()
 			return s
 		}
 	}
 	return callback()
 }
 
+func (f *processing) finishThatNode() {
+
+}
+
 func (f *processing) typeCheck(v interface{}, kind reflect.Kind) bool {
 	return reflect.TypeOf(v).Kind() == kind
 }
 
-func NewProcessing(modules modules.Modules, log *gslogrus.Logger) Handler {
-	return &processing{modules: modules, log: log}
+func NewProcessing(modules modules.Modules, log *gslogrus.Logger, store modules.IStore) Handler {
+	return &processing{modules: modules, log: log, store: store}
 }

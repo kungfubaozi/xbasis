@@ -39,7 +39,7 @@ func (pro *processes) AddProcess(p *models.Process) {
 		SequenceFlows:     make(map[string][]*models.SequenceFlow),
 		Nodes:             make(map[string]*models.Node),
 		Parallels:         make(map[string][]string),
-		BackwardRelations: make(map[string][]*models.NodeBackwardRelation),
+		BackwardRelations: make(map[string][]*models.NodeRelation),
 	}
 	if p.StartEvent != nil {
 		pip.StartEvent = &models.Node{
@@ -213,7 +213,7 @@ func (pro *processes) condition(pip *pipeline) {
 				//update target node
 				gateway, ok := v.Data.(*models.InclusiveGateway)
 				if ok {
-					gateway.ScriptFlows = size
+					gateway.ScriptFlows = size //设置脚本流数量，如果数量为0则没必要提前把提交的数据拿出来
 					pip.Nodes[v.Id] = &models.Node{
 						CT:   v.CT,
 						Key:  v.Key,
@@ -226,12 +226,57 @@ func (pro *processes) condition(pip *pipeline) {
 	}
 }
 
+func (pro *processes) forwardRelation(pip *pipeline) {
+	forwards := make(map[string][]*models.NodeRelation)
+
+	add := func(nodeId string, nr *models.SequenceFlow) {
+		if nr.EndType != types.CTInclusiveGateway {
+			fr := forwards[nodeId]
+			fr = append(fr, &models.NodeRelation{
+				Id: nr.End,
+				CT: nr.EndType,
+			})
+		}
+	}
+
+	//关联的节点
+	for _, v := range pip.Nodes {
+		//get flows
+		flows, err := pip.Flows(v.Id)
+		if err == nil && len(flows) > 0 {
+			var next []string
+			for _, v1 := range flows {
+				next = append(next, v1.End)
+				add(v.Id, v1)
+			}
+			for {
+				if len(next) == 0 {
+					break
+				}
+				for _, v1 := range next {
+					f1, err := pip.Flows(v1)
+					if err == nil && len(f1) > 0 {
+						for _, v3 := range f1 {
+							next = append(next, v3.End)
+							add(v.Id, v3)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func (pro *processes) findForwardFlows() {
+
+}
+
 func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*temporary) *flowerr.Error {
-	relations := make(map[string][]*models.NodeBackwardRelation)
+	relations := make(map[string][]*models.NodeRelation)
 	fmt.Println("size", len(pip.Nodes))
 	for _, v := range pip.Nodes {
 
-		var nrs []*models.NodeBackwardRelation
+		var nrs []*models.NodeRelation
 
 		rs, err := pro.loopFind(v.Id, backflows)
 		if err != nil {
@@ -246,14 +291,14 @@ func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*tempor
 	return nil
 }
 
-func (pro *processes) loopFind(nodeId string, backflows map[string][]*temporary) ([]*models.NodeBackwardRelation, *flowerr.Error) {
-	var res []*models.NodeBackwardRelation
+func (pro *processes) loopFind(nodeId string, backflows map[string][]*temporary) ([]*models.NodeRelation, *flowerr.Error) {
+	var res []*models.NodeRelation
 	v := backflows[nodeId]
 	for _, r := range v {
 		//在部分节点上和节点连接的数量有限制
 		_, err := pro.relation.Do(nil, nil, nil, r.endType, len(v))
 		if err == nil {
-			res = append(res, &models.NodeBackwardRelation{
+			res = append(res, &models.NodeRelation{
 				Id:  r.end,
 				Key: r.key,
 				CT:  r.endType,

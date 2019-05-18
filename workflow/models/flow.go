@@ -17,11 +17,11 @@ type SequenceFlow struct {
 }
 
 type NextStatus struct {
-	Again        string
+	Again        []string
 	CurrentNodes []string
 }
 
-type NodeBackwardRelation struct {
+type NodeRelation struct {
 	Id  string
 	Key string
 	CT  types.ConnectType

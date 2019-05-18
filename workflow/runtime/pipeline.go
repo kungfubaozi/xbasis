@@ -7,16 +7,25 @@ import (
 )
 
 type pipeline struct {
-	ProcessId         string                                    `bson:"_id" json:"id"`
-	Name              string                                    `bson:"name" json:"name"`
-	SequenceFlows     map[string][]*models.SequenceFlow         `bson:"sequence_flows" json:"sequence_flows"` //flows的key是对应节点的start
-	Parallels         map[string][]string                       `bson:"parallels" json:"parallels"`           //与对应的parallelGateway关联的task节点
-	StartEvent        *models.Node                              `bson:"start_event" json:"start_event"`
-	EndEvents         map[string]*models.TypeEvent              `bson:"end_events" json:"end_events"`
-	ExpireAt          int64                                     `bson:"expire_at" json:"expire_at"`
-	Nodes             map[string]*models.Node                   `bson:"nodes" json:"nodes"`
-	BackwardRelations map[string][]*models.NodeBackwardRelation `bson:"backward_relations" json:"backward_relations"` //关于指定节点可用的task
-	Version           int64                                     `bson:"version" json:"version"`
+	ProcessId         string                            `bson:"_id" json:"id"`
+	Name              string                            `bson:"name" json:"name"`
+	SequenceFlows     map[string][]*models.SequenceFlow `bson:"sequence_flows" json:"sequence_flows"` //flows的key是对应节点的start
+	Parallels         map[string][]string               `bson:"parallels" json:"parallels"`           //与对应的parallelGateway关联的task节点
+	StartEvent        *models.Node                      `bson:"start_event" json:"start_event"`
+	EndEvents         map[string]*models.TypeEvent      `bson:"end_events" json:"end_events"`
+	ExpireAt          int64                             `bson:"expire_at" json:"expire_at"`
+	Nodes             map[string]*models.Node           `bson:"nodes" json:"nodes"`
+	BackwardRelations map[string][]*models.NodeRelation `bson:"backward_relations" json:"backward_relations"` //关于指定节点可用的task
+	ForwardRelations  map[string][]*models.NodeRelation `bson:"forward_relations" json:"forward_relations"`
+	Version           int64                             `bson:"version" json:"version"`
+}
+
+func (p *pipeline) GetNodeForwardRelations(id string) []*models.NodeRelation {
+	return p.ForwardRelations[id]
+}
+
+func (p *pipeline) AllNodes() map[string]*models.Node {
+	return p.Nodes
 }
 
 func (p *pipeline) append(n *models.Node) {
@@ -52,6 +61,6 @@ func (p *pipeline) FindParallelNodes(id string) []string {
 	return p.Parallels[id]
 }
 
-func (p *pipeline) GetNodeBackwardRelations(nodeId string) []*models.NodeBackwardRelation {
+func (p *pipeline) GetNodeBackwardRelations(nodeId string) []*models.NodeRelation {
 	return p.BackwardRelations[nodeId]
 }

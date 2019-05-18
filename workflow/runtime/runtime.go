@@ -57,6 +57,36 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 			return flowerr.FromError(e)
 		}
 
+		commandFunc := func(command types.GetterCommand, values ...interface{}) (interface{}, *flowerr.Error) {
+			switch command {
+			case types.GCBackwardRelations:
+				return pipe.GetNodeBackwardRelations(values[0].(string)), nil
+			case types.GCNodeFlows:
+				connects, err := pipe.Flows(values[0].(string))
+				if err != nil {
+					return nil, err
+				}
+				return connects, err
+			case types.GCNodeSubmitData:
+				data, err := r.getSubmitData(i, context.Background(), values[0].(string), pipe)
+				if err != nil {
+					return nil, err
+				}
+				return data, nil
+			case types.GCNode:
+				node, err := pipe.GetNode(values[0].(string))
+				if err != nil {
+					return nil, err
+				}
+				return node, nil
+			case types.GCForwardRelationNodes:
+				return pipe.GetNodeForwardRelations(values[0].(string)), nil
+			}
+			return nil, flowerr.ErrNil
+		}
+
+		r.processing.SetCommandFunc(commandFunc)
+
 		size := 0
 		for _, v := range i.CurrentNodes {
 
@@ -86,31 +116,7 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 
 		r.next.Restore()
 
-		r.next.SetCommandFunc(func(command types.GetterCommand, values ...interface{}) (interface{}, *flowerr.Error) {
-			switch command {
-			case types.GCBackwardRelations:
-				return pipe.GetNodeBackwardRelations(values[0].(string)), nil
-			case types.GCNodeFlows:
-				connects, err := pipe.Flows(values[0].(string))
-				if err != nil {
-					return nil, err
-				}
-				return connects, err
-			case types.GCNodeSubmitData:
-				data, err := r.getSubmitData(i, context.Background(), values[0].(string), pipe)
-				if err != nil {
-					return nil, err
-				}
-				return data, nil
-			case types.GCNode:
-				node, err := pipe.GetNode(values[0].(string))
-				if err != nil {
-					return nil, err
-				}
-				return node, nil
-			}
-			return nil, flowerr.ErrNil
-		})
+		r.next.SetCommandFunc(commandFunc)
 
 		//if size == len(i.CurrentNodes) {
 		//next node
@@ -175,7 +181,35 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 		ns = append(ns, v1)
 	}
 	if len(nodes.Again) > 0 {
-		return r.again(ctx, ns, i, pipe, nodes.Again)
+		//如果遇到again操作则是下一节点遇到网关，需要循环判断是否需要进行下一步
+		var next []string
+		var err *flowerr.Error
+		var wg sync.WaitGroup
+
+		resp := func(e *flowerr.Error) {
+			if err == nil {
+				err = e
+			}
+		}
+
+		wg.Add(len(nodes.Again))
+		for _, v := range nodes.Again {
+			//但由于下一节点都不会相互关系，可以使用协程提高效率
+			go func() {
+				n, e := r.again(ctx, ns, i, pipe, v)
+				if e != nil {
+					resp(e)
+					return
+				}
+				if len(n) > 0 {
+					next = append(next, n...)
+				}
+			}()
+		}
+
+		wg.Wait()
+
+		return next, err
 	}
 	return ns, nil
 }

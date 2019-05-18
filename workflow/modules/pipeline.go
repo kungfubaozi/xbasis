@@ -16,7 +16,9 @@ type Pipeline interface {
 
 	FindParallelNodes(id string) []string
 
-	GetNodeBackwardRelations(id string) []*models.NodeBackwardRelation
+	GetNodeBackwardRelations(id string) []*models.NodeRelation
+
+	GetNodeForwardRelations(id string) []*models.NodeRelation
 }
 
 type Pipelines interface {

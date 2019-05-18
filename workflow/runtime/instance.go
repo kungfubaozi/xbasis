@@ -8,9 +8,11 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
+	"konekko.me/gosion/workflow/modules"
 )
 
 type instances struct {
+	store   modules.IStore
 	session *mgo.Session
 	pool    *redis.Pool
 	client  *indexutils.Client
@@ -43,7 +45,7 @@ func (i *instances) CurrentProcess(instanceId string) {
 }
 
 func (i *instances) New(ins *models.Instance) *flowerr.Error {
-	panic("implement me")
+	panic("")
 }
 
 func (i *instances) UpdateInstanceCurrentNodes(instanceId string, nodeIds ...string) *flowerr.Error {

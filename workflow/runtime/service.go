@@ -79,6 +79,10 @@ func (w *Workflow) Run(zookeeperURL string) error {
 		relation: distribute.NewRelation(),
 		client:   m.client,
 	}
+	s := &store{
+		log:    m.log,
+		client: m.client,
+	}
 	h := &history{
 		session: m.session.Clone(),
 		pool:    m.pool,
@@ -87,6 +91,7 @@ func (w *Workflow) Run(zookeeperURL string) error {
 		client:  m.client,
 	}
 	i := &instances{
+		store:   s,
 		session: m.session.Clone(),
 		pool:    m.pool,
 		log:     m.log,
@@ -110,10 +115,7 @@ func (w *Workflow) Run(zookeeperURL string) error {
 		shutdown: m.shutdown,
 		conn:     gs_commons_config.NewConnect(zookeeperURL),
 	}
-	s := &store{
-		log:    m.log,
-		client: m.client,
-	}
+
 	m.ui = u
 	m.ii = i
 	m.hi = h
@@ -123,8 +125,8 @@ func (w *Workflow) Run(zookeeperURL string) error {
 	r.pipelines = newPipelines(m.session.Clone(), m.log, m.pool)
 	r.modules = m
 	r.dataGetter = distribute.NewDataGetter(m, m.log)
-	r.processing = distribute.NewProcessing(m, m.log)
-	r.next = distribute.NewNextflow(m, m.log, script.NewScript(), m.pool)
+	r.processing = distribute.NewProcessing(m, m.log, s)
+	r.next = distribute.NewNextflow(m, m.log, script.NewScript(), m.pool, s)
 	fmt.Println("initialize ok...")
 	return <-m.shutdown
 }

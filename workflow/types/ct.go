@@ -25,6 +25,8 @@ const (
 
 	CTMessageStartEvent
 
+	CTApiStartEvent
+
 	CTEndEvent
 
 	CTEndErrorEvent

@@ -1,11 +1,14 @@
 package modules
 
-import "konekko.me/gosion/workflow/flowerr"
+import (
+	"konekko.me/gosion/workflow/flowerr"
+	"konekko.me/gosion/workflow/models"
+)
 
 type IStore interface {
-	Set(status int64, keys map[string]interface{}) (bool, *flowerr.Error)
+	IsFinished(nodeId string, instanceId string) (bool, *flowerr.Error)
 
-	Get(keys map[string]interface{}) (int64, *flowerr.Error)
+	ClearParentNodesStatus(nodeId string, instanceId string) (bool, *flowerr.Error)
 
-	Clear(keys map[string]interface{}) *flowerr.Error
+	Finished(store *models.Holder) *flowerr.Error
 }

@@ -3,7 +3,6 @@ package distribute
 import (
 	"context"
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
@@ -14,21 +13,19 @@ import (
 )
 
 type nextflow struct {
-	modules            modules.Modules
-	finished           map[string]bool
-	log                *gslogrus.Logger
-	values             []interface{}
-	status             *models.NextStatus
-	node               *models.Node
-	ctx                context.Context
-	instance           *models.Instance
-	script             Handler
-	gon                bool
-	ignoreNodes        []string
-	ignoreNodesChanged bool
-	pool               *redis.Pool
-	conn               redis.Conn
-	call               types.CommandDataGetter
+	modules  modules.Modules
+	store    modules.IStore
+	finished map[string]bool
+	log      *gslogrus.Logger
+	values   []interface{}
+	status   *models.NextStatus
+	node     *models.Node
+	ctx      context.Context
+	instance *models.Instance
+	script   Handler
+	gon      bool
+	pool     *redis.Pool
+	call     types.CommandDataGetter
 }
 
 func (f *nextflow) SetCommandFunc(call types.CommandDataGetter) {
@@ -64,41 +61,7 @@ func (f *nextflow) Do(ctx context.Context, instance *models.Instance, node *mode
 	f.ctx = ctx
 	f.instance = instance
 	f.status = &models.NextStatus{}
-	if f.conn == nil {
-		f.conn = f.pool.Get()
-	}
-	if f.ignoreNodes == nil {
-		v, err := redis.Bytes(f.conn.Do("get", instance.Id))
-		if err != nil && err == redis.ErrNil {
-			err = nil
-			f.ignoreNodes = []string{}
-		}
-		if err != nil {
-			return ctx, flowerr.FromError(err)
-		}
-		err = msgpack.Unmarshal(v, f.ignoreNodes)
-		if err != nil {
-			return ctx, flowerr.FromError(err)
-		}
-		if f.ignoreNodes == nil {
-			f.ignoreNodes = []string{}
-		}
-	}
 	return handler(ctx, ct, f)
-}
-
-func (f *nextflow) updateIgnoreNodes() *flowerr.Error {
-	if len(f.ignoreNodes) > 0 {
-		v, err := msgpack.Marshal(f.ignoreNodes)
-		if err != nil {
-			return flowerr.FromError(err)
-		}
-		_, err = f.conn.Do("set", f.instance.Id, v)
-		if err != nil {
-			return flowerr.FromError(err)
-		}
-	}
-	return nil
 }
 
 func (f *nextflow) flows(callback func([]*models.SequenceFlow) *flowerr.Error) *flowerr.Error {
@@ -124,7 +87,7 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 		gateway, ok := f.node.Data.(*models.InclusiveGateway)
 		if ok {
 			var flows []*models.SequenceFlow
-			var brsx []*models.NodeBackwardRelation
+			var brsx []*models.NodeRelation
 			var err *flowerr.Error
 			resp := func(e *flowerr.Error) {
 				if err == nil {
@@ -192,10 +155,35 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 				return err
 			}
 
-			//判断节点是否完成(反向关联的), 主要用于等待未完成的任务
-			for _, v := range brsx {
-				//check finished
+			okCount := 0
 
+			//判断节点是否完成(反向关联的), 主要用于等待未完成的任务
+			//store的作用是保存每个实例节点的状态（0：未完成，1：完成）
+			wg.Add(len(brsx))
+			for _, v := range brsx {
+				//heck finished
+				go func() {
+					defer wg.Done()
+					ok, err := f.store.IsFinished(v.Id, f.instance.Id)
+					if err != nil {
+						resp(err)
+						return
+					}
+					if ok {
+						okCount++
+					}
+				}()
+			}
+
+			wg.Wait()
+
+			if err != nil {
+				return err
+			}
+
+			//节点之前的任务没有完成，需要等待
+			if okCount != len(brsx) {
+				return nil
 			}
 
 			//next flow
@@ -208,43 +196,54 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 				size = gateway.ScriptFlows
 			}
 			wg.Add(size)
-			for _, v := range flows {
-				if v.DefaultFlow && defNode == nil {
-					defNode = v
-				}
-				if len(v.Script) > 0 {
-					go func() {
-						defer wg.Done()
-						node, err := f.call(types.GCNode, v.End)
-						if err != nil {
-							resp(err)
-							return
-						}
-						n, ok := node.(*models.Node)
-						if ok {
-							ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
-							if err != nil {
-								if err == flowerr.ScriptFalse {
-
-								} else if err == flowerr.ScriptTrue {
-									passCount++
-									f.next(v.End)
-									if gateway.Exclusive {
-										break
-									}
-								} else if err == flowerr.NextFlow {
-									f.again(v.End)
-								} else {
-									return err
-								}
-							}
-							f.context(ctx)
-						} else {
-							return flowerr.ErrNode
-						}
-					}()
-				}
-			}
+			//for _, v := range flows {
+			//	if v.DefaultFlow && defNode == nil {
+			//		defNode = v
+			//	}
+			//	if len(v.Script) > 0 {
+			//		go func() {
+			//			defer wg.Done()
+			//
+			//			//回退
+			//			if v.Rollback {
+			//
+			//			}
+			//
+			//			node, err := f.call(types.GCNode, v.End)
+			//			if err != nil {
+			//				resp(err)
+			//				return
+			//			}
+			//			n, ok := node.(*models.Node)
+			//			if ok {
+			//				ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
+			//				if err != nil {
+			//					if err == flowerr.ScriptFalse {
+			//
+			//					} else if err == flowerr.ScriptTrue {
+			//						passCount++
+			//
+			//						if v.Rollback {
+			//
+			//						}
+			//
+			//						f.next(v.End)
+			//						if gateway.Exclusive {
+			//
+			//						}
+			//					} else if err == flowerr.NextFlow {
+			//						f.again(v.End)
+			//					} else {
+			//
+			//					}
+			//				}
+			//				f.context(ctx)
+			//			} else {
+			//
+			//			}
+			//		}()
+			//	}
+			//}
 
 			wg.Wait()
 
@@ -302,7 +301,7 @@ func (f *nextflow) metadata(key string, data interface{}) {
 }
 
 func (f *nextflow) again(id string) {
-	f.status.Again = id
+	f.status.Again = append(f.status.Again, id)
 }
 
 func (f *nextflow) next(id string) {
@@ -316,11 +315,8 @@ func (f *nextflow) flow() *models.SequenceFlow {
 func (f *nextflow) Restore() {
 	f.status = nil
 	f.finished = make(map[string]bool)
-	f.ignoreNodes = nil
-	f.conn.Close()
-	f.ignoreNodesChanged = false
 }
 
-func NewNextflow(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript, pool *redis.Pool) Handler {
-	return &nextflow{modules: modules, log: log, script: newScript(modules, log, script), pool: pool}
+func NewNextflow(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript, pool *redis.Pool, store modules.IStore) Handler {
+	return &nextflow{modules: modules, log: log, script: newScript(modules, log, script), pool: pool, store: store}
 }

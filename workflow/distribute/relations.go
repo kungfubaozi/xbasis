@@ -11,6 +11,10 @@ type relation struct {
 	values []interface{}
 }
 
+func (f *relation) SetCommandFunc(call types.CommandDataGetter) {
+	panic("implement me")
+}
+
 func (f *relation) timerStartEvent() *flowerr.Error {
 	return nil
 }
@@ -75,7 +79,7 @@ func (f *relation) context(ctx context.Context) context.Context {
 	return ctx
 }
 
-func (f *relation) metadata(key, data interface{}) {
+func (f *relation) metadata(key string, data interface{}) {
 	panic("implement me")
 }
 
