@@ -157,22 +157,39 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 
 			okCount := 0
 
+			i, err := f.store.GetInstanceIgnoreNodes(f.instance.Id)
+			if err != nil {
+				return err
+			}
+
 			//判断节点是否完成(反向关联的), 主要用于等待未完成的任务
 			//store的作用是保存每个实例节点的状态（0：未完成，1：完成）
 			wg.Add(len(brsx))
 			for _, v := range brsx {
-				//heck finished
-				go func() {
-					defer wg.Done()
-					ok, err := f.store.IsFinished(v.Id, f.instance.Id)
-					if err != nil {
-						resp(err)
-						return
+				//check finished
+				c := false
+				//检查忽略的节点，不需要进行检查
+				for _, v1 := range i {
+					if v.Id == v1 {
+						c = true
+						break
 					}
-					if ok {
-						okCount++
-					}
-				}()
+				}
+				if c {
+					go func() {
+						defer wg.Done()
+						ok, err := f.store.IsFinished(v.Id, f.instance.Id)
+						if err != nil {
+							resp(err)
+							return
+						}
+						if ok {
+							okCount++
+						}
+					}()
+				} else {
+					wg.Done()
+				}
 			}
 
 			wg.Wait()
@@ -188,69 +205,108 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 
 			//next flow
 			var defNode *models.SequenceFlow
-			passCount := 0
 			size := 0
 			if !gateway.Exclusive {
 				size++
 			} else {
 				size = gateway.ScriptFlows
 			}
-			wg.Add(size)
+
+			if len(connect) > 0 {
+				//clear about node store ignore nodes
+				err := f.store.ClearAboutNodeIgnoreNodes(f.node.Id, f.instance.Id)
+				if err != nil {
+					return err
+				}
+			}
+
+			var ignoreNodes []string
+			var rollback string
+
 			for _, v := range connect {
 				if v.DefaultFlow && defNode == nil {
 					defNode = v
 				}
+				//把剩下的节点都添加进来
+				if gateway.Exclusive && len(f.status.Again) > 0 {
+					ignoreNodes = append(ignoreNodes, v.End)
+					continue
+				}
 				if len(v.Script) > 0 {
-					go func() {
-						defer wg.Done()
+					//get target node
+					node, err := f.call(types.GCNode, v.End)
+					if err != nil {
+						return err
+					}
 
-						//回退
-						if v.Rollback {
-
-						}
-
-						node, err := f.call(types.GCNode, v.End)
+					n, ok := node.(*models.Node)
+					if ok {
+						ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
+						f.context(ctx)
 						if err != nil {
-							resp(err)
-							return
-						}
-						n, ok := node.(*models.Node)
-						if ok {
-							ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
-							if err != nil {
-								if err == flowerr.ScriptFalse {
-
-								} else if err == flowerr.ScriptTrue {
-									passCount++
-
-									if v.Rollback {
-
-									}
-
-									f.next(v.End)
-									if gateway.Exclusive {
-
-									}
-								} else if err == flowerr.NextFlow {
-									f.again(v.End)
-								} else {
-
+							if err == flowerr.ScriptFalse {
+								//添加到忽略节点里
+								ignoreNodes = append(ignoreNodes, v.End)
+							} else if err == flowerr.ScriptTrue || err == flowerr.NextFlow {
+								if v.Rollback {
+									rollback = v.End
+									break
 								}
+								f.again(v.End)
+							} else {
+								return err
 							}
-							f.context(ctx)
-						} else {
-
 						}
-					}()
+					}
+				} else {
+					f.again(v.End)
 				}
 			}
 
-			wg.Wait()
-
-			if passCount == 0 {
-				//run defNode
-
+			//这一步的操作是，如果发现了是rollback操作，则清除rollback对应节点关联的所有节点（向前）的状态（未完成）
+			if len(rollback) > 0 {
+				//clear store
+				ok, err := f.store.ClearRelationNodesStatus(rollback, f.instance.Id)
+				if err != nil {
+					return err
+				}
+				if ok {
+					f.again(rollback)
+					return flowerr.ErrRollback
+				}
+				return flowerr.ErrSystem
 			}
+
+			ignores := &models.NodeIgnore{
+				InstanceId: f.instance.Id,
+				GatewayId:  f.node.Id,
+			}
+
+			//添加忽略的节点
+			addIgnoresNodes := func(def bool) *flowerr.Error {
+				if def {
+					for i, v := range ignoreNodes {
+						if v == defNode.End {
+							ignoreNodes = append(ignoreNodes[:i], ignoreNodes[i+1:]...)
+							break
+						}
+					}
+				}
+				ignores.Ignores = ignoreNodes
+				return f.store.AddIgnoreNode(ignores)
+			}
+
+			//执行默认的节点
+			if defNode != nil && len(f.status.Again) == 0 {
+				f.again(defNode.End)
+				return addIgnoresNodes(true)
+			}
+
+			if gateway.Exclusive {
+				return addIgnoresNodes(false)
+			}
+
+			return nil
 		}
 
 		return flowerr.ErrNode

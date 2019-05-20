@@ -8,4 +8,5 @@ type History struct {
 	Operate    types.OperateType `bson:"operate" json:"operate"`
 	NodeId     string            `bson:"node_id" json:"node_id"`
 	Comments   string            `bson:"comments" json:"comments"`
+	Status     int64             `bson:"status" json:"status"`
 }

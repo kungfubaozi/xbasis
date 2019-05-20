@@ -173,6 +173,9 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 
 		ctx, err = r.next.Do(ctx, i, n, n.CT, f)
 		if err != nil {
+			if err == flowerr.ErrRollback {
+
+			}
 			return nil, err
 		}
 	}
@@ -181,7 +184,6 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 		ns = append(ns, v1)
 	}
 	if len(nodes.Again) > 0 {
-		//如果遇到again操作则是下一节点遇到网关，需要循环判断是否需要进行下一步
 		var next []string
 		var err *flowerr.Error
 		var wg sync.WaitGroup
@@ -194,7 +196,6 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 
 		wg.Add(len(nodes.Again))
 		for _, v := range nodes.Again {
-			//但由于下一节点都不会相互关系，可以使用协程提高效率
 			go func() {
 				n, e := r.again(ctx, ns, i, pipe, v)
 				if e != nil {

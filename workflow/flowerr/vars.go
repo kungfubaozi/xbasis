@@ -6,6 +6,8 @@ var ErrSecretKey = err(102, "")
 
 var ErrRequest = err(201, "")
 
+var ErrSystem = err(202, "err system")
+
 var ErrNil = err(301, "nil")
 
 var ErrUnsupportedConnectType = err(302, "err unsupported connect type")
@@ -21,6 +23,8 @@ var ErrFindSubmitForm = err(306, "err find submit form")
 var ErrInvalidGatewayScript = err(307, "err invalid gateway flow script")
 
 var ErrConnectWithExclusiveGateWaySize = err(308, "err connect with ExclusiveGateWay size > 1")
+
+var ErrRollback = err(309, "roll back")
 
 var ScriptTrue = err(401, "script pass check")
 

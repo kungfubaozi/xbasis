@@ -22,7 +22,7 @@ type NextStatus struct {
 }
 
 type NodeRelation struct {
-	Id  string
-	Key string
-	CT  types.ConnectType
+	Id  string            `bson:"id" json:"id"`
+	Key string            `bson:"key" json:"key"`
+	CT  types.ConnectType `bson:"ct" json:"ct"`
 }

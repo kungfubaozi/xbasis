@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/generator"
@@ -188,6 +189,8 @@ func (pro *processes) AddProcess(p *models.Process) {
 	pro.forwardRelation(pip)
 
 	pro.condition(pip)
+
+	spew.Dump(pip.ForwardRelations[pip.StartEvent.Id])
 
 	fmt.Println("load process", pip.ProcessId)
 
