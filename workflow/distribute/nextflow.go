@@ -272,7 +272,7 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 				}
 				if ok {
 					f.again(rollback)
-					return flowerr.ErrRollback
+					return nil
 				}
 				return flowerr.ErrSystem
 			}
@@ -302,11 +302,7 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 				return addIgnoresNodes(true)
 			}
 
-			if gateway.Exclusive {
-				return addIgnoresNodes(false)
-			}
-
-			return nil
+			return addIgnoresNodes(false)
 		}
 
 		return flowerr.ErrNode

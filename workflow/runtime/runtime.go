@@ -173,9 +173,6 @@ func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.In
 
 		ctx, err = r.next.Do(ctx, i, n, n.CT, f)
 		if err != nil {
-			if err == flowerr.ErrRollback {
-
-			}
 			return nil, err
 		}
 	}
