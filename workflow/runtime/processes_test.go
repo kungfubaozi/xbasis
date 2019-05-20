@@ -26,46 +26,42 @@ func TestProcesses_AddProcess(t *testing.T) {
 	ut5 := id.Get()
 	ut6 := id.Get()
 
-	pg1 := id.Get()
-	pg2 := id.Get()
-	pg3 := id.Get()
-
 	ig1 := id.Get()
+	ig2 := id.Get()
+	ig3 := id.Get()
+	ig4 := id.Get()
 
 	p.AddProcess(&models.Process{
 		Id:   id.Get(),
 		Name: "TestProcess",
 		Gateways: &models.Gateways{
-			Parallels: []*models.ParallelGateway{
-				{
-					Info: &models.Info{
-						Id:   pg1,
-						Key:  "pg1",
-						Name: "pg1",
-					},
-				},
-				{
-					Info: &models.Info{
-						Id:   pg2,
-						Key:  "pg2",
-						Name: "pg2",
-					},
-				},
-				{
-					Info: &models.Info{
-						Id:   pg3,
-						Key:  "pg3",
-						Name: "pg3",
-					},
-				},
-			},
-			Exclusives: []*models.ExclusiveGateway{},
 			Inclusive: []*models.InclusiveGateway{
 				{
 					Info: &models.Info{
 						Id:   ig1,
 						Key:  "ig1",
 						Name: "ig1",
+					},
+				},
+				{
+					Info: &models.Info{
+						Id:   ig2,
+						Key:  "ig2",
+						Name: "ig2",
+					},
+				},
+				{
+					Info: &models.Info{
+						Id:   ig3,
+						Key:  "ig3",
+						Name: "ig3",
+					},
+				},
+				{
+					Info: &models.Info{
+						Id:   ig4,
+						Key:  "ig4",
+						Name: "ig4",
 					},
 				},
 			},
@@ -151,15 +147,15 @@ func TestProcesses_AddProcess(t *testing.T) {
 				},
 				Start:     ig1,
 				StartType: types.CTInclusiveGateway,
-				End:       pg1,
-				EndType:   types.CTParallelGateway,
+				End:       ig2,
+				EndType:   types.CTInclusiveGateway,
 			},
 			{
 				Info: &models.Info{
 					Id: id.Get(),
 				},
-				Start:     pg1,
-				StartType: types.CTParallelGateway,
+				Start:     ig2,
+				StartType: types.CTInclusiveGateway,
 				End:       ut2,
 				EndType:   types.CTUserTask,
 			},
@@ -167,8 +163,8 @@ func TestProcesses_AddProcess(t *testing.T) {
 				Info: &models.Info{
 					Id: id.Get(),
 				},
-				Start:     pg1,
-				StartType: types.CTParallelGateway,
+				Start:     ig2,
+				StartType: types.CTInclusiveGateway,
 				End:       ut3,
 				EndType:   types.CTUserTask,
 			},
@@ -178,8 +174,8 @@ func TestProcesses_AddProcess(t *testing.T) {
 				},
 				Start:     ut2,
 				StartType: types.CTUserTask,
-				End:       pg2,
-				EndType:   types.CTParallelGateway,
+				End:       ig3,
+				EndType:   types.CTInclusiveGateway,
 			},
 			{
 				Info: &models.Info{
@@ -187,8 +183,8 @@ func TestProcesses_AddProcess(t *testing.T) {
 				},
 				Start:     ut3,
 				StartType: types.CTUserTask,
-				End:       pg2,
-				EndType:   types.CTParallelGateway,
+				End:       ig3,
+				EndType:   types.CTInclusiveGateway,
 			},
 			{
 				Info: &models.Info{
@@ -212,35 +208,35 @@ func TestProcesses_AddProcess(t *testing.T) {
 				Info: &models.Info{
 					Id: id.Get(),
 				},
-				Start:     ut5,
-				StartType: types.CTUserTask,
-				End:       pg3,
-				EndType:   types.CTParallelGateway,
-			},
-			{
-				Info: &models.Info{
-					Id: id.Get(),
-				},
 				Start:     ut4,
 				StartType: types.CTUserTask,
-				End:       pg3,
-				EndType:   types.CTParallelGateway,
+				End:       ig4,
+				EndType:   types.CTInclusiveGateway,
 			},
 			{
 				Info: &models.Info{
 					Id: id.Get(),
 				},
-				Start:     pg2,
-				StartType: types.CTParallelGateway,
-				End:       pg3,
-				EndType:   types.CTParallelGateway,
+				Start:     ut5,
+				StartType: types.CTUserTask,
+				End:       ig4,
+				EndType:   types.CTInclusiveGateway,
 			},
 			{
 				Info: &models.Info{
 					Id: id.Get(),
 				},
-				Start:     pg3,
-				StartType: types.CTParallelGateway,
+				Start:     ig3,
+				StartType: types.CTInclusiveGateway,
+				End:       ig4,
+				EndType:   types.CTInclusiveGateway,
+			},
+			{
+				Info: &models.Info{
+					Id: id.Get(),
+				},
+				Start:     ig4,
+				StartType: types.CTInclusiveGateway,
 				End:       ut6,
 				EndType:   types.CTUserTask,
 			},

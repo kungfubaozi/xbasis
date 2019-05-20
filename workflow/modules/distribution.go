@@ -41,10 +41,6 @@ func distribute(ctx context.Context, ct types.ConnectType, t distribution) (cont
 		return t.EndEvent()
 	case types.CTUserTask:
 		return t.UserTask()
-	case types.CTExclusiveGateway:
-		return t.ExclusiveGateway()
-	case types.CTParallelGateway:
-		return t.ParallelGateway()
 	case types.CTInclusiveGateway:
 		return t.InclusiveGateway()
 	}

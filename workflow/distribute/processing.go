@@ -22,10 +22,11 @@ type processing struct {
 	node     *models.Node
 	sd       map[string]interface{}
 	value    interface{}
+	call     types.CommandDataGetter
 }
 
 func (f *processing) SetCommandFunc(call types.CommandDataGetter) {
-	panic("implement me")
+	f.call = call
 }
 
 func (f *processing) timerStartEvent() *flowerr.Error {
@@ -200,11 +201,14 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 					return
 				}
 			}
+
+			//记录表单
 			go func() {
 				defer wg.Done()
 				resp(f.modules.Form().Submit(f.ctx, f.instance.Id, f.node.Id, formId, form.Encryption, f.sd))
 			}()
 
+			//记录历史
 			go func() {
 				defer wg.Done()
 				resp(f.modules.History().Record(f.ctx, &models.History{
@@ -214,8 +218,27 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 				}))
 			}()
 
+			//finished that node
 			go func() {
 				defer wg.Done()
+				rns, err := f.call(types.GCForwardRelationNodes, f.node.Id)
+				if err != nil {
+					resp(err)
+					return
+				}
+				v, ok := rns.([]string)
+				if ok {
+					holder := &models.Holder{
+						NodeId:        f.node.Id,
+						Status:        1,
+						InstanceId:    f.instance.Id,
+						RelationNodes: v,
+					}
+					err = f.store.Finished(holder)
+					resp(err)
+					return
+				}
+				resp(flowerr.ErrUnknow)
 			}()
 			return s
 		}

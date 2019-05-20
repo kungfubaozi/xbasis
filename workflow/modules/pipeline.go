@@ -18,7 +18,7 @@ type Pipeline interface {
 
 	GetNodeBackwardRelations(id string) []*models.NodeRelation
 
-	GetNodeForwardRelations(id string) []*models.NodeRelation
+	GetNodeForwardRelations(id string) []string
 }
 
 type Pipelines interface {

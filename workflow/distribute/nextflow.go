@@ -86,7 +86,7 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 	if !finished { //检查是否完成
 		gateway, ok := f.node.Data.(*models.InclusiveGateway)
 		if ok {
-			var flows []*models.SequenceFlow
+			var connect []*models.SequenceFlow
 			var brsx []*models.NodeRelation
 			var err *flowerr.Error
 			resp := func(e *flowerr.Error) {
@@ -128,7 +128,7 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 				}
 				f, ok := data.([]*models.SequenceFlow)
 				if ok {
-					flows = f
+					connect = f
 					return
 				}
 				resp(flowerr.ErrUnknow)
@@ -141,7 +141,7 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 					resp(err)
 					return
 				}
-				data, ok := bx.([]*models.NodeBackwardRelation)
+				data, ok := bx.([]*models.NodeRelation)
 				if ok {
 					brsx = data
 					return
@@ -196,54 +196,54 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 				size = gateway.ScriptFlows
 			}
 			wg.Add(size)
-			//for _, v := range flows {
-			//	if v.DefaultFlow && defNode == nil {
-			//		defNode = v
-			//	}
-			//	if len(v.Script) > 0 {
-			//		go func() {
-			//			defer wg.Done()
-			//
-			//			//回退
-			//			if v.Rollback {
-			//
-			//			}
-			//
-			//			node, err := f.call(types.GCNode, v.End)
-			//			if err != nil {
-			//				resp(err)
-			//				return
-			//			}
-			//			n, ok := node.(*models.Node)
-			//			if ok {
-			//				ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
-			//				if err != nil {
-			//					if err == flowerr.ScriptFalse {
-			//
-			//					} else if err == flowerr.ScriptTrue {
-			//						passCount++
-			//
-			//						if v.Rollback {
-			//
-			//						}
-			//
-			//						f.next(v.End)
-			//						if gateway.Exclusive {
-			//
-			//						}
-			//					} else if err == flowerr.NextFlow {
-			//						f.again(v.End)
-			//					} else {
-			//
-			//					}
-			//				}
-			//				f.context(ctx)
-			//			} else {
-			//
-			//			}
-			//		}()
-			//	}
-			//}
+			for _, v := range connect {
+				if v.DefaultFlow && defNode == nil {
+					defNode = v
+				}
+				if len(v.Script) > 0 {
+					go func() {
+						defer wg.Done()
+
+						//回退
+						if v.Rollback {
+
+						}
+
+						node, err := f.call(types.GCNode, v.End)
+						if err != nil {
+							resp(err)
+							return
+						}
+						n, ok := node.(*models.Node)
+						if ok {
+							ctx, err := f.script.Do(f.ctx, f.instance, nil, v.EndType, f, n)
+							if err != nil {
+								if err == flowerr.ScriptFalse {
+
+								} else if err == flowerr.ScriptTrue {
+									passCount++
+
+									if v.Rollback {
+
+									}
+
+									f.next(v.End)
+									if gateway.Exclusive {
+
+									}
+								} else if err == flowerr.NextFlow {
+									f.again(v.End)
+								} else {
+
+								}
+							}
+							f.context(ctx)
+						} else {
+
+						}
+					}()
+				}
+			}
 
 			wg.Wait()
 

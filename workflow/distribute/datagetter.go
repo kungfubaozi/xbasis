@@ -16,7 +16,7 @@ type dataGetter struct {
 	values   []interface{}
 	ctx      context.Context
 	instance *models.Instance
-	rn       *models.NodeBackwardRelation
+	rn       *models.NodeRelation
 	data     map[string]interface{}
 }
 
@@ -55,8 +55,8 @@ func (f *dataGetter) Do(ctx context.Context, instance *models.Instance, node *mo
 	return handler(ctx, ct, f)
 }
 
-func (f *dataGetter) relation() *models.NodeBackwardRelation {
-	return f.values[0].(*models.NodeBackwardRelation)
+func (f *dataGetter) relation() *models.NodeRelation {
+	return f.values[0].(*models.NodeRelation)
 }
 
 func (f *dataGetter) inclusiveGateway() *flowerr.Error {

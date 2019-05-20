@@ -1,8 +1,6 @@
 package runtime
 
 import (
-	"context"
-	"github.com/olivere/elastic"
 	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/flowerr"
@@ -26,5 +24,5 @@ func (s *store) ClearParentNodesStatus(nodeId string, instanceId string) (bool, 
 
 //流程实例化时保存状态, 初始状态
 func (s *store) Finished(store *models.Holder) *flowerr.Error {
-
+	panic("")
 }

@@ -16,11 +16,11 @@ type pipeline struct {
 	ExpireAt          int64                             `bson:"expire_at" json:"expire_at"`
 	Nodes             map[string]*models.Node           `bson:"nodes" json:"nodes"`
 	BackwardRelations map[string][]*models.NodeRelation `bson:"backward_relations" json:"backward_relations"` //关于指定节点可用的task
-	ForwardRelations  map[string][]*models.NodeRelation `bson:"forward_relations" json:"forward_relations"`
+	ForwardRelations  map[string][]string               `bson:"forward_relations" json:"forward_relations"`
 	Version           int64                             `bson:"version" json:"version"`
 }
 
-func (p *pipeline) GetNodeForwardRelations(id string) []*models.NodeRelation {
+func (p *pipeline) GetNodeForwardRelations(id string) []string {
 	return p.ForwardRelations[id]
 }
 
@@ -51,7 +51,7 @@ func (p *pipeline) Dump() {
 //finder node start id as flow
 func (p *pipeline) Flows(nodeId string) ([]*models.SequenceFlow, *flowerr.Error) {
 	f := p.SequenceFlows[nodeId]
-	if f != nil {
+	if f == nil {
 		return nil, flowerr.ErrNil
 	}
 	return f, nil

@@ -178,11 +178,14 @@ func (pro *processes) AddProcess(p *models.Process) {
 
 			backflows[v.End] = append(bf, t)
 		}
+
 	}
 
 	if len(backflows) > 0 {
 		pro.backRelation(pip, backflows)
 	}
+
+	pro.forwardRelation(pip)
 
 	pro.condition(pip)
 
@@ -227,15 +230,16 @@ func (pro *processes) condition(pip *pipeline) {
 }
 
 func (pro *processes) forwardRelation(pip *pipeline) {
-	forwards := make(map[string][]*models.NodeRelation)
+
+	fmt.Println("forwardRelation")
+
+	forwards := make(map[string][]string)
 
 	add := func(nodeId string, nr *models.SequenceFlow) {
+		fmt.Println("added", nodeId)
 		if nr.EndType != types.CTInclusiveGateway {
 			fr := forwards[nodeId]
-			fr = append(fr, &models.NodeRelation{
-				Id: nr.End,
-				CT: nr.EndType,
-			})
+			forwards[nodeId] = append(fr, nr.End)
 		}
 	}
 
@@ -253,31 +257,30 @@ func (pro *processes) forwardRelation(pip *pipeline) {
 				if len(next) == 0 {
 					break
 				}
-				for _, v1 := range next {
-					f1, err := pip.Flows(v1)
+				var _next []string
+				for _, v2 := range next {
+					f1, err := pip.Flows(v2)
 					if err == nil && len(f1) > 0 {
 						for _, v3 := range f1 {
-							next = append(next, v3.End)
+							_next = append(_next, v3.End)
 							add(v.Id, v3)
 						}
 					}
 				}
+				next = _next
 			}
 		}
 	}
-}
 
-func (pro *processes) findForwardFlows() {
+	pip.ForwardRelations = forwards
 
 }
 
 func (pro *processes) backRelation(pip *pipeline, backflows map[string][]*temporary) *flowerr.Error {
 	relations := make(map[string][]*models.NodeRelation)
-	fmt.Println("size", len(pip.Nodes))
 	for _, v := range pip.Nodes {
 
 		var nrs []*models.NodeRelation
-
 		rs, err := pro.loopFind(v.Id, backflows)
 		if err != nil {
 			return err
