@@ -37,3 +37,5 @@ const (
 
 	CTInclusiveGateway
 )
+
+var RollbackKey = "_#rollback"

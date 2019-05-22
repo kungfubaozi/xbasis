@@ -17,8 +17,9 @@ type SequenceFlow struct {
 }
 
 type NextStatus struct {
-	Again        []string
-	CurrentNodes []string
+	Again     []string
+	NextNodes []string
+	Rollback  []string
 }
 
 type NodeRelation struct {

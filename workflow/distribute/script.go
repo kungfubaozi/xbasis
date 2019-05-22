@@ -20,15 +20,27 @@ type flowscript struct {
 	instance *models.Instance
 }
 
-func (f *flowscript) SetCommandFunc(call types.CommandDataGetter) {
-	panic("implement me")
+func (f *flowscript) startEvent() *flowerr.Error {
+	return f.do()
 }
 
 func (f *flowscript) timerStartEvent() *flowerr.Error {
 	return f.do()
 }
 
+func (f *flowscript) apiStartEvent() *flowerr.Error {
+	return f.do()
+}
+
 func (f *flowscript) messageStartEvent() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) triggerStartEvent() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) endEvent() *flowerr.Error {
 	return f.do()
 }
 
@@ -38,6 +50,22 @@ func (f *flowscript) cancelEndEvent() *flowerr.Error {
 
 func (f *flowscript) terminateEndEvent() *flowerr.Error {
 	return f.do()
+}
+
+func (f *flowscript) userTask() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) notifyTask() *flowerr.Error {
+	return f.do()
+}
+
+func (f *flowscript) RunActions(values ...interface{}) (interface{}, *flowerr.Error) {
+	panic("implement me")
+}
+
+func (f *flowscript) SetCommandFunc(call types.CommandDataGetter) {
+	panic("implement me")
 }
 
 func (f *flowscript) Data() interface{} {
@@ -61,30 +89,6 @@ func (f *flowscript) nextflow() *flowerr.Error {
 
 func (f *flowscript) inclusiveGateway() *flowerr.Error {
 	return f.nextflow()
-}
-
-func (f *flowscript) startEvent() *flowerr.Error {
-	return f.do()
-}
-
-func (f *flowscript) endEvent() *flowerr.Error {
-	return f.do()
-}
-
-func (f *flowscript) apiStartEvent() *flowerr.Error {
-	return f.do()
-}
-
-func (f *flowscript) userTask() *flowerr.Error {
-	return f.do()
-}
-
-func (f *flowscript) notifyTask() *flowerr.Error {
-	return f.do()
-}
-
-func (f *flowscript) triggerStartEvent() *flowerr.Error {
-	return f.do()
 }
 
 func (f *flowscript) context(ctx context.Context) context.Context {

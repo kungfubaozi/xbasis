@@ -24,8 +24,6 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 
 		log := svc.WithHeaders(auth.TraceId, auth.ClientId, auth.IP, "", auth.UserAgent, auth.UserDevice)
 
-		fmt.Println("log")
-
 		ok, err := svc.Client.QueryFirst("gs-user-roles-relation",
 			map[string]interface{}{"structure_id": in.StructureId, "user_id": in.UserId}, &userroles, "roles")
 		if err != nil || !ok {

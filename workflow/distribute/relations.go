@@ -11,15 +11,27 @@ type relation struct {
 	values []interface{}
 }
 
-func (f *relation) SetCommandFunc(call types.CommandDataGetter) {
-	panic("implement me")
+func (f *relation) startEvent() *flowerr.Error {
+	return nil
 }
 
 func (f *relation) timerStartEvent() *flowerr.Error {
 	return nil
 }
 
+func (f *relation) apiStartEvent() *flowerr.Error {
+	return nil
+}
+
 func (f *relation) messageStartEvent() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) triggerStartEvent() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) endEvent() *flowerr.Error {
 	return nil
 }
 
@@ -29,6 +41,22 @@ func (f *relation) cancelEndEvent() *flowerr.Error {
 
 func (f *relation) terminateEndEvent() *flowerr.Error {
 	return nil
+}
+
+func (f *relation) userTask() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) notifyTask() *flowerr.Error {
+	return nil
+}
+
+func (f *relation) RunActions(values ...interface{}) (interface{}, *flowerr.Error) {
+	panic("implement me")
+}
+
+func (f *relation) SetCommandFunc(call types.CommandDataGetter) {
+	panic("implement me")
 }
 
 func (f *relation) Data() interface{} {
@@ -49,30 +77,6 @@ func (f *relation) inclusiveGateway() *flowerr.Error {
 	//	return nil
 	//}
 	return flowerr.NextFlow
-}
-
-func (f *relation) startEvent() *flowerr.Error {
-	return nil
-}
-
-func (f *relation) endEvent() *flowerr.Error {
-	return nil
-}
-
-func (f *relation) apiStartEvent() *flowerr.Error {
-	return nil
-}
-
-func (f *relation) userTask() *flowerr.Error {
-	return nil
-}
-
-func (f *relation) notifyTask() *flowerr.Error {
-	return nil
-}
-
-func (f *relation) triggerStartEvent() *flowerr.Error {
-	return nil
 }
 
 func (f *relation) context(ctx context.Context) context.Context {

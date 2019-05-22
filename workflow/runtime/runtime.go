@@ -118,98 +118,106 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 
 		r.next.SetCommandFunc(commandFunc)
 
-		//if size == len(i.CurrentNodes) {
-		//next node
-		//下面处理的是，流程下一步该怎么走
-		var currentNodes []string
-		for _, v := range i.CurrentNodes {
-			//again的作用是: 当前的节点的另一端不是一个有效的task/event，需要再进行一次查询，直到出现有效的task/event
-			nodes, err := r.again(ctx, currentNodes, i, pipe, v)
-			if err != nil {
-				return err
-			}
-			if len(nodes) > 0 {
-				return nil
-			}
-			if len(nodes) > 0 {
-				currentNodes = append(currentNodes, nodes...)
-			}
-		}
-		//update instance node
-		err = r.modules.Instance().UpdateInstanceCurrentNodes(instanceId, currentNodes...)
+		//不需要遍历CurrentNodes，直接走提交的节点即可
+		err = r.again(ctx, i, pipe, nodeId)
 		if err != nil {
-			fmt.Println("update error", err)
 			return err
 		}
-		//}
+
+		//执行
+		data, err := r.next.RunActions(i.CurrentNodes, nodeId)
+		if err != nil {
+			return err
+		}
+
+		d, ok := data.([]string)
 
 		r.next.Restore()
 		r.dataGetter.Restore()
 
+		if ok {
+			err = r.modules.Instance().UpdateInstanceCurrentNodes(instanceId, d...)
+			if err != nil {
+				fmt.Println("update error", err)
+				return err
+			}
+			return nil
+		}
+
+		return flowerr.ErrUnknow
 	}
 
 	return nil
 }
 
-func (r *runtime) again(ctx context.Context, currentNodes []string, i *models.Instance, pipe modules.Pipeline, nodeId string) ([]string, *flowerr.Error) {
-	var ns []string
-	if len(currentNodes) > 0 {
-		ns = append(ns, currentNodes...)
-	}
+func (r *runtime) again(ctx context.Context, i *models.Instance, pipe modules.Pipeline, nodeId string) *flowerr.Error {
+
 	//nodeId是当前执行node
 	flows, err := pipe.Flows(nodeId)
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(flows))
+	resp := func(e *flowerr.Error) {
+		if err == nil {
+			err = e
+		}
 	}
 
 	//处理的是当前节后后面的所有节点, 不是当前node
+	//这里还有问题没有解决：冗余和多余请求的问题，当前节点连接的可能是同一节点
+	//以及包括还有提交的数据都是一样的
 	for _, f := range flows {
+		go func() {
+			defer wg.Done()
+			//获取当前flow末尾连线的节点
+			n, err := pipe.GetNode(f.End)
+			if err != nil {
+				resp(err)
+				return
+			}
 
-		//获取当前flow末尾连线的节点
-		n, err := pipe.GetNode(f.End)
-		if err != nil {
-			return nil, err
-		}
-
-		ctx, err = r.next.Do(ctx, i, n, n.CT, f)
-		if err != nil {
-			return nil, err
-		}
+			ctx, err = r.next.Do(ctx, i, n, n.CT, f)
+			if err != nil {
+				resp(err)
+				return
+			}
+		}()
 	}
+
+	wg.Wait()
+
+	if err != nil {
+		return err
+	}
+
 	nodes := r.next.Data().(*models.NextStatus)
-	for _, v1 := range nodes.CurrentNodes {
-		ns = append(ns, v1)
-	}
-	if len(nodes.Again) > 0 {
-		var next []string
-		var err *flowerr.Error
-		var wg sync.WaitGroup
 
-		resp := func(e *flowerr.Error) {
-			if err == nil {
-				err = e
+	v, ok := ctx.Value(types.RollbackKey).(bool)
+	if !ok {
+		v = false
+	}
+	if v {
+		//如果没有继续往下的则设置rb为false
+		if len(nodes.Again) == 0 {
+			ctx = context.WithValue(ctx, types.RollbackKey, false)
+		}
+	}
+
+	if len(nodes.Again) > 0 {
+
+		for _, v := range nodes.Again {
+			e := r.again(ctx, i, pipe, v)
+			if e != nil {
+				return e
 			}
 		}
 
-		wg.Add(len(nodes.Again))
-		for _, v := range nodes.Again {
-			go func() {
-				n, e := r.again(ctx, ns, i, pipe, v)
-				if e != nil {
-					resp(e)
-					return
-				}
-				if len(n) > 0 {
-					next = append(next, n...)
-				}
-			}()
-		}
-
-		wg.Wait()
-
-		return next, err
+		return err
 	}
-	return ns, nil
+	return nil
 }
 
 //不同于其他的是，此操作是向前查找
@@ -231,6 +239,9 @@ func (r *runtime) getSubmitData(i *models.Instance, ctx context.Context, fromNod
 		}()
 	}
 	wg.Wait()
+	if err != nil {
+		return nil, err
+	}
 	return r.dataGetter.Data(), nil
 }
 

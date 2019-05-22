@@ -25,40 +25,7 @@ type processing struct {
 	call     types.CommandDataGetter
 }
 
-func (f *processing) SetCommandFunc(call types.CommandDataGetter) {
-	f.call = call
-}
-
-func (f *processing) timerStartEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *processing) messageStartEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *processing) cancelEndEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *processing) terminateEndEvent() *flowerr.Error {
-	panic("implement me")
-}
-
 func (f *processing) Data() interface{} {
-	panic("implement me")
-}
-
-func (f *processing) Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
-	f.instance = instance
-	f.value = value[0]
-	f.node = node
-	f.ctx = ctx
-	return handler(ctx, ct, f)
-}
-
-//执行的node类型不能是除Event/Task之外的类型
-func (f *processing) inclusiveGateway() *flowerr.Error {
 	panic("implement me")
 }
 
@@ -82,11 +49,31 @@ func (f *processing) startEvent() *flowerr.Error {
 	return flowerr.ErrNode
 }
 
-func (f *processing) endEvent() *flowerr.Error {
+func (f *processing) timerStartEvent() *flowerr.Error {
 	panic("implement me")
 }
 
 func (f *processing) apiStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) messageStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) triggerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) endEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) cancelEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *processing) terminateEndEvent() *flowerr.Error {
 	panic("implement me")
 }
 
@@ -107,7 +94,24 @@ func (f *processing) notifyTask() *flowerr.Error {
 	panic("implement me")
 }
 
-func (f *processing) triggerStartEvent() *flowerr.Error {
+func (f *processing) RunActions(values ...interface{}) (interface{}, *flowerr.Error) {
+	panic("implement me")
+}
+
+func (f *processing) SetCommandFunc(call types.CommandDataGetter) {
+	f.call = call
+}
+
+func (f *processing) Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
+	f.instance = instance
+	f.value = value[0]
+	f.node = node
+	f.ctx = ctx
+	return handler(ctx, ct, f)
+}
+
+//执行的node类型不能是除Event/Task之外的类型
+func (f *processing) inclusiveGateway() *flowerr.Error {
 	panic("implement me")
 }
 
@@ -191,7 +195,6 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 			}
 		}
 		if len(f.sd) > 0 {
-			//提交到form记录
 			var wg sync.WaitGroup
 			wg.Add(3)
 			var s *flowerr.Error

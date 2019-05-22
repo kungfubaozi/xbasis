@@ -40,10 +40,13 @@ type Handler interface {
 
 	metadata(key string, data interface{})
 
+	RunActions(values ...interface{}) (interface{}, *flowerr.Error)
+
 	Restore()
 }
 
 func handler(ctx context.Context, ct types.ConnectType, t Handler) (context.Context, *flowerr.Error) {
+
 	switch ct {
 	case types.CTStartEvent:
 		return t.context(nil), t.startEvent()

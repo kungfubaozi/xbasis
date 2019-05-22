@@ -26,41 +26,33 @@ type nextflow struct {
 	gon      bool
 	pool     *redis.Pool
 	call     types.CommandDataGetter
+	loadSync map[string]chan *flowerr.Error
+}
+
+func (f *nextflow) Data() interface{} {
+	return f.status
 }
 
 func (f *nextflow) SetCommandFunc(call types.CommandDataGetter) {
 	f.call = call
 }
 
-func (f *nextflow) timerStartEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *nextflow) messageStartEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *nextflow) cancelEndEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *nextflow) terminateEndEvent() *flowerr.Error {
-	panic("implement me")
-}
-
-func (f *nextflow) Data() interface{} {
-	panic("implement me")
-}
-
 /**
 当前是进行下一步流程的规定和辨识, 并不设计具体的操作，如 Submit
+
+//去除在外的again处理，降低操作复杂度，直接在此进行loop， value[0]为CurrentNodes
 */
 func (f *nextflow) Do(ctx context.Context, instance *models.Instance, node *models.Node, ct types.ConnectType, value ...interface{}) (context.Context, *flowerr.Error) {
 	f.values = value
 	f.node = node
 	f.ctx = ctx
 	f.instance = instance
-	f.status = &models.NextStatus{}
+	if f.status == nil {
+		f.status = &models.NextStatus{}
+	} else {
+		f.status.Again = []string{}
+	}
+
 	return handler(ctx, ct, f)
 }
 
@@ -271,7 +263,12 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 					return err
 				}
 				if ok {
-					f.again(rollback)
+					//set context rollback
+					f.metadata(types.RollbackKey, true)
+
+					//clear again
+					f.status.Again = []string{rollback}
+
 					return nil
 				}
 				return flowerr.ErrSystem
@@ -311,34 +308,93 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 	return nil
 }
 
-//如果nextflow跳转到开始节点，那么需要停止当前实例，
+//退回
 func (f *nextflow) startEvent() *flowerr.Error {
 	panic("implement me")
 }
 
-//如果到endevent会停止所有instance的交互
+//退回
+func (f *nextflow) timerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+//退回
+func (f *nextflow) apiStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+//退回
+func (f *nextflow) messageStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+//退回
+func (f *nextflow) triggerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+//结束
 func (f *nextflow) endEvent() *flowerr.Error {
 	panic("implement me")
 }
 
-func (f *nextflow) apiStartEvent() *flowerr.Error {
+//结束
+func (f *nextflow) cancelEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+//结束
+func (f *nextflow) terminateEndEvent() *flowerr.Error {
 	panic("implement me")
 }
 
 func (f *nextflow) userTask() *flowerr.Error {
 	f.next(f.node.Id)
-	e := f.node.Data.(*models.UserTask)
-	//如果有用户，则通知TA们
-	f.modules.User().Notify(f.ctx, e)
 	return nil
 }
 
 func (f *nextflow) notifyTask() *flowerr.Error {
-	panic("implement me")
+	f.again(f.node.Id)
+	return nil
 }
 
-func (f *nextflow) triggerStartEvent() *flowerr.Error {
-	panic("implement me")
+//这样设计的目的是，如果直接执行到某一个节点如果发生rb操作可能会发生重复执行或节点不对
+func (f *nextflow) RunActions(values ...interface{}) (interface{}, *flowerr.Error) {
+	nodes := values[0].([]string)
+	currentNodeId := values[1].(string)
+	var nextNodes []string
+	//remove currentNode
+	for k, v := range nodes {
+		if v == currentNodeId {
+			nodes = append(nodes[:k], nodes[k+1:]...)
+			break
+		}
+	}
+
+	if len(f.status.Rollback) > 0 {
+		nextNodes = f.status.Rollback
+	} else if len(f.status.NextNodes) > 0 {
+		nextNodes = f.status.NextNodes
+	}
+
+	if len(nextNodes) > 0 {
+		//去除重复的node
+		for _, v := range nextNodes {
+			if len(nodes) > 0 {
+				for k, v1 := range nodes {
+					if v1 == v {
+						nodes = append(nodes[:k], nodes[k+1:]...)
+						break
+					}
+				}
+			}
+		}
+		if len(nodes) > 0 {
+			nextNodes = append(nextNodes, nodes...)
+		}
+	}
+
+	return nextNodes, nil
 }
 
 func (f *nextflow) context(ctx context.Context) context.Context {
@@ -349,15 +405,20 @@ func (f *nextflow) context(ctx context.Context) context.Context {
 }
 
 func (f *nextflow) metadata(key string, data interface{}) {
-	panic("implement me")
+	f.context(context.WithValue(f.ctx, key, data))
 }
 
 func (f *nextflow) again(id string) {
 	f.status.Again = append(f.status.Again, id)
 }
 
+//next操作是由系统/人来操作的
 func (f *nextflow) next(id string) {
-	f.status.CurrentNodes = append(f.status.CurrentNodes, id)
+	if f.isRollback() {
+		f.status.Rollback = append(f.status.Rollback, id)
+		return
+	}
+	f.status.NextNodes = append(f.status.NextNodes, id)
 }
 
 func (f *nextflow) flow() *models.SequenceFlow {
@@ -367,6 +428,14 @@ func (f *nextflow) flow() *models.SequenceFlow {
 func (f *nextflow) Restore() {
 	f.status = nil
 	f.finished = make(map[string]bool)
+}
+
+func (f *nextflow) isRollback() bool {
+	v, ok := f.ctx.Value(types.RollbackKey).(bool)
+	if !ok {
+		v = false
+	}
+	return v
 }
 
 func NewNextflow(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript, pool *redis.Pool, store modules.IStore) Handler {

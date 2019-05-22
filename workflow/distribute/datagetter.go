@@ -20,19 +20,27 @@ type dataGetter struct {
 	data     map[string]interface{}
 }
 
-func (f *dataGetter) SetCommandFunc(call types.CommandDataGetter) {
-	panic("implement me")
-}
-
-func (f *dataGetter) eventGateway() *flowerr.Error {
-	panic("implement me")
+func (f *dataGetter) startEvent() *flowerr.Error {
+	return f.loadData()
 }
 
 func (f *dataGetter) timerStartEvent() *flowerr.Error {
 	panic("implement me")
 }
 
+func (f *dataGetter) apiStartEvent() *flowerr.Error {
+	return f.loadData()
+}
+
 func (f *dataGetter) messageStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) triggerStartEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) endEvent() *flowerr.Error {
 	panic("implement me")
 }
 
@@ -41,6 +49,22 @@ func (f *dataGetter) cancelEndEvent() *flowerr.Error {
 }
 
 func (f *dataGetter) terminateEndEvent() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) userTask() *flowerr.Error {
+	return f.loadData()
+}
+
+func (f *dataGetter) notifyTask() *flowerr.Error {
+	panic("implement me")
+}
+
+func (f *dataGetter) RunActions(values ...interface{}) (interface{}, *flowerr.Error) {
+	panic("implement me")
+}
+
+func (f *dataGetter) SetCommandFunc(call types.CommandDataGetter) {
 	panic("implement me")
 }
 
@@ -60,30 +84,6 @@ func (f *dataGetter) relation() *models.NodeRelation {
 }
 
 func (f *dataGetter) inclusiveGateway() *flowerr.Error {
-	return nil
-}
-
-func (f *dataGetter) startEvent() *flowerr.Error {
-	return f.loadData()
-}
-
-func (f *dataGetter) endEvent() *flowerr.Error {
-	return nil
-}
-
-func (f *dataGetter) apiStartEvent() *flowerr.Error {
-	return f.loadData()
-}
-
-func (f *dataGetter) userTask() *flowerr.Error {
-	return f.loadData()
-}
-
-func (f *dataGetter) notifyTask() *flowerr.Error {
-	return nil
-}
-
-func (f *dataGetter) triggerStartEvent() *flowerr.Error {
 	return nil
 }
 
