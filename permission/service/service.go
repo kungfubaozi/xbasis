@@ -82,6 +82,8 @@ func StartService() {
 
 		gs_service_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool))
 
+		gs_service_permission.RegisterStructureHandler(m.Server(), permissionhandlers.NewStructureService(session, client))
+
 		errc <- m.Run()
 
 	}()

@@ -26,6 +26,7 @@ message EnabledRequest {
 
 message GetListRequest {
     string appId = 1;
+    bool user = 2;
 }
 
 message GetListResponse {

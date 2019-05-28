@@ -37,6 +37,12 @@ func (repo *structureRepo) FindById(id string) (*structure, error) {
 	return s, err
 }
 
+func (repo *structureRepo) FindByAppIdAndType(appId string, t int) ([]*structure, error) {
+	var s []*structure
+	err := repo.collection().Find(bson.M{"app_id": appId, "type": t}).All(&s)
+	return s, err
+}
+
 func (repo *structureRepo) setUserStructureConfig(appId, structureId string) {
 
 }

@@ -44,49 +44,56 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 
 		appId := id.Short()
 
+		enabled := gs_commons_constants.Closed
+		if in.Open {
+			enabled = gs_commons_constants.Enabled
+		}
+
 		info := &appInfo{
 			Name:         in.Name,
 			CreateAt:     now,
 			Id:           appId,
 			CreateUserId: auth.User,
 			Settings: &appSetting{
-				Enabled: gs_commons_constants.Enabled,
+				Enabled:     enabled,
+				MustSync:    in.MustSync,
+				RedirectURL: in.Url,
 			},
 			Clients: []*appClient{
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfAndroid,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfIOS,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfWeb,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfWindows,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatfromOfMacOS,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfLinux,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 				{
 					Id:       id.Short(),
 					Platform: gs_commons_constants.PlatformOfFuchsia,
-					Enabled:  gs_commons_constants.Enabled,
+					Enabled:  gs_commons_constants.Closed,
 				},
 			},
 		}
@@ -133,6 +140,14 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 			Settings: &gs_commons_dto.AppSettings{
 				Enabled: info.Settings.Enabled,
 			},
+		}
+
+		if info.FunctionS != nil {
+			out.Info.FuncS = info.FunctionS.Id
+		}
+
+		if info.UserS != nil {
+			out.Info.UserS = info.UserS.Id
 		}
 
 		var ar []*gs_service_application.AppClientInfo

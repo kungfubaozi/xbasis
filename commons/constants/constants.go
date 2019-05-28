@@ -84,8 +84,8 @@ const (
 )
 
 const (
-	Enabled = 14 << 6
-	Closed  = 14 << 7
+	Enabled int64 = 14 << 6
+	Closed  int64 = 14 << 7
 )
 
 const (

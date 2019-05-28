@@ -45,6 +45,9 @@ message SimpleApplicationResponse {
 message CreateRequest {
     string name = 1;
     string desc = 2;
+    bool open = 3;
+    string url = 4;
+    bool mustSync = 5;
 }
 
 message RemoveRequest {
@@ -66,6 +69,8 @@ message AppInfo {
     gs.commons.dto.AppSettings settings = 7;
     string createUserId = 8;
     string type = 9;
+    string funcS = 10;
+    string userS = 11;
 }
 
 message AppClientInfo {
