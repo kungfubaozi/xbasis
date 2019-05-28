@@ -42,6 +42,14 @@ func (repo *applicationRepo) ApplicationExists(name string) bool {
 	return c > 0
 }
 
+func (repo *applicationRepo) RedirectUrlExists(url string) bool {
+	c, err := repo.collection().Find(bson.M{"settings.redirect_url": url}).Count()
+	if err != nil {
+		return true
+	}
+	return c > 0
+}
+
 func (repo *applicationRepo) Add(info *appInfo) error {
 	id, err := repo.AddData("gs-applications", info)
 	if err != nil {

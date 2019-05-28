@@ -38,6 +38,10 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			return errstate.ErrApplicationAlreadyExists
 		}
 
+		if len(in.Url) > 0 && repo.RedirectUrlExists(in.Url) {
+			return errstate.ErrApplicationRedirectUrl
+		}
+
 		id := gs_commons_generator.NewIDG()
 
 		now := time.Now().UnixNano()
