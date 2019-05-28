@@ -2,6 +2,7 @@ package authenticationhandlers
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pkg/errors"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/connection/cmd/connectioncli"
@@ -16,6 +17,9 @@ type UserClaims struct {
 }
 
 func decodeToken(token, tokenKey string) (*UserClaims, error) {
+	if len(token) <= 128 {
+		return nil, errors.New("err token")
+	}
 	t, err := jwt.ParseWithClaims(token, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return tokenKey, nil
 	})

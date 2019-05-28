@@ -14,7 +14,7 @@ service Router {
 }
 
 message LogoutRequest {
-
+    string refreshToken = 1;
 }
 
 message RefreshRequest {

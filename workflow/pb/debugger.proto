@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+service Debugger {
+
+    rpc Run (RunRequest) returns (RunResponse);
+
+}
+
+message RunRequest {
+
+}
+
+message RunResponse {
+
+}

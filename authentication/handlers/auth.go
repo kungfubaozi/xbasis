@@ -2,6 +2,7 @@ package authenticationhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/application/pb/ext"
@@ -50,6 +51,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 		claims, err := decodeToken(in.Token, configuration.TokenSecretKey)
 		if err != nil {
+			fmt.Println("err 1")
 			return errstate.ErrAccessToken
 		}
 
@@ -58,6 +60,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		}
 
 		if claims.Token.Type != gs_commons_constants.AccessToken {
+			fmt.Println("err 2")
 			return errstate.ErrAccessToken
 		}
 
@@ -123,9 +126,8 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 				return
 			}
 
-			//check
-			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation || uai.Device != auth.UserDevice ||
-				uai.UserAgent != auth.UserAgent {
+			//check //uai.UserAgent != auth.UserAgent
+			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation || uai.Device != auth.UserDevice {
 				resp(errstate.ErrAccessToken)
 				return
 			}

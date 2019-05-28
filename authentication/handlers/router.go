@@ -33,7 +33,23 @@ func (svc *routeService) Logout(ctx context.Context, in *gs_service_authenticati
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		return offlineUser(svc.connectioncli, repo, auth.Token.UserId, auth.Token.ClientId)
+		fmt.Println("logout")
+
+		configuration := serviceconfiguration.Get()
+
+		claims, err := decodeToken(in.RefreshToken, configuration.TokenSecretKey)
+		if err != nil {
+			return nil
+		}
+
+		if claims.Token.Type != gs_commons_constants.RefreshToken {
+			return errstate.ErrRefreshToken
+		}
+
+		v, err := repo.SizeOf(claims.Token.UserId)
+
+		//离线与之相关的所有登录信息
+		return offlineRelation(svc.connectioncli, v, repo, claims.Token.UserId, claims.Token.Relation)
 	})
 }
 
@@ -52,8 +68,6 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 
 				repo := svc.GetRepo()
 				defer repo.Close()
-
-				fmt.Println("expire", claims.VerifyExpiresAt(time.Now().Unix(), true))
 
 				if claims.Valid() != nil {
 					//offline
@@ -221,7 +235,15 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 					}
 
 					out.RefreshToken = token.RefreshToken
-					out.AccessToken = token.AccessToken
+
+					//当web端登录时，不传入accessToken，需要进行refresh，保证其refreshToken是有效的
+					if app.ClientPlatform != gs_commons_constants.PlatformOfWeb {
+						out.AccessToken = token.AccessToken
+					} else {
+						if app.CanRedirect {
+
+						}
+					}
 
 					return errstate.Success
 

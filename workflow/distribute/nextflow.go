@@ -348,11 +348,13 @@ func (f *nextflow) terminateEndEvent() *flowerr.Error {
 	panic("implement me")
 }
 
+//用户操作
 func (f *nextflow) userTask() *flowerr.Error {
 	f.next(f.node.Id)
 	return nil
 }
 
+//提醒用户
 func (f *nextflow) notifyTask() *flowerr.Error {
 	f.again(f.node.Id)
 	return nil

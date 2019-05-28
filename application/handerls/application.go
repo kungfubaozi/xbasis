@@ -2,6 +2,7 @@ package applicationhanderls
 
 import (
 	"context"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb"
 	"konekko.me/gosion/commons/constants"
@@ -162,19 +163,29 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 		repo := svc.GetRepo()
 		defer repo.Close()
 
+		fmt.Println("list")
+
 		list, err := repo.FindAll()
 		if err != nil {
+			fmt.Println("err", err)
 			return nil
 		}
 
 		var l []*gs_service_application.AppInfo
 		for _, v := range list {
+			t := "user"
+			switch v.Type {
+			case gs_commons_constants.AppTypeManage, gs_commons_constants.AppTypeRoute, gs_commons_constants.AppTypeSafe, gs_commons_constants.AppTypeUser:
+				t = "sys"
+			}
+
 			l = append(l, &gs_service_application.AppInfo{
 				AppId:    v.Id,
 				Enabled:  v.Settings.Enabled,
 				CreateAt: v.CreateAt,
 				Name:     v.Name,
 				Desc:     v.Desc,
+				Type:     t,
 			})
 		}
 

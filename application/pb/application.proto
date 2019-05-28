@@ -65,6 +65,7 @@ message AppInfo {
     repeated AppClientInfo clients = 6;
     gs.commons.dto.AppSettings settings = 7;
     string createUserId = 8;
+    string type = 9;
 }
 
 message AppClientInfo {

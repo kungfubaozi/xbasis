@@ -1,7 +1,7 @@
 package applicationhanderls
 
 const (
-	dbName = "gs_application"
+	dbName = "gs_applications"
 
 	applicationCollection = "applications"
 )

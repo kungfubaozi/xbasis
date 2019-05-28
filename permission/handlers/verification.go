@@ -50,7 +50,7 @@ func (svc *verificationService) GetRepo() *functionRepo {
 	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
-var whiteApiList = []string{"/authentication/router/refresh"}
+var whiteApiList = []string{"/authentication/router/refresh", "/authentication/router/logout"}
 
 //application verify
 //ip, userDevice blacklist verify
@@ -274,6 +274,11 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							//1.check token
+
+							if len(rh.authorization) == 0 {
+								resp(errstate.ErrAccessToken)
+								return
+							}
 
 							ac := metadata.NewContext(context.Background(), map[string]string{
 								"transport-user-agent":      rh.userAgent,
