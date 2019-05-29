@@ -8,6 +8,15 @@ It is generated from these files:
 	permission/pb/function.proto
 
 It has these top-level messages:
+	GetFunctionItemsRequest
+	GetFunctionItemsResponse
+	FindItemResponse
+	GetFunctionItemRequest
+	GetFunctionItemResponse
+	FunctionItemDetail
+	FunctionBindRole
+	FunctionAuthTypes
+	FunctionGrantPlatforms
 	FunctionRequest
 	FunctionGroupRequest
 */
@@ -50,6 +59,8 @@ type FunctionService interface {
 	AddGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	MoveGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, opts ...client.CallOption) (*GetFunctionItemsResponse, error)
+	GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, opts ...client.CallOption) (*GetFunctionItemResponse, error)
 }
 
 type functionService struct {
@@ -130,6 +141,26 @@ func (c *functionService) RenameGroup(ctx context.Context, in *FunctionGroupRequ
 	return out, nil
 }
 
+func (c *functionService) GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, opts ...client.CallOption) (*GetFunctionItemsResponse, error) {
+	req := c.c.NewRequest(c.name, "Function.GetFunctionItems", in)
+	out := new(GetFunctionItemsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *functionService) GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, opts ...client.CallOption) (*GetFunctionItemResponse, error) {
+	req := c.c.NewRequest(c.name, "Function.GetFunctionItemDetail", in)
+	out := new(GetFunctionItemResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Function service
 
 type FunctionHandler interface {
@@ -139,6 +170,8 @@ type FunctionHandler interface {
 	AddGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
 	MoveGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
 	RenameGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
+	GetFunctionItems(context.Context, *GetFunctionItemsRequest, *GetFunctionItemsResponse) error
+	GetFunctionItemDetail(context.Context, *GetFunctionItemRequest, *GetFunctionItemResponse) error
 }
 
 func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...server.HandlerOption) error {
@@ -149,6 +182,8 @@ func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...serv
 		AddGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
 		MoveGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
 		RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
+		GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, out *GetFunctionItemsResponse) error
+		GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, out *GetFunctionItemResponse) error
 	}
 	type Function struct {
 		function
@@ -183,4 +218,12 @@ func (h *functionHandler) MoveGroup(ctx context.Context, in *FunctionGroupReques
 
 func (h *functionHandler) RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error {
 	return h.FunctionHandler.RenameGroup(ctx, in, out)
+}
+
+func (h *functionHandler) GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, out *GetFunctionItemsResponse) error {
+	return h.FunctionHandler.GetFunctionItems(ctx, in, out)
+}
+
+func (h *functionHandler) GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, out *GetFunctionItemResponse) error {
+	return h.FunctionHandler.GetFunctionItemDetail(ctx, in, out)
 }

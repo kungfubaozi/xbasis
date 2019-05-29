@@ -8,6 +8,10 @@ It is generated from these files:
 	permission/pb/role.proto
 
 It has these top-level messages:
+	GetStructureRolesRequest
+	GetRoleRequest
+	GetRoleResponse
+	SimpleRoleInfo
 	RoleRequest
 */
 package gs_service_permission
@@ -46,6 +50,8 @@ type RoleService interface {
 	Add(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Remove(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error)
+	GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 }
 
 type roleService struct {
@@ -96,12 +102,34 @@ func (c *roleService) Rename(ctx context.Context, in *RoleRequest, opts ...clien
 	return out, nil
 }
 
+func (c *roleService) GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.GetRole", in)
+	out := new(GetRoleResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roleService) GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.GetStructureRoles", in)
+	out := new(GetRoleResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Role service
 
 type RoleHandler interface {
 	Add(context.Context, *RoleRequest, *gs_commons_dto.Status) error
 	Remove(context.Context, *RoleRequest, *gs_commons_dto.Status) error
 	Rename(context.Context, *RoleRequest, *gs_commons_dto.Status) error
+	GetRole(context.Context, *GetRoleRequest, *GetRoleResponse) error
+	GetStructureRoles(context.Context, *GetStructureRolesRequest, *GetRoleResponse) error
 }
 
 func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.HandlerOption) error {
@@ -109,6 +137,8 @@ func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.Handl
 		Add(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
 		Remove(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
 		Rename(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
+		GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error
+		GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, out *GetRoleResponse) error
 	}
 	type Role struct {
 		role
@@ -131,4 +161,12 @@ func (h *roleHandler) Remove(ctx context.Context, in *RoleRequest, out *gs_commo
 
 func (h *roleHandler) Rename(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error {
 	return h.RoleHandler.Rename(ctx, in, out)
+}
+
+func (h *roleHandler) GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error {
+	return h.RoleHandler.GetRole(ctx, in, out)
+}
+
+func (h *roleHandler) GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, out *GetRoleResponse) error {
+	return h.RoleHandler.GetStructureRoles(ctx, in, out)
 }

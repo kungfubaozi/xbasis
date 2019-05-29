@@ -16,6 +16,14 @@ type groupService struct {
 	session *mgo.Session
 }
 
+func (svc *groupService) GetGroupItems(context.Context, *gs_service_permission.GetGroupItemsRequest, *gs_service_permission.GetGroupItemsResponse) error {
+	panic("implement me")
+}
+
+func (svc *groupService) GetGroupItemDetail(context.Context, *gs_service_permission.GetGroupItemDetailRequest, *gs_service_permission.GetGroupItemDetailResponse) error {
+	panic("implement me")
+}
+
 func (svc *groupService) GetRepo() *groupRepo {
 	return &groupRepo{session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
 }

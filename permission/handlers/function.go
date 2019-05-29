@@ -16,6 +16,56 @@ import (
 type functionService struct {
 	*indexutils.Client
 	session *mgo.Session
+	id      gs_commons_generator.IDGenerator
+}
+
+func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service_permission.GetFunctionItemsRequest, out *gs_service_permission.GetFunctionItemsResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(in.StructureId) == 0 {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		groups, err := repo.FindChildGroups(in.StructureId, in.Id)
+		if err != nil {
+			return nil
+		}
+
+		var data []*gs_service_permission.FindItemResponse
+		for _, v := range groups {
+			data = append(data, &gs_service_permission.FindItemResponse{
+				Function: false,
+				Id:       v.Id,
+				Name:     v.Name,
+			})
+		}
+
+		//find group and function
+		if len(in.Id) > 0 {
+			functions, err := repo.FindChildFunctions(in.StructureId, in.Id)
+			if err != nil {
+				return nil
+			}
+			for _, v := range functions {
+				data = append(data, &gs_service_permission.FindItemResponse{
+					Function: true,
+					Id:       v.Id,
+					Name:     v.Name,
+				})
+			}
+		}
+
+		out.Data = data
+		return errstate.Success
+	})
+}
+
+func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_service_permission.GetFunctionItemRequest, out *gs_service_permission.GetFunctionItemResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
 func (svc *functionService) GetRepo() *functionRepo {
@@ -37,7 +87,7 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 		}
 
 		//find group exists
-		if repo.FindGroupExists(in.BindGroupId) {
+		if !repo.FindGroupExists(in.BindGroupId) {
 			return errstate.ErrFunctionBindGroupId
 		}
 
@@ -61,10 +111,10 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 		if err != nil && err == mgo.ErrNotFound {
 
 			f := &function{
-				Id:           gs_commons_generator.ID().Generate().String(),
+				Id:           svc.id.String(),
 				Name:         in.Name,
 				Type:         in.Type,
-				CreateUserId: auth.User,
+				CreateUserId: auth.Token.UserId,
 				CreateAt:     time.Now().UnixNano(),
 				BindGroupId:  in.BindGroupId,
 				StructureId:  in.StructureId,
@@ -104,7 +154,27 @@ func (svc *functionService) AddGroup(ctx context.Context, in *gs_service_permiss
 			return nil
 		}
 
-		return nil
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		i := svc.id.Get()
+
+		err := repo.AddGroup(&functionGroup{
+			Id:           i,
+			Name:         in.Name,
+			StructureId:  in.StructureId,
+			BindGroupId:  in.BindGroupId,
+			CreateAt:     time.Now().UnixNano(),
+			CreateUserId: auth.Token.UserId,
+		})
+
+		if err != nil {
+			return nil
+		}
+
+		out.Content = i
+
+		return errstate.Success
 	})
 }
 
@@ -121,5 +191,5 @@ func (svc *functionService) RenameGroup(ctx context.Context, in *gs_service_perm
 }
 
 func NewFunctionService(client *indexutils.Client, session *mgo.Session) gs_service_permission.FunctionHandler {
-	return &functionService{Client: client, session: session}
+	return &functionService{Client: client, session: session, id: gs_commons_generator.NewIDG()}
 }

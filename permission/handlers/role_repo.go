@@ -48,6 +48,12 @@ func (repo *roleRepo) Save(name, structureId, userId string) error {
 	return err
 }
 
+func (repo *roleRepo) FindRolesByStructure(structureId string, page, size int64) ([]*role, error) {
+	var roles []*role
+	err := repo.collection().Find(bson.M{"structure_id": structureId}).Limit(int(size)).Skip(int(page * size)).All(&roles)
+	return roles, err
+}
+
 func (repo *roleRepo) collection() *mgo.Collection {
 	return repo.session.DB(dbName).C(roleCollection)
 }

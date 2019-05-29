@@ -42,6 +42,10 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			return errstate.ErrApplicationRedirectUrl
 		}
 
+		if in.MustSync && len(in.SyncUrl) <= 10 {
+			return errstate.ErrApplicationSyncUrl
+		}
+
 		id := gs_commons_generator.NewIDG()
 
 		now := time.Now().UnixNano()
@@ -62,6 +66,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 				Enabled:     enabled,
 				MustSync:    in.MustSync,
 				RedirectURL: in.Url,
+				SyncUserURL: in.SyncUrl,
 			},
 			Clients: []*appClient{
 				{

@@ -5,7 +5,7 @@ const (
 
 	structureCollection = "structures"
 
-	roleCollection = "roles"
+	roleCollection = "user_roles"
 
 	groupCollection = "groups"
 
@@ -84,6 +84,7 @@ type role struct {
 
 type functionGroup struct {
 	Id           string `bson:"_id" json:"id"`
+	SID          string `bson:"sid" json:"sid"`
 	Name         string `bson:"name" json:"name"`
 	CreateUserId string `bson:"create_user_id" json:"create_user_id"`
 	CreateAt     int64  `bson:"create_at" json:"create_at"`

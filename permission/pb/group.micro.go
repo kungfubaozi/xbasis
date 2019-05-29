@@ -8,6 +8,13 @@ It is generated from these files:
 	permission/pb/group.proto
 
 It has these top-level messages:
+	GetGroupItemsRequest
+	GetGroupItemsResponse
+	GetGroupItemDetailRequest
+	GroupItem
+	GetGroupItemDetailResponse
+	DetailItem
+	DetailBindRole
 	SimpleGroup
 	SimpleUserNode
 */
@@ -51,6 +58,8 @@ type UserGroupService interface {
 	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	AddUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error)
+	GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, opts ...client.CallOption) (*GetGroupItemDetailResponse, error)
 }
 
 type userGroupService struct {
@@ -141,6 +150,26 @@ func (c *userGroupService) MoveUser(ctx context.Context, in *SimpleUserNode, opt
 	return out, nil
 }
 
+func (c *userGroupService) GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.GetGroupItems", in)
+	out := new(GetGroupItemsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userGroupService) GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, opts ...client.CallOption) (*GetGroupItemDetailResponse, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.GetGroupItemDetail", in)
+	out := new(GetGroupItemDetailResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserGroup service
 
 type UserGroupHandler interface {
@@ -151,6 +180,8 @@ type UserGroupHandler interface {
 	Rename(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	AddUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
 	MoveUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
+	GetGroupItems(context.Context, *GetGroupItemsRequest, *GetGroupItemsResponse) error
+	GetGroupItemDetail(context.Context, *GetGroupItemDetailRequest, *GetGroupItemDetailResponse) error
 }
 
 func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...server.HandlerOption) error {
@@ -162,6 +193,8 @@ func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...se
 		Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		AddUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
 		MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
+		GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error
+		GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error
 	}
 	type UserGroup struct {
 		userGroup
@@ -200,4 +233,12 @@ func (h *userGroupHandler) AddUser(ctx context.Context, in *SimpleUserNode, out 
 
 func (h *userGroupHandler) MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
 	return h.UserGroupHandler.MoveUser(ctx, in, out)
+}
+
+func (h *userGroupHandler) GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error {
+	return h.UserGroupHandler.GetGroupItems(ctx, in, out)
+}
+
+func (h *userGroupHandler) GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error {
+	return h.UserGroupHandler.GetGroupItemDetail(ctx, in, out)
 }

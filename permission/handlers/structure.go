@@ -20,6 +20,25 @@ type structureService struct {
 	*indexutils.Client
 }
 
+func (svc *structureService) GetInfo(ctx context.Context, in *gs_service_permission.GetInfoRequest, out *gs_service_permission.GetInfoResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		repo := svc.GetRepo()
+		defer repo.Close()
+		s, err := repo.FindById(in.StructureId)
+		if err != nil {
+			return nil
+		}
+		d := &gs_service_permission.SimpleStructure{
+			Name:     s.Name,
+			CreateAt: s.CreateAt,
+			Id:       s.Id,
+			FuncS:    s.Type == permissionutils.TypeFunctionStructure,
+		}
+		out.Data = d
+		return errstate.Success
+	})
+}
+
 func (svc *structureService) CreateUserStructure(ctx context.Context, in *gs_service_permission.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return svc.Create(ctx, in.Name, auth.User, in.AppId, permissionutils.TypeUserStructure)
@@ -111,15 +130,11 @@ func (svc *structureService) GetList(ctx context.Context, in *gs_service_permiss
 			})
 		}
 
-		if data != nil {
-			out.Data = data
-			return errstate.Success
-		}
-
-		return nil
+		out.Data = data
+		return errstate.Success
 	})
 }
 
-func NewStructureService(session *mgo.Session, client *indexutils.Client) gs_service_permission.StructureHandler {
-	return &structureService{session: session, Client: client}
+func NewStructureService(session *mgo.Session, client *indexutils.Client, application gs_service_application.ApplicationService) gs_service_permission.StructureHandler {
+	return &structureService{session: session, Client: client, applicationService: application}
 }

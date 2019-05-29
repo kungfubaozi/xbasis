@@ -42,4 +42,5 @@ var (
 	ErrOperateBusy                 = &gs_commons_dto.State{Ok: false, Code: 20035, Message: "err operate busy"}
 	ErrUserSyncToApp               = &gs_commons_dto.State{Ok: false, Code: 20035, Message: "err operate busy"}
 	ErrApplicationRedirectUrl      = &gs_commons_dto.State{Ok: false, Code: 20036, Message: "err app url"}
+	ErrApplicationSyncUrl          = &gs_commons_dto.State{Ok: false, Code: 20036, Message: "err sync url"}
 )

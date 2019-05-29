@@ -65,20 +65,6 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	})
 }
 
-func tryAgain(serviceName string, conn *zk.Conn, version int32) {
-	p := gs_commons_constants.ZKWatchInitializeVersionListenPath + "-" + serviceName
-	version = 0
-	_, s, err := conn.Get(p)
-	if err == nil {
-		version = s.Version + 1
-	}
-	_, err = conn.Set(p, []byte("already"), version)
-	if err != nil && err == zk.ErrBadVersion {
-		time.Sleep(100)
-		tryAgain(serviceName, conn, version+1)
-	}
-}
-
 func NewConnect(url string) *zk.Conn {
 	c, _, err := zk.Connect([]string{url}, time.Second)
 	if err != nil {

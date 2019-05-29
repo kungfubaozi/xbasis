@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/dto"
@@ -14,6 +15,40 @@ import (
 type roleService struct {
 	session *mgo.Session
 	pool    *redis.Pool
+}
+
+func (svc *roleService) GetStructureRoles(ctx context.Context, in *gs_service_permission.GetStructureRolesRequest, out *gs_service_permission.GetRoleResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(in.StructureId) == 0 {
+			return nil
+		}
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		roles, err := repo.FindRolesByStructure(in.StructureId, in.Page, in.Size)
+		if err != nil {
+			return nil
+		}
+
+		fmt.Println("data", len(roles))
+		var rs []*gs_service_permission.SimpleRoleInfo
+		for _, v := range roles {
+			rs = append(rs, &gs_service_permission.SimpleRoleInfo{
+				Id:       v.Id,
+				Name:     v.Name,
+				CreateAt: v.CreateAt,
+			})
+		}
+
+		out.Data = rs
+		return errstate.Success
+	})
+}
+
+func (svc *roleService) GetRole(ctx context.Context, in *gs_service_permission.GetRoleRequest, out *gs_service_permission.GetRoleResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
 func (svc *roleService) GetRepo() *roleRepo {

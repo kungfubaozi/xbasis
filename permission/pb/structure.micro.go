@@ -8,6 +8,8 @@ It is generated from these files:
 	permission/pb/structure.proto
 
 It has these top-level messages:
+	GetInfoRequest
+	GetInfoResponse
 	CreateRequest
 	EnabledRequest
 	GetListRequest
@@ -50,6 +52,7 @@ type StructureService interface {
 	CreateUserStructure(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	CreateFunctionStructure(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error)
+	GetInfo(ctx context.Context, in *GetInfoRequest, opts ...client.CallOption) (*GetInfoResponse, error)
 }
 
 type structureService struct {
@@ -100,12 +103,23 @@ func (c *structureService) GetList(ctx context.Context, in *GetListRequest, opts
 	return out, nil
 }
 
+func (c *structureService) GetInfo(ctx context.Context, in *GetInfoRequest, opts ...client.CallOption) (*GetInfoResponse, error) {
+	req := c.c.NewRequest(c.name, "Structure.GetInfo", in)
+	out := new(GetInfoResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Structure service
 
 type StructureHandler interface {
 	CreateUserStructure(context.Context, *CreateRequest, *gs_commons_dto.Status) error
 	CreateFunctionStructure(context.Context, *CreateRequest, *gs_commons_dto.Status) error
 	GetList(context.Context, *GetListRequest, *GetListResponse) error
+	GetInfo(context.Context, *GetInfoRequest, *GetInfoResponse) error
 }
 
 func RegisterStructureHandler(s server.Server, hdlr StructureHandler, opts ...server.HandlerOption) error {
@@ -113,6 +127,7 @@ func RegisterStructureHandler(s server.Server, hdlr StructureHandler, opts ...se
 		CreateUserStructure(ctx context.Context, in *CreateRequest, out *gs_commons_dto.Status) error
 		CreateFunctionStructure(ctx context.Context, in *CreateRequest, out *gs_commons_dto.Status) error
 		GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error
+		GetInfo(ctx context.Context, in *GetInfoRequest, out *GetInfoResponse) error
 	}
 	type Structure struct {
 		structure
@@ -135,4 +150,8 @@ func (h *structureHandler) CreateFunctionStructure(ctx context.Context, in *Crea
 
 func (h *structureHandler) GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error {
 	return h.StructureHandler.GetList(ctx, in, out)
+}
+
+func (h *structureHandler) GetInfo(ctx context.Context, in *GetInfoRequest, out *GetInfoResponse) error {
+	return h.StructureHandler.GetInfo(ctx, in, out)
 }

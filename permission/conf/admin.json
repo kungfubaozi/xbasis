@@ -138,6 +138,28 @@
           ]
         },
         {
+          "api": "/function/getFunctionItems",
+          "name": "GetFunctionItems",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/getFunctionItemDetail",
+          "name": "GetFunctionItemDetail",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
           "api": "/userGroup/linkTo",
           "name": "LinkToUserGroup",
           "roles": [
@@ -204,6 +226,83 @@
           ]
         },
         {
+          "api": "/userGroup/getFunctionItems",
+          "name": "GetGroupItems",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userGroup/getFunctionItemDetail",
+          "name": "GetGroupItemDetail",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/getRole",
+          "name": "GetRoleDetail",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/getStructureRoles",
+          "name": "GetStructureRoles",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/add",
+          "name": "AddRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/remove",
+          "name": "RemoveRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/rename",
+          "name": "RenameRole",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
           "api": "/structure/createUserStructure",
           "name": "CreateUserStructure",
           "roles": [
@@ -217,6 +316,17 @@
         {
           "api": "/structure/createFunctionStructure",
           "name": "CreateFunctionStructure",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/structure/getInfo",
+          "name": "GetStructureInfo",
           "roles": [
             "Administrator",
             "AppManage"
@@ -278,7 +388,7 @@
         },
         {
           "api": "/locking/unlock",
-          "name": "LockUser",
+          "name": "UnlockUser",
           "roles": [
             "Administrator",
             "AppManage"

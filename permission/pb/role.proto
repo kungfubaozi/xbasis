@@ -13,6 +13,30 @@ service Role {
 
     rpc Rename(RoleRequest) returns (gs.commons.dto.Status);
 
+    rpc GetRole(GetRoleRequest) returns (GetRoleResponse);
+
+    rpc GetStructureRoles(GetStructureRolesRequest) returns (GetRoleResponse);
+}
+
+message GetStructureRolesRequest {
+    string structureId = 1;
+    int64 page = 2;
+    int64 size = 3;
+}
+
+message GetRoleRequest {
+   repeated string ids = 1;
+}
+
+message GetRoleResponse {
+    gs.commons.dto.State state = 1;
+    repeated SimpleRoleInfo data = 2;
+}
+
+message SimpleRoleInfo {
+    string id = 1;
+    string name = 2;
+    int64 createAt = 3;
 }
 
 message RoleRequest {

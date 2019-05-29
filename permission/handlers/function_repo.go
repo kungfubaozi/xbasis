@@ -26,22 +26,26 @@ func (repo *functionRepo) AddFunction(function *function) error {
 }
 
 func (repo *functionRepo) AddGroup(group *functionGroup) error {
-	return repo.groupCollection().Insert(group)
+	id, err := repo.AddData("gs-functions-groups", group)
+	if err != nil {
+		return err
+	}
+	if len(id) > 0 {
+		group.SID = id
+		return repo.groupCollection().Insert(group)
+	}
+	return indexutils.ErrNotFound
 }
 
-func (repo *functionRepo) FindGroup(appId, name string) error {
-	return nil
-}
-
-func (repo *functionRepo) FindChildGroups(parentId string) ([]*functionGroup, error) {
+func (repo *functionRepo) FindChildGroups(structureId, parentId string) ([]*functionGroup, error) {
 	var groups []*functionGroup
-	err := repo.groupCollection().Find(bson.M{"bind_group_id": parentId}).All(&groups)
+	err := repo.groupCollection().Find(bson.M{"bind_group_id": parentId, "structure_id": structureId}).All(&groups)
 	return groups, err
 }
 
-func (repo *functionRepo) FindChildFunctions(parentId string) ([]*function, error) {
+func (repo *functionRepo) FindChildFunctions(structureId, parentId string) ([]*function, error) {
 	var functions []*function
-	err := repo.functionCollection().Find(bson.M{"bind_group_id": parentId}).All(&functions)
+	err := repo.functionCollection().Find(bson.M{"bind_group_id": parentId, "structure_id": structureId}).All(&functions)
 	return functions, err
 }
 
@@ -54,7 +58,7 @@ func (repo *functionRepo) FindApi(structureId, api string) (*function, error) {
 func (repo *functionRepo) FindGroupExists(groupId string) bool {
 	c, err := repo.groupCollection().Find(bson.M{"_id": groupId}).Count()
 	if err != nil {
-		return true
+		return false
 	}
 	return c > 0
 }

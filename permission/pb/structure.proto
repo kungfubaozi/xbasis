@@ -12,6 +12,16 @@ service Structure {
 
     rpc GetList (GetListRequest) returns (GetListResponse);
 
+    rpc GetInfo(GetInfoRequest) returns (GetInfoResponse);
+}
+
+message GetInfoRequest {
+    string structureId = 1;
+}
+
+message GetInfoResponse {
+    gs.commons.dto.State state = 1;
+    SimpleStructure data = 2;
 }
 
 message CreateRequest {
@@ -39,4 +49,6 @@ message SimpleStructure {
     int64 createAt = 2;
     bool opening = 3;
     string id = 4;
+    bool funcS = 5;
+    int64 lastUpdateAt = 6;
 }
