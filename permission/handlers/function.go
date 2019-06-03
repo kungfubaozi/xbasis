@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -10,6 +11,7 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
+	"sync"
 	"time"
 )
 
@@ -64,12 +66,179 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service
 
 func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_service_permission.GetFunctionItemRequest, out *gs_service_permission.GetFunctionItemResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+		if len(in.Id) == 0 || len(in.StructureId) == 0 {
+			return nil
+		}
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		f, err := repo.FindApiById(in.StructureId, in.Id)
+		if err != nil {
+			fmt.Println("find api err", err)
+			return nil
+		}
+
+		function := &gs_service_permission.FunctionItemDetail{
+			Name:         f.Name,
+			Id:           f.Id,
+			ValTokenLife: f.ValTokenLife,
+			Api:          f.Api,
+			CreateAt:     f.CreateAt,
+			Share:        f.Share,
+		}
+
+		if len(f.Roles) > 0 {
+			rrepo := svc.GetRoleRepo()
+			defer rrepo.Close()
+			size := len(f.Roles)
+			var wg sync.WaitGroup
+			var err error
+
+			setRole := func(r *role) {
+				function.Roles = append(function.Roles, &gs_service_permission.FunctionBindRole{
+					Name: r.Name,
+					Id:   r.Id,
+				})
+			}
+
+			resp := func(e error) {
+				if err == nil {
+					err = e
+				}
+			}
+
+			findRole := func(v string) {
+				role, err := rrepo.FindRoleById(v)
+				if err != nil {
+					resp(err)
+					return
+				}
+				setRole(role)
+			}
+
+			if size > 2 {
+				wg.Add(2)
+				s := size / 2
+				go func() {
+					defer wg.Done()
+					a := f.Roles[:s]
+					for _, v := range a {
+						findRole(v)
+					}
+				}()
+				go func() {
+					defer wg.Done()
+					a := f.Roles[s:]
+					for _, v := range a {
+						findRole(v)
+					}
+				}()
+			} else {
+				wg.Add(len(f.Roles))
+				for _, v := range f.Roles {
+					go func() {
+						defer wg.Done()
+						findRole(v)
+					}()
+				}
+			}
+			wg.Wait()
+			if err != nil {
+				return nil
+			}
+		}
+
+		isAuthEnabled := func(t int64) bool {
+			for _, v := range f.AuthTypes {
+				if v == t {
+					return true
+				}
+			}
+			return false
+		}
+
+		function.AuthTypes = []*gs_service_permission.FunctionAuthTypes{
+			{
+				Name:    "ValCode",
+				Type:    gs_commons_constants.AuthTypeOfValcode,
+				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfValcode),
+			},
+			{
+				Name:    "Token",
+				Type:    gs_commons_constants.AuthTypeOfToken,
+				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfToken),
+			},
+			{
+				Name:    "MobileConfirm",
+				Type:    gs_commons_constants.AuthTypeOfMobileConfirm,
+				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfMobileConfirm),
+			},
+			{
+				Name:    "Face",
+				Type:    gs_commons_constants.AuthTypeOfFace,
+				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfFace),
+			},
+			{
+				Name:    "Gosion Mini Program",
+				Type:    gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm,
+				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm),
+			},
+		}
+
+		isGrant := func(t int64) bool {
+			for _, v := range f.GrantPlatforms {
+				if v == t {
+					return true
+				}
+			}
+			return false
+		}
+
+		function.Platforms = []*gs_service_permission.FunctionGrantPlatforms{
+			{
+				Name:    "Web",
+				Type:    gs_commons_constants.PlatformOfWeb,
+				Enabled: isGrant(gs_commons_constants.PlatformOfWeb),
+			},
+			{
+				Name:    "Android",
+				Type:    gs_commons_constants.PlatformOfAndroid,
+				Enabled: isGrant(gs_commons_constants.PlatformOfAndroid),
+			},
+			{
+				Name:    "Fuchsia",
+				Type:    gs_commons_constants.PlatformOfFuchsia,
+				Enabled: isGrant(gs_commons_constants.PlatformOfFuchsia),
+			},
+			{
+				Name:    "iOS",
+				Type:    gs_commons_constants.PlatformOfIOS,
+				Enabled: isGrant(gs_commons_constants.PlatformOfIOS),
+			},
+			{
+				Name:    "Linux",
+				Type:    gs_commons_constants.PlatformOfLinux,
+				Enabled: isGrant(gs_commons_constants.PlatformOfLinux),
+			},
+			{
+				Name:    "Windows",
+				Type:    gs_commons_constants.PlatformOfWindows,
+				Enabled: isGrant(gs_commons_constants.PlatformOfWindows),
+			},
+		}
+
+		out.Data = function
+
+		return errstate.Success
 	})
 }
 
 func (svc *functionService) GetRepo() *functionRepo {
 	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
+}
+
+func (svc *functionService) GetRoleRepo() *roleRepo {
+	return &roleRepo{session: svc.session.Clone()}
 }
 
 func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
@@ -120,6 +289,13 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 				StructureId:  in.StructureId,
 				Api:          in.Api,
 				AuthTypes:    in.AuthTypes,
+				GrantPlatforms: []int64{
+					gs_commons_constants.PlatformOfWindows,
+					gs_commons_constants.PlatformOfLinux,
+					gs_commons_constants.PlatformOfIOS,
+					gs_commons_constants.PlatformOfFuchsia,
+					gs_commons_constants.PlatformOfAndroid,
+					gs_commons_constants.PlatformOfWeb},
 			}
 
 			err := repo.AddFunction(f)

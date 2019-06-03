@@ -114,6 +114,11 @@ func main() {
 		panic(err)
 	}
 
+	if len(b) > 0 {
+		fmt.Println(string(b))
+		return
+	}
+
 	//once
 	c := gs_commons_config.NewConnect(config)
 	//set def configs

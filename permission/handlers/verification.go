@@ -8,6 +8,7 @@ import (
 	"github.com/micro/go-micro/metadata"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/logger/client"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config"
@@ -34,6 +35,7 @@ type verificationService struct {
 	extAuthService              gs_ext_service_authentication.AuthService
 	*indexutils.Client
 	*gslogrus.Logger
+	log loggerclient.Logger
 }
 
 type requestHeaders struct {

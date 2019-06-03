@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package gs.service.analysis.frequency;
+
+service Frequency {
+
+    rpc GetCount (GetRequest) returns (GetResponse);
+
+}
+
+message GetResponse {
+
+}
+
+message GetRequest {
+    string action = 1;
+    string tag = 2;
+    string restrict = 3;
+}
+
+message Rule {
+    string ruleType = 1;
+    int64 ruleValue = 2;
+}
+
+message Aggregation {
+
+}

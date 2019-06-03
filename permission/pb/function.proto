@@ -19,9 +19,9 @@ service Function {
 
     rpc RenameGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
 
-    rpc GetFunctionItems(GetFunctionItemsRequest) returns (GetFunctionItemsResponse);
+    rpc GetFunctionItems (GetFunctionItemsRequest) returns (GetFunctionItemsResponse);
 
-    rpc GetFunctionItemDetail(GetFunctionItemRequest) returns (GetFunctionItemResponse);
+    rpc GetFunctionItemDetail (GetFunctionItemRequest) returns (GetFunctionItemResponse);
 }
 
 message GetFunctionItemsRequest {
@@ -42,11 +42,12 @@ message FindItemResponse {
 
 message GetFunctionItemRequest {
     string id = 1;
+    string structureId = 2;
 }
 
 message GetFunctionItemResponse {
     gs.commons.dto.State state = 1;
-    repeated FunctionItemDetail data = 2;
+    FunctionItemDetail data = 2;
 }
 
 message FunctionItemDetail {
@@ -58,6 +59,7 @@ message FunctionItemDetail {
     repeated FunctionGrantPlatforms platforms = 6;
     bool share = 7;
     int64 valTokenLife = 8;
+    string id = 9;
 }
 
 message FunctionBindRole {
@@ -68,11 +70,13 @@ message FunctionBindRole {
 message FunctionAuthTypes {
     string name = 1;
     int64 type = 2;
+    bool enabled = 3;
 }
 
 message FunctionGrantPlatforms {
     string name = 1;
     int64 type = 2;
+    bool enabled = 3;
 }
 
 message FunctionRequest {
