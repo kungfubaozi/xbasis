@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package gs.service.analysis;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Logger {
+
+    rpc GetAxisData (GetDataRequest) returns (GetDataResponse);
+
+    //今日使用情况
+    rpc TodayVisit (TodayVisitRequest) returns (TodayVisitResponse);
+
+    //使用功能统计
+    rpc UsageFunction (UsageFunctionRequest) returns (UsageFunctionResponse);
+}
+
+message UsageFunctionRequest {
+    string appId = 1;
+}
+
+message UsageFunctionStatus {
+    string name = 1;
+    int64 count = 2;
+}
+
+message UsageFunctionResponse {
+    gs.commons.dto.State state = 1;
+    repeated UsageFunctionStatus status = 2;
+}
+
+message TodayVisitRequest {
+    string appId = 1;
+}
+
+message TodayVisitResponse {
+    gs.commons.dto.State state = 1;
+    map<string, VisitInfo> data = 2;
+}
+
+message VisitInfo {
+    int64 today = 1;
+    int64 yesterday = 2;
+    repeated PlatformVisitInfo info = 3;
+}
+
+message PlatformVisitInfo {
+    string name = 1;
+    int64 count = 2;
+}
+
+message GetDataResponse {
+    gs.commons.dto.State state = 1;
+    string data = 2;
+}
+
+message GetDataRequest {
+    XAxisRequest x_axis = 1;
+    YAxisRequest y_axis = 2;
+    string map = 3; //用来存放data
+    int64 sd = 4; //起始日期(这两个主要是限制查找的位置，index的位置)
+    int64 ed = 5; //结束日期
+}
+
+message XAxisRequest {
+    string name = 1;
+    repeated XAxisFactor factors = 2;
+    string order = 3; //排序
+}
+
+message XAxisFactor {
+    string field = 1;
+    string operation = 2; //操作, range/equals/gt/lt/contains/not_equals
+    string value = 3; //取值
+}
+
+message YAxisRequest {
+    string name = 1;
+    int64 size = 2; //aggs返回数量
+    repeated YAxisFactor factors = 3;
+}
+
+message YAxisFactor {
+    string field = 1;
+    string operation = 2; //sum(统计数量)/value(原本)/cardinality(去重计数)->cae/stats/terms(统计)
+    string value = 3; //取值
+    YAxisFactor factor = 4; //子聚合操作
+    string name = 5;
+}

@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/commons/actions"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -18,6 +20,7 @@ import (
 type tokenService struct {
 	pool          *redis.Pool
 	connectioncli connectioncli.ConnectionClient
+	log           analysisclient.LogClient
 }
 
 func (svc *tokenService) GetRepo() *tokenRepo {
@@ -29,6 +32,12 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 
 		if len(auth.ClientId) <= 10 {
 			return nil
+		}
+
+		headers := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ModuleName:  "Token",
+			ServiceName: gs_commons_constants.ExtAuthenticationService,
 		}
 
 		repo := svc.GetRepo()
@@ -100,6 +109,19 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 		}
 
 		if len(refreshToken) > 0 && len(accessToken) > 0 {
+
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  loggeractions.VisitApplication,
+				Message: "generate token to access application-client",
+				Fields: &analysisclient.LogFields{
+					"userId":   access.UserId,
+					"clientId": access.ClientId,
+					"appId":    access.AppId,
+					"platform": ui.Platform,
+				},
+			})
+
 			out.AccessToken = accessToken
 			out.RefreshToken = refreshToken
 			return errstate.Success
@@ -109,6 +131,6 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 	})
 }
 
-func NewTokenService(pool *redis.Pool, connectioncli connectioncli.ConnectionClient) gs_ext_service_authentication.TokenHandler {
-	return &tokenService{pool: pool, connectioncli: connectioncli}
+func NewTokenService(pool *redis.Pool, connectioncli connectioncli.ConnectionClient, log analysisclient.LogClient) gs_ext_service_authentication.TokenHandler {
+	return &tokenService{pool: pool, connectioncli: connectioncli, log: log}
 }

@@ -1,6 +1,7 @@
 package permissionsvc
 
 import (
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
@@ -39,6 +40,8 @@ func StartService() {
 		panic(err)
 	}
 
+	logger := analysisclient.NewLoggerClient()
+
 	go func() {
 		m := microservice.NewService(gs_commons_constants.ExtPermissionVerification, false)
 
@@ -47,7 +50,7 @@ func StartService() {
 		gs_ext_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
 			session, applicationclient.NewStatusClient(m.Client()),
 			safetyclient.NewBlacklistClient(m.Client()),
-			authenticationcli.NewAuthClient(m.Client()), client, log))
+			authenticationcli.NewAuthClient(m.Client()), client, log, logger))
 
 		errc <- m.Run()
 	}()
@@ -55,9 +58,7 @@ func StartService() {
 	go func() {
 		m := microservice.NewService(gs_commons_constants.ExtAccessibleVerification, false)
 
-		log := gslogrus.New(gs_commons_constants.ExtAccessibleVerification, client)
-
-		gs_ext_service_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, log))
+		gs_ext_service_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, logger))
 
 		errc <- m.Run()
 	}()
@@ -76,7 +77,7 @@ func StartService() {
 
 		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc, client, log))
 
-		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session))
+		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
 
 		gs_service_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
 

@@ -1,6 +1,7 @@
 package authenticationsvc
 
 import (
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/authentication/handlers"
@@ -39,6 +40,8 @@ func StartService() {
 		panic(err)
 	}
 
+	logger := analysisclient.NewLoggerClient()
+
 	go func() {
 		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
@@ -52,9 +55,9 @@ func StartService() {
 		gs_ext_service_authentication.RegisterAuthHandler(s.Server(),
 			authenticationhandlers.NewAuthService(pool, safetyclient.NewSecurityClient(s.Client()), conn, client,
 				applicationclient.NewStatusClient(s.Client()),
-				safetyclient.NewBlacklistClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), log))
+				safetyclient.NewBlacklistClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), log, logger))
 
-		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn))
+		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn, logger))
 
 		errc <- s.Run()
 

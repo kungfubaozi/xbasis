@@ -43,6 +43,7 @@ message FindItemResponse {
 message GetFunctionItemRequest {
     string id = 1;
     string structureId = 2;
+
 }
 
 message GetFunctionItemResponse {
@@ -60,6 +61,10 @@ message FunctionItemDetail {
     bool share = 7;
     int64 valTokenLife = 8;
     string id = 9;
+    int64 todayVisit = 10;
+    int64 todayVisitUser = 11;
+    int64 monthVisit = 12;
+    int64 totalVisit = 13;
 }
 
 message FunctionBindRole {

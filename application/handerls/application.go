@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -17,6 +18,7 @@ import (
 type applicationService struct {
 	session *mgo.Session
 	*indexutils.Client
+	log analysisclient.LogClient
 }
 
 func (svc *applicationService) GetRepo() *applicationRepo {
@@ -26,6 +28,12 @@ func (svc *applicationService) GetRepo() *applicationRepo {
 //create new application if not exists(name)
 func (svc *applicationService) Create(ctx context.Context, in *gs_service_application.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		headers := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: gs_commons_constants.ApplicationService,
+			ModuleName:  "Application",
+		}
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -112,6 +120,11 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			return errstate.Success
 		}
 
+		svc.log.Info(&analysisclient.LogContent{
+			Headers: headers,
+			Action:  "CreateApplication",
+		})
+
 		return nil
 	})
 }
@@ -187,8 +200,6 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		fmt.Println("list")
-
 		list, err := repo.FindAll()
 		if err != nil {
 			fmt.Println("err", err)
@@ -226,6 +237,6 @@ func (svc *applicationService) Switch(context.Context, *gs_service_application.S
 	panic("implement me")
 }
 
-func NewApplicationService(session *mgo.Session, client *indexutils.Client) gs_service_application.ApplicationHandler {
-	return &applicationService{session: session, Client: client}
+func NewApplicationService(session *mgo.Session, client *indexutils.Client, log analysisclient.LogClient) gs_service_application.ApplicationHandler {
+	return &applicationService{session: session, Client: client, log: log}
 }

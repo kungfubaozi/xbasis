@@ -4,11 +4,35 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Shopify/sarama"
+	"konekko.me/gosion/commons/date"
 	"konekko.me/gosion/commons/generator"
 	"time"
 )
 
 func main() {
+	//log := loggerclient.NewClient()
+	////id := gs_commons_generator.NewIDG()
+	//
+	//log.Info(&loggerclient.LogContent{
+	//	Headers: &loggerclient.Headers{
+	//		ServiceName: "",
+	//		Ip:          "192.168.80.67",
+	//		UserAgent:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
+	//		TraceId:     "wACIHN7ukUEqKY2whzmPyZw0x/whT8XBq+ojnYiauJdkU4fZh0tYtQ0hgJJsB",
+	//	},
+	//	Action:    "LoginSuccess",
+	//	Message:   "start verification",
+	//	StateCode: 0,
+	//	Fields: &loggerclient.Fields{
+	//		"appId":    "5135597a5a69",
+	//		"clientId": "597a5957566d",
+	//		"userId":   "MDk1YThiYTdlMjMxMmU0MjBhYzY5YmYzZjhjN2E0ZjQ2OTc5ZTA2Yw==",
+	//	},
+	//})
+	fmt.Println(gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_I_MM_I_DD))
+}
+
+func test() {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Partitioner = sarama.NewRandomPartitioner

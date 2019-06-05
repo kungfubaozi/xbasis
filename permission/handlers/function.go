@@ -3,8 +3,12 @@ package permissionhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
+	"konekko.me/gosion/commons/actions"
 	"konekko.me/gosion/commons/constants"
+	"konekko.me/gosion/commons/date"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
@@ -19,6 +23,7 @@ type functionService struct {
 	*indexutils.Client
 	session *mgo.Session
 	id      gs_commons_generator.IDGenerator
+	log     analysisclient.LogClient
 }
 
 func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service_permission.GetFunctionItemsRequest, out *gs_service_permission.GetFunctionItemsResponse) error {
@@ -72,9 +77,19 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_se
 		repo := svc.GetRepo()
 		defer repo.Close()
 
+		headers := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ModuleName:  "Function",
+			ServiceName: gs_commons_constants.PermissionService,
+		}
+
 		f, err := repo.FindApiById(in.StructureId, in.Id)
 		if err != nil {
-			fmt.Println("find api err", err)
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  loggeractions.InvalidFunction,
+				Message: "not found function",
+			})
 			return nil
 		}
 
@@ -227,6 +242,66 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_se
 			},
 		}
 
+		svc.log.Info(&analysisclient.LogContent{
+			Headers: headers,
+			Action:  loggeractions.FindFunction,
+			Message: "found",
+		})
+
+		now := gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_I_MM_I_DD)
+		q := elastic.NewBoolQuery()
+		q.Must(elastic.NewMatchPhraseQuery("fields.id", f.Id), elastic.NewMatchPhraseQuery("action", "UserRequestApi"))
+
+		var wg sync.WaitGroup
+		wg.Add(4)
+		//today visit count
+		go func() {
+			defer wg.Done()
+			c, err := svc.GetElasticClient().Count("gosion-logger." + now).Type("_doc").Query(q).Do(context.Background())
+			if err != nil {
+				return
+			}
+			function.TodayVisit = c
+		}()
+
+		//today visit user count
+		go func() {
+			defer wg.Done()
+			v, err := svc.GetElasticClient().Search("gosion-logger."+now).Type("_doc").Query(q).Aggregation("count", elastic.NewCardinalityAggregation().Field("headers.userId.keyword")).Do(context.Background())
+			if err != nil {
+				return
+			}
+			if v.Aggregations != nil {
+				c, ok := v.Aggregations.Cardinality("count")
+				if ok {
+					function.TodayVisitUser = int64(*c.Value)
+				}
+			}
+		}()
+
+		//month
+		go func() {
+			defer wg.Done()
+			t := gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_I_MM)
+			c, err := svc.GetElasticClient().Count(fmt.Sprintf("gosion-logger.%s.*", t)).Type("_doc").Query(q).Do(context.Background())
+			if err != nil {
+				return
+			}
+			function.MonthVisit = c
+		}()
+
+		//total
+		go func() {
+			defer wg.Done()
+			c, err := svc.GetElasticClient().Count("gosion-logger.*").Type("_doc").Query(q).Do(context.Background())
+			if err != nil {
+				return
+			}
+			function.TotalVisit = c
+		}()
+
+		wg.Wait()
+
 		out.Data = function
 
 		return errstate.Success
@@ -366,6 +441,6 @@ func (svc *functionService) RenameGroup(ctx context.Context, in *gs_service_perm
 	})
 }
 
-func NewFunctionService(client *indexutils.Client, session *mgo.Session) gs_service_permission.FunctionHandler {
-	return &functionService{Client: client, session: session, id: gs_commons_generator.NewIDG()}
+func NewFunctionService(client *indexutils.Client, session *mgo.Session, log analysisclient.LogClient) gs_service_permission.FunctionHandler {
+	return &functionService{Client: client, session: session, id: gs_commons_generator.NewIDG(), log: log}
 }

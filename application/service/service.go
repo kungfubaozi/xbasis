@@ -1,6 +1,7 @@
 package applicationservice
 
 import (
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/handerls"
 	"konekko.me/gosion/application/pb"
 	"konekko.me/gosion/application/pb/ext"
@@ -29,14 +30,16 @@ func StartService() {
 	}
 	defer pool.Close()
 
-	client, err := indexutils.NewClient("http://192.168.2.62:9200/")
+	c, err := indexutils.NewClient("http://192.168.2.62:9200/")
 	if err != nil {
 		panic(err)
 	}
 
+	logger := analysisclient.NewLoggerClient()
+
 	go func() {
 		gs_commons_config.WatchInitializeConfig(gs_commons_constants.ApplicationService,
-			applicationhanderls.Initialize(session.Clone(), client))
+			applicationhanderls.Initialize(session.Clone(), c))
 	}()
 
 	go func() {
@@ -47,11 +50,11 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.ExtApplicationService, true)
 		s.Init()
 
-		log := gslogrus.New(gs_commons_constants.ExtApplicationService, client)
+		log := gslogrus.New(gs_commons_constants.ExtApplicationService, c)
 
-		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(client, pool, log))
+		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, log))
 
-		gs_ext_service_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(client, session))
+		gs_ext_service_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(c, session))
 
 		errc <- s.Run()
 	}()
@@ -60,9 +63,9 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.ApplicationService, true)
 		s.Init()
 
-		gs_service_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, client))
+		gs_service_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger))
 
-		gs_service_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, client))
+		gs_service_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, c))
 
 		errc <- s.Run()
 	}()

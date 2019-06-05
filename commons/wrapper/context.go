@@ -3,7 +3,6 @@ package gs_commons_wrapper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/micro/go-micro/metadata"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -100,11 +99,8 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 		//	return nil
 		//}
 
-		fmt.Println("entry md ok")
-
 		if auth.Token != nil && len(auth.Token.UserId) > 0 {
 			if auth.Token.AppType == -1 || auth.Platform == -1 || auth.AppType == -1 {
-				fmt.Println("auth token appType")
 				null()
 				return nil
 			}

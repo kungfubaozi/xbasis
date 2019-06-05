@@ -13,6 +13,8 @@ const (
 	YYYYMM                  = "yyyyMM"
 	YYYY_MM                 = "yyyy-MM"
 	YYYY_MM_DD              = "yyyy-MM-dd"
+	YYYY_I_MM_I_DD          = "yyyy.MM.dd"
+	YYYY_I_MM               = "yyyy.MM"
 	YYYYMMDD                = "yyyyMMdd"
 	YYYYMMDDHHMMSS          = "yyyyMMddHHmmss"
 	YYYYMMDDHHMM            = "yyyyMMddHHmm"

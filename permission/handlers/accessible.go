@@ -2,11 +2,10 @@ package permissionhandlers
 
 import (
 	"context"
-	"fmt"
-	"github.com/Sirupsen/logrus"
+	"konekko.me/gosion/analysis/client"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb/ext"
@@ -14,7 +13,7 @@ import (
 
 type accessibleService struct {
 	*indexutils.Client
-	*gslogrus.Logger
+	log analysisclient.LogClient
 }
 
 func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_permission.CheckRequest, out *gs_commons_dto.Status) error {
@@ -22,27 +21,31 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 		//get user require roles
 		var userroles map[string]interface{}
 
-		log := svc.WithHeaders(auth.TraceId, auth.ClientId, auth.IP, "", auth.UserAgent, auth.UserDevice)
+		headers := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ModuleName:  "Accessible",
+			ServiceName: gs_commons_constants.ExtAccessibleVerification,
+		}
 
 		ok, err := svc.Client.QueryFirst("gs-user-roles-relation",
 			map[string]interface{}{"structure_id": in.StructureId, "user_id": in.UserId}, &userroles, "roles")
 		if err != nil || !ok {
 
-			log.WithAction("RelationFind", logrus.Fields{
-				"err":               err,
-				"state":             errstate.ErrRequest.Code,
-				"userId":            in.UserId,
-				"functionStructure": in.StructureId,
-			}).Error("find roles by userId err.")
-
-			fmt.Println("relation find")
+			svc.log.Info(&analysisclient.LogContent{
+				Headers:   headers,
+				Action:    "FindUserRoleRelation",
+				Message:   "find roles by userId err.",
+				StateCode: errstate.ErrRequest.Code,
+				Fields: &analysisclient.LogFields{
+					"userId": in.UserId,
+					"funcS":  in.StructureId,
+				},
+			})
 
 			return errstate.ErrRequest
 		}
 
 		userRoles := userroles["roles"].([]interface{})
-
-		fmt.Println("roles", userRoles)
 
 		if userRoles != nil && len(userRoles) > 0 && len(in.FunctionRoles) > 0 {
 			roles := make(map[string]string)
@@ -58,21 +61,33 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 			}
 
 			if ok {
-				log.WithAction("RoleInclusion", logrus.Fields{
-					"state": errstate.Success.Code,
-				}).Info("grant")
+				svc.log.Info(&analysisclient.LogContent{
+					Headers:   headers,
+					Action:    "RoleGrant",
+					StateCode: errstate.ErrRequest.Code,
+					Fields: &analysisclient.LogFields{
+						"userId": in.UserId,
+						"funcS":  in.StructureId,
+					},
+				})
 				return errstate.Success
 			}
 		}
 
-		log.WithAction("RoleInclusion", logrus.Fields{
-			"state": errstate.ErrUserPermission.Code,
-		}).Info("unauthorized")
+		svc.log.Info(&analysisclient.LogContent{
+			Headers:   headers,
+			Action:    "RoleUnauthorized",
+			StateCode: errstate.ErrRequest.Code,
+			Fields: &analysisclient.LogFields{
+				"userId": in.UserId,
+				"funcS":  in.StructureId,
+			},
+		})
 
 		return errstate.ErrUserPermission
 	})
 }
 
-func NewAccessibleService(c *indexutils.Client, log *gslogrus.Logger) gs_ext_service_permission.AccessibleHandler {
-	return &accessibleService{Client: c, Logger: log}
+func NewAccessibleService(c *indexutils.Client, log analysisclient.LogClient) gs_ext_service_permission.AccessibleHandler {
+	return &accessibleService{Client: c, log: log}
 }

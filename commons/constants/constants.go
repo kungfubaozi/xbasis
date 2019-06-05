@@ -2,6 +2,7 @@ package gs_commons_constants
 
 const (
 	PermissionService     = "gs.svc.permission"
+	AnalysisService       = "gs.svc.analysis"
 	MessageService        = "gs.svc.message"
 	ConnectionService     = "gs.svc.connection"
 	UserService           = "gs.svc.user"

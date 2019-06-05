@@ -46,6 +46,8 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/ext/status.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/ext/sync.proto
 
+#analysis
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. analysis/pb/logger.proto
 
 #micro
 #protoc -I ${GOPATH}/src -I ${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \

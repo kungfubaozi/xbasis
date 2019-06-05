@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config/call"
@@ -30,6 +31,7 @@ type authService struct {
 	connectioncli               connectioncli.ConnectionClient
 	*gslogrus.Logger
 	*indexutils.Client
+	log analysisclient.LogClient
 }
 
 func (svc *authService) GetRepo() *tokenRepo {
@@ -42,8 +44,13 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		configuration := serviceconfiguration.Get()
 
 		if len(in.ClientId) == 0 || len(in.Token) == 0 {
-
 			return errstate.ErrRequest
+		}
+
+		headers := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: gs_commons_constants.ExtAuthenticationService,
+			ModuleName:  "Auth",
 		}
 
 		var wg sync.WaitGroup
@@ -51,16 +58,28 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 		claims, err := decodeToken(in.Token, configuration.TokenSecretKey)
 		if err != nil {
-			fmt.Println("err 1")
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "DecodeTokenError",
+				Message: err.Error(),
+			})
 			return errstate.ErrAccessToken
 		}
 
 		if claims.Valid() != nil {
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "AccessTokenExpired",
+				Message: fmt.Sprintf("%d", claims.ExpiresAt),
+			})
 			return errstate.ErrAccessTokenExpired
 		}
 
 		if claims.Token.Type != gs_commons_constants.AccessToken {
-			fmt.Println("err 2")
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "ErrTokenType",
+			})
 			return errstate.ErrAccessToken
 		}
 
@@ -95,6 +114,11 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 					return
 				}
 				if a.ClientEnabled != gs_commons_constants.Enabled {
+					svc.log.Info(&analysisclient.LogContent{
+						Headers:   headers,
+						Action:    "ApplicationClosed",
+						StateCode: errstate.ErrApplicationClosed.Code,
+					})
 					resp(errstate.ErrApplicationClosed)
 					return
 				}
@@ -129,12 +153,20 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 			//check //uai.UserAgent != auth.UserAgent
 			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation || uai.Device != auth.UserDevice {
 				resp(errstate.ErrAccessToken)
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "ClaimsInfoCheckError",
+				})
 				return
 			}
 
 			//share function
 			if !in.Share && (claims.Token.ClientId != uai.ClientId || auth.ClientId != uai.ClientId || auth.AppId != uai.AppId) {
 				resp(errstate.ErrAccessToken)
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "ShareFunctionClaimsInfoCheckError",
+				})
 			}
 
 		}()
@@ -188,6 +220,10 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 		if state.Ok {
 
 			if uai == nil || len(uai.UserId) == 0 {
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "ErrUserId",
+				})
 				return errstate.ErrSystem
 			}
 
@@ -209,7 +245,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 func NewAuthService(pool *redis.Pool, extSecurityService gs_ext_service_safety.SecurityService,
 	connectioncli connectioncli.ConnectionClient, client *indexutils.Client, as gs_ext_service_application.ApplicationStatusService,
-	blacklistService gs_service_safety.BlacklistService, extAccessibleService gs_ext_service_permission.AccessibleService, logger *gslogrus.Logger) gs_ext_service_authentication.AuthHandler {
+	blacklistService gs_service_safety.BlacklistService, extAccessibleService gs_ext_service_permission.AccessibleService, logger *gslogrus.Logger, log analysisclient.LogClient) gs_ext_service_authentication.AuthHandler {
 	return &authService{pool: pool, extSecurityService: extSecurityService, connectioncli: connectioncli, blacklistService: blacklistService,
-		Client: client, extApplicationStatusService: as, extAccessibleService: extAccessibleService, Logger: logger}
+		Client: client, extApplicationStatusService: as, extAccessibleService: extAccessibleService, Logger: logger, log: log}
 }

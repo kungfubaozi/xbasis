@@ -2,9 +2,9 @@ package userhandlers
 
 import (
 	"context"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/constants"
@@ -23,6 +23,7 @@ type loginService struct {
 	extTokenService    gs_ext_service_authentication.TokenService
 	extSyncCheck       gs_ext_service_application.UsersyncService
 	*indexutils.Client
+	log analysisclient.LogClient
 }
 
 func (svc *loginService) GetRepo() *userRepo {
@@ -39,6 +40,12 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 		if len(in.Account) > 0 && len(in.Content) > 0 {
 			repo := svc.GetRepo()
 			defer repo.Close()
+
+			headers := &analysisclient.LogHeaders{
+				TraceId:     auth.TraceId,
+				ServiceName: gs_commons_constants.UserService,
+				ModuleName:  "Login",
+			}
 
 			var info *userModel
 
@@ -63,24 +70,31 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 
 			info, err = repo.FindById(id)
 			if err != nil {
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "LoginFailed",
+					Message: err.Error(),
+				})
 				return eiup()
 			}
 
 			if len(info.Id) == 0 {
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "LoginFailed",
+					Message: "userId nil",
+				})
 				return nil
 			}
 
 			if info != nil && len(info.Id) > 0 {
 				//check state
 
-				fmt.Println("entry")
-
 				s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{
 					UserId: info.Id,
 				})
 
 				if err != nil {
-					fmt.Println("err", err)
 					return nil
 				}
 
@@ -89,6 +103,11 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				}
 
 				if s.Current != gs_commons_constants.UserStateOfClear {
+					svc.log.Info(&analysisclient.LogContent{
+						Headers: headers,
+						Action:  "SecurityCheck",
+						Message: "user state not clear",
+					})
 					return errstate.ErrLoginFailed
 				}
 
@@ -97,10 +116,13 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				//check password
 				err = bcrypt.CompareHashAndPassword([]byte(info.Password), []byte(in.Content))
 				if err != nil {
+					svc.log.Info(&analysisclient.LogContent{
+						Headers: headers,
+						Action:  "UserCheck",
+						Message: "password error",
+					})
 					return eiup()
 				}
-
-				fmt.Println("login clientId", auth.ClientId)
 
 				//generate token
 				s1, err := svc.extTokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
@@ -130,6 +152,11 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 
 				return errstate.Success
 			}
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "LoginFailed",
+				Message: "cannot find user info",
+			})
 			return eiup()
 		}
 		return nil
@@ -151,6 +178,6 @@ func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.Ent
 }
 
 func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
-	tokenService gs_ext_service_authentication.TokenService, client *indexutils.Client) gs_service_user.LoginHandler {
-	return &loginService{session: session, extSecurityService: securityService, extTokenService: tokenService, Client: client}
+	tokenService gs_ext_service_authentication.TokenService, client *indexutils.Client, log analysisclient.LogClient) gs_service_user.LoginHandler {
+	return &loginService{session: session, extSecurityService: securityService, extTokenService: tokenService, Client: client, log: log}
 }

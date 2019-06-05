@@ -1,6 +1,7 @@
 package usersvc
 
 import (
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/constants"
@@ -37,6 +38,8 @@ func StartService() {
 
 	configuration := &gs_commons_config.GosionConfiguration{}
 
+	logger := analysisclient.NewLoggerClient()
+
 	go func() {
 		s := microservice.NewService(gs_commons_constants.ExtUserService, true)
 
@@ -53,7 +56,7 @@ func StartService() {
 		ss := safetyclient.NewSecurityClient(s.Client())
 		ts := authenticationcli.NewTokenClient(s.Client())
 
-		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client))
+		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client, logger))
 
 		gs_service_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session))
 

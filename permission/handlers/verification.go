@@ -3,12 +3,11 @@ package permissionhandlers
 import (
 	"context"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/logger/client"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
 	"konekko.me/gosion/commons/config"
@@ -34,8 +33,7 @@ type verificationService struct {
 	blacklistService            gs_service_safety.BlacklistService
 	extAuthService              gs_ext_service_authentication.AuthService
 	*indexutils.Client
-	*gslogrus.Logger
-	log loggerclient.Logger
+	log analysisclient.LogClient
 }
 
 type requestHeaders struct {
@@ -59,9 +57,6 @@ var whiteApiList = []string{"/authentication/router/refresh", "/authentication/r
 //api exists and authType verify
 func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_permission.HasPermissionRequest, out *gs_ext_service_permission.HasPermissionResponse) error {
 	var wg sync.WaitGroup
-
-	fmt.Println("check verification")
-
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		md, ok := metadata.FromContext(ctx)
@@ -126,7 +121,25 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				}
 			}
 
-			log := svc.WithHeaders(traceId, rh.clientId, rh.ip, rh.path, rh.userAgent, rh.userDevice)
+			headers := &analysisclient.LogHeaders{
+				ServiceName:      gs_commons_constants.ExtPermissionVerification,
+				ModuleName:       "Verification",
+				UserAgent:        rh.userAgent,
+				Device:           rh.userDevice,
+				HasAccessToken:   len(rh.authorization) != 0,
+				HasDurationToken: len(rh.dat) != 0,
+				ClientId:         rh.clientId,
+				Ip:               rh.ip,
+				Path:             rh.path,
+				TraceId:          traceId,
+			}
+
+			svc.log.Info(&analysisclient.LogContent{
+				Headers:   headers,
+				Action:    "PermissionVerification",
+				Message:   "start verification",
+				StateCode: 0,
+			})
 
 			ctx = metadata.NewContext(ctx, map[string]string{
 				"transport-trace-id": traceId,
@@ -185,9 +198,15 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			wg.Wait()
 
 			if !state.Ok {
-				log.WithAction("ThreeBasicValidations", logrus.Fields{
-					"state": state.Code,
-				}).Info("check failed.")
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: &analysisclient.LogHeaders{
+						TraceId: traceId,
+					},
+					Action:    "ThreeBasicValidations",
+					Message:   "CheckFailed",
+					StateCode: state.Code,
+				})
+
 				return state
 			}
 
@@ -214,7 +233,12 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 					//fmt.Println("function structure id", ccs.FunctionStructureId)
 					f, err = repo.SimplifiedLookupApi(appResp.FunctionStructure, rh.path)
 					if err != nil {
-						log.WithAction("InvalidApi", logrus.Fields{}).Info("invalid api")
+						svc.log.Info(&analysisclient.LogContent{
+							Headers: &analysisclient.LogHeaders{
+								TraceId: traceId,
+							},
+							Action: "InvalidApi",
+						})
 						return nil
 					}
 
@@ -222,11 +246,27 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 					if f.GrantPlatforms != nil && len(f.GrantPlatforms) > 0 {
 						for _, v := range f.GrantPlatforms {
 							if v == appResp.ClientPlatform {
+								svc.log.Info(&analysisclient.LogContent{
+									Headers: &analysisclient.LogHeaders{
+										TraceId: traceId,
+									},
+									Action: "ApiPlatformAccessDenied",
+								})
 								return errstate.ErrRequest
 							}
 						}
 					}
 				}
+
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "RequestApi",
+					Message: headers.Path,
+					Fields: &analysisclient.LogFields{
+						"id":    f.Id,
+						"appId": appResp.AppId,
+					},
+				})
 
 				out.AppType = appResp.Type
 
@@ -318,11 +358,15 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								}
 
 								userId = status.UserId
+
 							} else {
-								log.WithAction("ExtAuthVerify", logrus.Fields{
-									"state": status.State.Code,
-									"who":   status.UserId,
-								}).Info("verification failed.")
+								svc.log.Info(&analysisclient.LogContent{
+									Headers: &analysisclient.LogHeaders{
+										TraceId: traceId,
+									},
+									Action:  "ExtAuthVerify",
+									Message: "VerificationFailed",
+								})
 							}
 
 							resp(status.State)
@@ -352,9 +396,14 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				if !state.Ok {
 					out.State = state
 					out.Token = nil
-					log.WithAction("BasicApplicationInfoCheck", logrus.Fields{
-						"state": state.Code,
-					}).Info("check failed.")
+					svc.log.Info(&analysisclient.LogContent{
+						Headers: &analysisclient.LogHeaders{
+							TraceId: traceId,
+						},
+						Action:    "BasicApplicationInfoCheck",
+						Message:   "CheckFailed",
+						StateCode: out.State.Code,
+					})
 					return nil
 				}
 
@@ -370,10 +419,19 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				}
 				out.User = userId
 
-				log.WithAction("Verification", logrus.Fields{
-					"state": errstate.Success.Code,
-					"who":   userId,
-				}).Info("verification success.")
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: &analysisclient.LogHeaders{
+						TraceId: traceId,
+						UserId:  userId,
+					},
+					Action:    "UserRequestApi",
+					Message:   "verification passed",
+					StateCode: 0,
+					Fields: &analysisclient.LogFields{
+						"id":    f.Id,
+						"appId": appResp.AppId,
+					},
+				})
 
 				return errstate.Success
 			}
@@ -386,7 +444,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 
 func NewVerificationService(pool *redis.Pool, session *mgo.Session,
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService, blacklistService gs_service_safety.BlacklistService,
-	extAuthService gs_ext_service_authentication.AuthService, client *indexutils.Client, log *gslogrus.Logger) gs_ext_service_permission.VerificationHandler {
+	extAuthService gs_ext_service_authentication.AuthService, client *indexutils.Client, log *gslogrus.Logger, logger analysisclient.LogClient) gs_ext_service_permission.VerificationHandler {
 	return &verificationService{pool: pool, session: session, extApplicationStatusService: extApplicationStatusService,
-		blacklistService: blacklistService, extAuthService: extAuthService, Client: client, Logger: log}
+		blacklistService: blacklistService, extAuthService: extAuthService, Client: client, log: logger}
 }

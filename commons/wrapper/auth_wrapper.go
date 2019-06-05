@@ -26,15 +26,13 @@ func set(rsp interface{}, state *gs_commons_dto.State) error {
 func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 	verificationClient := permissioncli.NewVerificationClient(c)
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-		fmt.Println("auth wrapper")
+
 		status, err := verificationClient.Check(ctx, &gs_ext_service_permission.HasPermissionRequest{})
 		if err != nil {
-			fmt.Println("verification error", err)
 			return set(rsp, errstate.ErrRequest)
 		}
 
 		if !status.State.Ok {
-			fmt.Println("verification state error", status)
 			return set(rsp, status.State)
 		}
 
