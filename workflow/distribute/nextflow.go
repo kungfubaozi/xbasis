@@ -3,7 +3,7 @@ package distribute
 import (
 	"context"
 	"github.com/garyburd/redigo/redis"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/modules"
@@ -16,7 +16,7 @@ type nextflow struct {
 	modules  modules.Modules
 	store    modules.IStore
 	finished map[string]bool
-	log      *gslogrus.Logger
+	log      analysisclient.LogClient
 	values   []interface{}
 	status   *models.NextStatus
 	node     *models.Node
@@ -92,23 +92,33 @@ func (f *nextflow) inclusiveGateway() *flowerr.Error {
 
 			//如果有条件提前拿数据
 			if gateway.ScriptFlows > 0 {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					data, err := f.call(types.GCNodeSubmitData, f.node.Id)
-					if err != nil {
-						resp(err)
-						return
-					}
-					f1, ok := data.(map[string]interface{})
-					if ok {
-						for k, v1 := range f1 {
-							f.metadata(k, v1)
+				//has data
+				hd, ok := f.ctx.Value("has-" + f.node.Id).(bool)
+				if ok {
+					hd = false
+				}
+
+				if !hd {
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						data, err := f.call(types.GCNodeSubmitData, f.node.Id)
+						if err != nil {
+							resp(err)
+							return
 						}
-					} else {
-						resp(flowerr.ErrUnknow)
-					}
-				}()
+						f1, ok := data.(map[string]interface{})
+						if ok {
+							for k, v1 := range f1 {
+								f.metadata("has-"+f.node.Id, true)
+								f.metadata(k, v1)
+							}
+						} else {
+							resp(flowerr.ErrUnknow)
+						}
+					}()
+				}
+
 			}
 
 			go func() {
@@ -430,6 +440,7 @@ func (f *nextflow) flow() *models.SequenceFlow {
 func (f *nextflow) Restore() {
 	f.status = nil
 	f.finished = make(map[string]bool)
+	//f.cache.Clear()
 }
 
 func (f *nextflow) isRollback() bool {
@@ -440,6 +451,6 @@ func (f *nextflow) isRollback() bool {
 	return v
 }
 
-func NewNextflow(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript, pool *redis.Pool, store modules.IStore) Handler {
+func NewNextflow(modules modules.Modules, log analysisclient.LogClient, script *script.LuaScript, pool *redis.Pool, store modules.IStore) Handler {
 	return &nextflow{modules: modules, log: log, script: newScript(modules, log, script), pool: pool, store: store}
 }

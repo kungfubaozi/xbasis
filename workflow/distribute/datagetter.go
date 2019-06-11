@@ -2,7 +2,7 @@ package distribute
 
 import (
 	"context"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/modules"
@@ -12,7 +12,7 @@ import (
 type dataGetter struct {
 	modules  modules.Modules
 	finished map[string]bool
-	log      *gslogrus.Logger
+	log      analysisclient.LogClient
 	values   []interface{}
 	ctx      context.Context
 	instance *models.Instance
@@ -100,7 +100,7 @@ func (f *dataGetter) metadata(key string, data interface{}) {
 
 func (f *dataGetter) loadData() *flowerr.Error {
 	d := f.relation()
-	data, err := f.modules.Form().LoadNodeDataToStore(f.ctx, f.instance.Id, d.Id)
+	data, err := f.modules.Form().LoadNodeDataFromStore(f.ctx, f.instance.Id, d.Id)
 	if err != nil {
 		return err
 	}
@@ -113,6 +113,6 @@ func (f *dataGetter) Restore() {
 }
 
 //作用是查找节点提交的数据
-func NewDataGetter(modules modules.Modules, log *gslogrus.Logger) Handler {
+func NewDataGetter(modules modules.Modules, log analysisclient.LogClient) Handler {
 	return &dataGetter{modules: modules, log: log}
 }

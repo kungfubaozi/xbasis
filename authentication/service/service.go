@@ -50,12 +50,10 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.ExtAuthenticationService, true)
 		s.Init()
 
-		log := gslogrus.New(gs_commons_constants.ExtAuthenticationService, client)
-
 		gs_ext_service_authentication.RegisterAuthHandler(s.Server(),
 			authenticationhandlers.NewAuthService(pool, safetyclient.NewSecurityClient(s.Client()), conn, client,
 				applicationclient.NewStatusClient(s.Client()),
-				safetyclient.NewBlacklistClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), log, logger))
+				safetyclient.NewBlacklistClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), logger))
 
 		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn, logger))
 

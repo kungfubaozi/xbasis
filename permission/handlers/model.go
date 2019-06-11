@@ -19,9 +19,28 @@ type cacheStructure struct {
 	FunctionStructureId string
 }
 
+type durationAccessCredential struct {
+	FromClientId string
+	RefClientId  string
+	FuncId       string
+	Timestamp    int64
+	FromAuth     bool
+}
+
+type durationAccessToken struct {
+	ClientId string
+	FuncId   string
+	User     string
+	Times    int64
+	MaxTimes int64
+	Auth     bool
+	From     string
+}
+
 type durationAccess struct {
 	User          string
-	Path          string
+	From          string
+	FuncId        string
 	Life          int64
 	ClientId      string
 	CreateAt      int64
@@ -29,6 +48,7 @@ type durationAccess struct {
 	Code          int64
 	CodeExpiredAt int64
 	Key           string
+	Auth          bool
 }
 
 type structure struct {
@@ -105,7 +125,7 @@ type function struct {
 	StructureId  string  `bson:"structure_id" json:"structure_id"`
 	AuthTypes    []int64 `bson:"auth_types" json:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenLife   int64    `bson:"val_token_life" json:"val_token_life"` //def: 0 second (your value must >= 60s)
+	ValTokenTimes  int64    `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
 	GrantPlatforms []int64  `bson:"grant_platforms" json:"grant_platforms"`
 	Roles          []string `json:"roles" bson:"roles"`
 	//representation validation does not require judging the application to which it belongs, and each application can share this function (roles need to be set to null)
@@ -115,7 +135,7 @@ type function struct {
 type simplifiedFunction struct {
 	Id             string   `json:"id"`
 	AuthTypes      []int64  `json:"auth_types"`
-	ValTokenLife   int64    `json:"val_token_life"` //def: 0 second (your value must >= 60s)
+	ValTokenTimes  int64    `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
 	GrantPlatforms []int64  `json:"grant_platforms"`
 	Roles          []string `json:"roles" bson:"roles"`
 	Share          bool     `bson:"share" json:"share"`

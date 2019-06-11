@@ -10,6 +10,10 @@ type formService struct {
 	modules modules.Modules
 }
 
+func (svc *formService) CheckFiledValue(context.Context, *gs_service_workflow.CheckFiledValueRequest, *gs_service_workflow.CheckFieldValueResponse) error {
+	panic("implement me")
+}
+
 func (svc *formService) CreatePlaceholder(context.Context, *gs_service_workflow.CreatePlaceholderRequest, *gs_service_workflow.CreatePlaceholderResponse) error {
 	panic("implement me")
 }

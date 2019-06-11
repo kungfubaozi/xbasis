@@ -2,20 +2,23 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"github.com/samuel/go-zookeeper/zk"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/analysis/client"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/user/pb/ext"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -23,106 +26,128 @@ type durationAccessService struct {
 	pool    *redis.Pool
 	session *mgo.Session
 	*indexutils.Client
-	configuration  *gs_commons_config.GosionConfiguration
 	messageService gs_ext_service_user.MessageService
-	*gslogrus.Logger
+	log            analysisclient.LogClient
+	zk             *zk.Conn
 }
 
 func (svc *durationAccessService) GetRepo() functionRepo {
 	return functionRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
-type sendToUserFunc func(to, code string) *gs_commons_dto.State
-
-//ip, NoneAuth
-func (svc *durationAccessService) Datp(ctx context.Context, in *gs_service_permission.DurationAccessRequest, out *gs_service_permission.DurationAccessResponse) error {
+func (svc *durationAccessService) Send(ctx context.Context, in *gs_service_permission.SendRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.To) == 0 || len(in.Path) == 0 {
+		if len(in.Credential) > 0 {
+			return errstate.ErrRequest
+		}
+
+		configuration := serviceconfiguration.Get()
+
+		credential, es := svc.getCredential(in.Credential)
+		if !es.Ok {
+			return es
+		}
+
+		//
+		////credential的有效时间为10s
+		//if time.Now().UnixNano()-credential.Timestamp >= 10*1e6 {
+		//	return errstate.ErrDurationAccessCredential
+		//}
+
+		to := in.To
+
+		if !credential.FromAuth && len(in.To) <= 8 {
+			return errstate.ErrDurationAccessTarget
+		}
+
+		if credential.FromAuth {
+			to = auth.Token.UserId
+		}
+
+		hkey := encrypt.SHA256(to + credential.FuncId + auth.FromClientId)
+
+		path := "gs.dat.lock/" + hkey
+		var version int32
+		invalid := false
+
+		_, s, err := svc.zk.Get(path)
+		if err != nil && err != zk.ErrInvalidPath {
+			err = nil
+			invalid = true
+		}
+
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		if err == nil {
+			t := time.Now().Unix()
+
+			if s != nil {
+				t = s.Mtime
+				version = s.Version
+			}
+			//limit
+			if time.Now().Unix()-t < configuration.DurationAccessTokenRetryTime*1000 {
+				return errstate.ErrDurationAccessTokenBusy
+			}
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		api, err := repo.FindApiByPrimaryId(credential.FuncId)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		conn := svc.pool.Get()
+
+		write := func(dat *durationAccess) error {
+			b, err := msgpack.Marshal(dat)
+			if err != nil {
+				return err
+			}
+			_, err = conn.Do("hset", hkey, api.Id, b)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
-		hkey := encrypt.SHA1(auth.IP + auth.ClientId)
-		svc.dat(auth.IP, out, in.Path, in.To, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
-			return svc.sendTo(ctx, to, code, 1)
-		})
-		return nil
-	})
-}
-
-//user, AuthTypeOfToken
-func (svc *durationAccessService) Datu(ctx context.Context, in *gs_service_permission.DurationAccessRequest, out *gs_service_permission.DurationAccessResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.Path) == 0 {
-			return nil
-		}
-		hkey := encrypt.SHA1(auth.User + auth.ClientId)
-		svc.dat(auth.User, out, in.Path, auth.User, auth.ClientId, auth.AppId, hkey, in.Code, svc.pool.Get(), func(to, code string) *gs_commons_dto.State {
-			return svc.sendTo(ctx, to, code, 2)
-		})
-		return nil
-	})
-}
-
-func (svc *durationAccessService) sendTo(ctx context.Context, to, code string, t int64) *gs_commons_dto.State {
-	s, err := svc.messageService.SendVerificationCode(ctx, &gs_ext_service_user.SendRequest{
-		To:          to,
-		Type:        t,
-		Code:        code,
-		MessageType: svc.configuration.SendVerificationCodeType,
-	})
-	if err != nil {
-		return errstate.ErrSystem
-	}
-	return s.State
-}
-
-func (svc *durationAccessService) dat(user string, out *gs_service_permission.DurationAccessResponse, path, to, clientId,
-	appId, hkey string, code int64, conn redis.Conn, toUser sendToUserFunc) {
-	repo := svc.GetRepo()
-	defer repo.Close()
-
-	api, err := repo.FindApi(appId, path)
-	if err != nil {
-		out.State = errstate.ErrRequest
-		return
-	}
-
-	write := func(dat *durationAccess) error {
-		b, err := msgpack.Marshal(dat)
-		if err != nil {
-			return err
-		}
-		_, err = conn.Do("hset", hkey, api.Api, b)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
-	addCode := func() {
 
 		var ext int64
 
-		if svc.configuration.DurationAccessTokenSendCodeToType == 1002 { //email
+		if configuration.DurationAccessTokenSendCodeToType == 1002 { //email
+			if !gs_commons_regx.Email(to) && !credential.FromAuth {
+				return errstate.ErrFormatEmail
+			}
 			var t int64
 			t = 10 * 60
-			if svc.configuration.EmailVerificationCodeExpiredTime > 0 {
-				t = svc.configuration.EmailVerificationCodeExpiredTime
+			if configuration.EmailVerificationCodeExpiredTime > 0 {
+				t = configuration.EmailVerificationCodeExpiredTime
 			}
 			ext = t * 1e6
-		} else if svc.configuration.DurationAccessTokenSendCodeToType == 1001 { //phone
+		} else if configuration.DurationAccessTokenSendCodeToType == 1001 { //phone
+			if !gs_commons_regx.Phone(to) && !credential.FromAuth {
+				return errstate.ErrFormatPhone
+			}
 			var t int64
 			t = 10 * 60
-			if svc.configuration.PhoneVerificationCodeExpiredTime > 0 {
-				t = svc.configuration.PhoneVerificationCodeExpiredTime
+			if configuration.PhoneVerificationCodeExpiredTime > 0 {
+				t = configuration.PhoneVerificationCodeExpiredTime
 			}
 			ext = t * 1e6
 		} else {
 			ext = 10 * 60 * 1e6 //10min
 		}
 
+		from := encrypt.SHA1(auth.IP + auth.UserAgent + auth.UserDevice + auth.FromClientId)
+
 		dat := &durationAccess{
-			Path:          path,
-			ClientId:      clientId,
+			Auth:          credential.FromAuth,
+			FuncId:        api.Id,
+			ClientId:      auth.FromClientId,
+			From:          from,
 			User:          to,
 			CreateAt:      time.Now().UnixNano(),
 			CodeExpiredAt: ext + time.Now().UnixNano(),
@@ -130,82 +155,148 @@ func (svc *durationAccessService) dat(user string, out *gs_service_permission.Du
 		}
 
 		if write(dat) != nil {
-			out.State = errstate.ErrSystem
-			return
+			return errstate.ErrSystem
 		}
 
-		out.State = toUser(to, strconv.FormatInt(dat.Code, 10))
-	}
+		st, err := svc.messageService.SendVerificationCode(ctx, &gs_ext_service_user.SendRequest{
+			To:          to,
+			Auth:        credential.FromAuth,
+			Code:        fmt.Sprintf("%d", dat.Code),
+			MessageType: configuration.DurationAccessTokenSendCodeToType,
+		})
 
-	b, err := redis.Bytes(conn.Do("hget", hkey, api.Api))
-	if err != nil && err == redis.ErrNil {
-		if code > 0 {
-			out.State = errstate.ErrDurationAccess
-			return
-		}
-		//code not send
-		addCode()
-		return
-	}
-
-	if err != nil {
-		out.State = errstate.ErrRequest
-		return
-	}
-
-	dat := &durationAccess{}
-	err = msgpack.Unmarshal(b, dat)
-	if err != nil {
-		out.State = errstate.ErrRequest
-		return
-	}
-
-	if dat.Code == -1 { // user already verify
-		out.State = errstate.ErrVerificationCode
-		return
-	}
-
-	if code < 1000000 && code > 100000 {
-		//verify
-		if dat.User != to && dat.ClientId != clientId && dat.Path != path && dat.Code != code {
-			out.State = errstate.ErrDurationAccess
-			return
-		}
-		if time.Now().UnixNano()-dat.CodeExpiredAt >= 0 {
-			out.State = errstate.ErrDurationAccessExpired
-			return
-		}
-		et, err := encrypt.AESEncrypt([]byte(user), []byte(svc.configuration.CurrencySecretKey))
 		if err != nil {
-			out.State = errstate.ErrSystem
-			return
-		}
-		stat := string(et)
-		dat.Stat = stat
-		dat.Life = api.ValTokenLife
-
-		//rewrite
-		if write(dat) != nil {
-			out.State = errstate.ErrSystem
-			return
+			return errstate.ErrSystem
 		}
 
-		out.State = errstate.Success
-		out.Dat = stat
-	} else if code == 0 {
-		//resend
-		if time.Now().UnixNano()/1e9-dat.CreateAt/1e9 >= svc.configuration.DurationAccessTokenRetryTime {
-			addCode()
-			return
+		if !st.State.Ok {
+			return st.State
 		}
-		out.State = errstate.ErrDurationAccessTokenBusy
-	} else {
-		//err code
-		out.State = errstate.ErrVerificationCode
-	}
+
+		data := []byte("")
+		if invalid {
+			_, err = svc.zk.Create(path, data, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+			if err != nil {
+				return errstate.ErrRequest
+			}
+		}
+		_, err = svc.zk.Set(path, data, version+1)
+
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		return errstate.Success
+	})
 }
 
-func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, configuration *gs_commons_config.GosionConfiguration,
-	messageService gs_ext_service_user.MessageService, client *indexutils.Client, log *gslogrus.Logger) gs_service_permission.DurationAccessHandler {
-	return &durationAccessService{pool: pool, Client: client, session: session, configuration: configuration, messageService: messageService, Logger: log}
+func (svc *durationAccessService) Verify(ctx context.Context, in *gs_service_permission.VerifyRequest, out *gs_service_permission.VerifyResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(in.Credential) > 0 && len(in.To) <= 8 && (in.Code <= 1000000 && in.Code >= 100000) {
+			return errstate.ErrRequest
+		}
+		configuration := serviceconfiguration.Get()
+
+		credential, es := svc.getCredential(in.Credential)
+		if !es.Ok {
+			return es
+		}
+
+		hkey := encrypt.SHA256(in.To + credential.FuncId + auth.FromClientId)
+
+		conn := svc.pool.Get()
+
+		b, err := redis.Bytes(conn.Do("hget", hkey, credential.FuncId))
+		if err != nil && err == redis.ErrNil {
+			return errstate.ErrDurationAccessUnsentCode
+		}
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		da := &durationAccess{}
+		err = msgpack.Unmarshal(b, &da)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		if in.To != da.User || in.Code != da.Code || auth.FromClientId != da.ClientId {
+			return errstate.ErrDurationAccessCode
+		}
+
+		if da.CodeExpiredAt >= time.Now().UnixNano() {
+			return errstate.ErrDurationAccessExpired
+		}
+
+		//generate token
+		id := gs_commons_generator.NewIDG()
+		tokenKey := id.Get()
+
+		key, err := encrypt.AESEncrypt([]byte(tokenKey), []byte(configuration.CurrencySecretKey))
+		if err != nil {
+			return errstate.ErrSystem
+		}
+
+		_, err = conn.Do("del", hkey)
+		if err != nil {
+			return errstate.ErrSystem
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		api, err := repo.FindApiByPrimaryId(credential.FuncId)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		dat := &durationAccessToken{
+			ClientId: da.ClientId,
+			FuncId:   da.FuncId,
+			User:     da.Key,
+			Times:    0,
+			Auth:     da.Auth,
+			From:     da.From,
+			MaxTimes: api.ValTokenTimes,
+		}
+
+		b, err = msgpack.Marshal(dat)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		_, err = conn.Do("hset", "dat."+da.FuncId, tokenKey, b)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		out.Dat = key
+
+		return errstate.Success
+	})
+}
+
+func (svc *durationAccessService) getCredential(credential string) (*durationAccessCredential, *gs_commons_dto.State) {
+	configuration := serviceconfiguration.Get()
+
+	var c *durationAccessCredential
+	b, err := encrypt.AESDecrypt(credential, []byte(configuration.CurrencySecretKey))
+	if err != nil {
+		return nil, errstate.ErrSystem
+	}
+
+	err = msgpack.Unmarshal([]byte(b), &credential)
+	if err != nil {
+		return nil, errstate.ErrSystem
+	}
+
+	if c == nil || len(c.FuncId) == 0 {
+		return nil, errstate.ErrSystem
+	}
+	return c, errstate.Success
+}
+
+func NewDurationAccessService(pool *redis.Pool, session *mgo.Session,
+	messageService gs_ext_service_user.MessageService, client *indexutils.Client, log analysisclient.LogClient) gs_service_permission.DurationAccessHandler {
+	return &durationAccessService{pool: pool, Client: client, session: session, messageService: messageService, log: log}
 }

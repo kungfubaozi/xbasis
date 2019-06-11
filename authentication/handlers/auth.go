@@ -12,7 +12,6 @@ import (
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/connection/cmd/connectioncli"
@@ -29,7 +28,6 @@ type authService struct {
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
 	extAccessibleService        gs_ext_service_permission.AccessibleService
 	connectioncli               connectioncli.ConnectionClient
-	*gslogrus.Logger
 	*indexutils.Client
 	log analysisclient.LogClient
 }
@@ -245,7 +243,7 @@ func (svc *authService) Verify(ctx context.Context, in *gs_ext_service_authentic
 
 func NewAuthService(pool *redis.Pool, extSecurityService gs_ext_service_safety.SecurityService,
 	connectioncli connectioncli.ConnectionClient, client *indexutils.Client, as gs_ext_service_application.ApplicationStatusService,
-	blacklistService gs_service_safety.BlacklistService, extAccessibleService gs_ext_service_permission.AccessibleService, logger *gslogrus.Logger, log analysisclient.LogClient) gs_ext_service_authentication.AuthHandler {
+	blacklistService gs_service_safety.BlacklistService, extAccessibleService gs_ext_service_permission.AccessibleService, log analysisclient.LogClient) gs_ext_service_authentication.AuthHandler {
 	return &authService{pool: pool, extSecurityService: extSecurityService, connectioncli: connectioncli, blacklistService: blacklistService,
-		Client: client, extApplicationStatusService: as, extAccessibleService: extAccessibleService, Logger: logger, log: log}
+		Client: client, extApplicationStatusService: as, extAccessibleService: extAccessibleService, log: log}
 }

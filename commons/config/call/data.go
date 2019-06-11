@@ -16,7 +16,7 @@ func Configuration() gs_commons_config.OnGosionConfigurationChanged {
 
 func Get() *gs_commons_config.GosionConfiguration {
 	if configuration == nil {
-		return &gs_commons_config.GosionConfiguration{}
+		panic("error gosion configuration.")
 	}
 	return configuration
 }

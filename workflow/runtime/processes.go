@@ -5,8 +5,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/distribute"
 	"konekko.me/gosion/workflow/flowerr"
@@ -17,7 +17,7 @@ import (
 type processes struct {
 	session  *mgo.Session
 	pool     *redis.Pool
-	log      *gslogrus.Logger
+	log      analysisclient.LogClient
 	client   *indexutils.Client
 	relation distribute.Handler
 	id       gs_commons_generator.IDGenerator

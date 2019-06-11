@@ -14,10 +14,11 @@ type LogHeaders struct {
 	ModuleName       string `json:"moduleName"`
 	UserAgent        string `json:"userAgent"`
 	Ip               string `json:"ip"`
+	FromClientId     string `json:"from_client_id"`
 	UserId           string `json:"userId"`
 	Path             string `json:"path"`
 	Api              string `json:"api"`
-	ClientId         string `json:"clientId"`
+	RefClientId      string `json:"refClientId"`
 	HasAccessToken   bool   `json:"hasAccessToken"`
 	HasDurationToken bool   `json:"hasDurationToken"`
 	TraceId          string `json:"traceId"`

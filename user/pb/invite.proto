@@ -6,6 +6,10 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Invite {
 
+    //邀请用户
+    //邀请的流程并不是直接把用户放在库中
+    //需要被邀请
+    //1.如果没有注册，需要注册再进行
     rpc User (InviteRequest) returns (gs.commons.dto.Status);
 
 }

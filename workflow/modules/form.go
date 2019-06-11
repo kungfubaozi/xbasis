@@ -12,5 +12,5 @@ type IForm interface {
 	Submit(ctx context.Context, instanceId, nodeId, formId string, encryption bool, value map[string]interface{}) *flowerr.Error
 
 	//load key.form
-	LoadNodeDataToStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, *flowerr.Error)
+	LoadNodeDataFromStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, *flowerr.Error)
 }

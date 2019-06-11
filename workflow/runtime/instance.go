@@ -3,8 +3,8 @@ package runtime
 import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
@@ -16,7 +16,7 @@ type instances struct {
 	session *mgo.Session
 	pool    *redis.Pool
 	client  *indexutils.Client
-	log     *gslogrus.Logger
+	log     analysisclient.LogClient
 	id      gs_commons_generator.IDGenerator
 }
 

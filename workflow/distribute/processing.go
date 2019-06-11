@@ -2,7 +2,7 @@ package distribute
 
 import (
 	"context"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/modules"
@@ -18,7 +18,7 @@ type processing struct {
 	instance *models.Instance
 	appId    string
 	ctx      context.Context
-	log      *gslogrus.Logger
+	log      analysisclient.LogClient
 	node     *models.Node
 	sd       map[string]interface{}
 	value    interface{}
@@ -257,6 +257,6 @@ func (f *processing) typeCheck(v interface{}, kind reflect.Kind) bool {
 	return reflect.TypeOf(v).Kind() == kind
 }
 
-func NewProcessing(modules modules.Modules, log *gslogrus.Logger, store modules.IStore) Handler {
+func NewProcessing(modules modules.Modules, log analysisclient.LogClient, store modules.IStore) Handler {
 	return &processing{modules: modules, log: log, store: store}
 }

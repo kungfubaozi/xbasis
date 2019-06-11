@@ -3,7 +3,7 @@ package runtime
 import (
 	"context"
 	"github.com/olivere/elastic"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
@@ -11,7 +11,7 @@ import (
 
 type store struct {
 	client *indexutils.Client
-	log    *gslogrus.Logger
+	log    analysisclient.LogClient
 }
 
 func (s *store) AddIgnoreNode(ignore *models.NodeIgnore) *flowerr.Error {

@@ -8,15 +8,16 @@ It is generated from these files:
 	permission/pb/dat.proto
 
 It has these top-level messages:
-	DurationAccessRequest
-	DurationAccessResponse
+	VerifyRequest
+	VerifyResponse
+	SendRequest
 */
 package gs_service_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import gs_commons_dto "konekko.me/gosion/commons/dto"
 
 import (
 	context "context"
@@ -28,6 +29,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = gs_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,8 +45,8 @@ var _ server.Option
 // Client API for DurationAccess service
 
 type DurationAccessService interface {
-	Datu(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error)
-	Datp(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error)
+	Send(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*VerifyResponse, error)
 }
 
 type durationAccessService struct {
@@ -65,9 +67,9 @@ func NewDurationAccessService(name string, c client.Client) DurationAccessServic
 	}
 }
 
-func (c *durationAccessService) Datu(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error) {
-	req := c.c.NewRequest(c.name, "DurationAccess.datu", in)
-	out := new(DurationAccessResponse)
+func (c *durationAccessService) Send(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "DurationAccess.Send", in)
+	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -75,9 +77,9 @@ func (c *durationAccessService) Datu(ctx context.Context, in *DurationAccessRequ
 	return out, nil
 }
 
-func (c *durationAccessService) Datp(ctx context.Context, in *DurationAccessRequest, opts ...client.CallOption) (*DurationAccessResponse, error) {
-	req := c.c.NewRequest(c.name, "DurationAccess.datp", in)
-	out := new(DurationAccessResponse)
+func (c *durationAccessService) Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*VerifyResponse, error) {
+	req := c.c.NewRequest(c.name, "DurationAccess.Verify", in)
+	out := new(VerifyResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -88,14 +90,14 @@ func (c *durationAccessService) Datp(ctx context.Context, in *DurationAccessRequ
 // Server API for DurationAccess service
 
 type DurationAccessHandler interface {
-	Datu(context.Context, *DurationAccessRequest, *DurationAccessResponse) error
-	Datp(context.Context, *DurationAccessRequest, *DurationAccessResponse) error
+	Send(context.Context, *SendRequest, *gs_commons_dto.Status) error
+	Verify(context.Context, *VerifyRequest, *VerifyResponse) error
 }
 
 func RegisterDurationAccessHandler(s server.Server, hdlr DurationAccessHandler, opts ...server.HandlerOption) error {
 	type durationAccess interface {
-		Datu(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error
-		Datp(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error
+		Send(ctx context.Context, in *SendRequest, out *gs_commons_dto.Status) error
+		Verify(ctx context.Context, in *VerifyRequest, out *VerifyResponse) error
 	}
 	type DurationAccess struct {
 		durationAccess
@@ -108,10 +110,10 @@ type durationAccessHandler struct {
 	DurationAccessHandler
 }
 
-func (h *durationAccessHandler) Datu(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error {
-	return h.DurationAccessHandler.Datu(ctx, in, out)
+func (h *durationAccessHandler) Send(ctx context.Context, in *SendRequest, out *gs_commons_dto.Status) error {
+	return h.DurationAccessHandler.Send(ctx, in, out)
 }
 
-func (h *durationAccessHandler) Datp(ctx context.Context, in *DurationAccessRequest, out *DurationAccessResponse) error {
-	return h.DurationAccessHandler.Datp(ctx, in, out)
+func (h *durationAccessHandler) Verify(ctx context.Context, in *VerifyRequest, out *VerifyResponse) error {
+	return h.DurationAccessHandler.Verify(ctx, in, out)
 }

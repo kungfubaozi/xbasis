@@ -11,5 +11,6 @@ service Check {
 }
 
 message AuthRequest {
-
+    string path = 1;
+    map<string, string> headers = 2;
 }

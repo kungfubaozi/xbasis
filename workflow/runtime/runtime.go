@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/micro/go-micro/metadata"
 	"github.com/samuel/go-zookeeper/zk"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/workflow/distribute"
 	"konekko.me/gosion/workflow/flowerr"
@@ -22,7 +22,7 @@ type runtime struct {
 	processing distribute.Handler
 	next       distribute.Handler
 	dataGetter distribute.Handler
-	log        *gslogrus.Logger
+	log        analysisclient.LogClient
 	conn       *zk.Conn
 }
 

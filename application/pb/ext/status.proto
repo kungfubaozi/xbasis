@@ -26,4 +26,5 @@ message GetAppClientStatusResponse {
     bool mustsync = 8;
     int64 type = 9;
     bool canRedirect = 10;
+    string secretKey = 11;
 }

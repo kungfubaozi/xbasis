@@ -11,6 +11,8 @@ message State {
     int64 code = 1;
     string message = 2;
     bool ok = 3;
+    string credential = 4;
+    int64 timestamp = 5;
 }
 
 message Authorize {

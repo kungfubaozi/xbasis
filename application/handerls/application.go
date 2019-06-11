@@ -6,8 +6,10 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
@@ -65,11 +67,21 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			enabled = gs_commons_constants.Enabled
 		}
 
+		//生成加密字符
+		secretKey := id.Get()
+		c := serviceconfiguration.Get()
+
+		s, err := encrypt.AESEncrypt([]byte(secretKey), []byte(c.CurrencySecretKey))
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
 		info := &appInfo{
 			Name:         in.Name,
 			CreateAt:     now,
 			Id:           appId,
 			CreateUserId: auth.User,
+			SecretKey:    string(s),
 			Settings: &appSetting{
 				Enabled:     enabled,
 				MustSync:    in.MustSync,

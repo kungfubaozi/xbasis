@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/garyburd/redigo/redis"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 )
@@ -17,7 +17,7 @@ type applicationStatusService struct {
 	//session *mgo.Session
 	pool *redis.Pool
 	*indexutils.Client
-	*gslogrus.Logger
+	log analysisclient.LogClient
 }
 
 func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in *gs_ext_service_application.GetAppClientStatusRequest,
@@ -27,7 +27,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 			return errstate.ErrRequest
 		}
 
-		log := svc.WithHeaders(auth.TraceId, auth.ClientId, auth.IP, "", auth.UserAgent, auth.UserDevice)
+		log := svc.WithHeaders(auth.TraceId, auth.GetClientId(), auth.IP, "", auth.UserAgent, auth.UserDevice)
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -54,6 +54,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 				out.ClientEnabled = v.Enabled
 				out.AppId = a.Id
 				out.AppQuarantine = a.Settings.Quarantine
+				out.SecretKey = a.SecretKey
 				if a.UserS == nil || a.FunctionS == nil {
 
 					log.WithAction("ApplicationStructureNull", logrus.Fields{

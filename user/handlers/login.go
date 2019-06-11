@@ -32,7 +32,6 @@ func (svc *loginService) GetRepo() *userRepo {
 
 /**
 1）登录生成的token只适用于当前登录的项目(x-client-id)
-2)
 */
 //web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithAccountResponse) error {
@@ -127,7 +126,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				//generate token
 				s1, err := svc.extTokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
 					Auth: &gs_commons_dto.Authorize{
-						ClientId:  auth.ClientId,
+						ClientId:  auth.FromClientId,
 						UserId:    info.Id,
 						Ip:        auth.IP,
 						Device:    auth.UserDevice,

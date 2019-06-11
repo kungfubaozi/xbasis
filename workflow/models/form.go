@@ -9,7 +9,7 @@ type TypeForm struct {
 	CreateUserId string       `json:"create_user_id" bson:"create_user_id"`
 	Require      bool         `bson:"require" json:"require"`
 	Fields       []*TypeField `bson:"fields" json:"fields"`
-	Encryption   bool         `bson:"encryption" json:"encryption"`
+	Encryption   bool         `bson:"encryption" json:"encryption"` //default true
 }
 
 type TypeField struct {

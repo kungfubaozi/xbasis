@@ -42,5 +42,13 @@ var (
 	ErrOperateBusy                 = &gs_commons_dto.State{Ok: false, Code: 20035, Message: "err operate busy"}
 	ErrUserSyncToApp               = &gs_commons_dto.State{Ok: false, Code: 20035, Message: "err operate busy"}
 	ErrApplicationRedirectUrl      = &gs_commons_dto.State{Ok: false, Code: 20036, Message: "err app url"}
-	ErrApplicationSyncUrl          = &gs_commons_dto.State{Ok: false, Code: 20036, Message: "err sync url"}
+	ErrApplicationSyncUrl          = &gs_commons_dto.State{Ok: false, Code: 20037, Message: "err sync url"}
+	ErrDurationAccessCredential    = &gs_commons_dto.State{Ok: false, Code: 20038, Message: "err duration access credential"}
+	ErrDurationAccessTarget        = &gs_commons_dto.State{Ok: false, Code: 20039, Message: "err duration access target"}
+	ErrFormatEmail                 = &gs_commons_dto.State{Ok: false, Code: 20040, Message: "err format email"}
+	ErrFormatPhone                 = &gs_commons_dto.State{Ok: false, Code: 20041, Message: "err format phone"}
+	ErrDurationAccessUnsentCode    = &gs_commons_dto.State{Ok: false, Code: 20042, Message: "err duration access unsent code"} //
+	ErrDurationAccessCode          = &gs_commons_dto.State{Ok: false, Code: 20043, Message: "err duration access code"}        //
+	ErrUnbindEmail                 = &gs_commons_dto.State{Ok: false, Code: 20044, Message: "err unbind email"}                //
+	ErrUnbindPhone                 = &gs_commons_dto.State{Ok: false, Code: 20045, Message: "err unbind phone"}                //
 )

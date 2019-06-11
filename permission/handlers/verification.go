@@ -10,6 +10,7 @@ import (
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb/ext"
 	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/commons/actions"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
@@ -17,12 +18,12 @@ import (
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb/ext"
 	"konekko.me/gosion/safety/pb"
 	"sync"
+	"time"
 )
 
 type verificationService struct {
@@ -41,9 +42,10 @@ type requestHeaders struct {
 	userAgent     string
 	userDevice    string
 	ip            string
-	clientId      string
+	refClientId   string //作为API share
 	path          string
 	dat           string
+	fromClientId  string
 }
 
 func (svc *verificationService) GetRepo() *functionRepo {
@@ -74,7 +76,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 					return nil
 				}
 
-				out.ClientId = auth.ClientId
+				out.FromClient = auth.FromClientId
+				out.RefClientId = auth.RefClientId
 				out.TraceId = traceId
 				out.Ip = auth.IP
 				out.UserDevice = auth.UserDevice
@@ -90,18 +93,23 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				authorization: md["authorization"],
 				userAgent:     md["x-user-agent"],
 				ip:            md["x-real-ip"],
-				clientId:      md["gs-client-id"],
+				fromClientId:  md["gs-client-id"],
 				userDevice:    md["gs-user-device"],
 				path:          md["gs-request-path"],
 				dat:           md["gs-duration-token"],
+				refClientId:   md["gs-client-sci"],
 			}
 
 			//check
 			if len(rh.userDevice) == 0 ||
-				len(rh.clientId) == 0 || len(rh.userAgent) == 0 || len(rh.ip) == 0 ||
+				len(rh.fromClientId) == 0 || len(rh.userAgent) == 0 || len(rh.ip) == 0 ||
 				len(rh.path) == 0 {
 				fmt.Println("basic check failed")
 				return nil
+			}
+
+			if len(rh.refClientId) == 0 {
+				rh.refClientId = rh.fromClientId
 			}
 
 			fmt.Println("start check process")
@@ -121,14 +129,18 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				}
 			}
 
+			/**
+			调用的顺序是refClientId第一
+			*/
 			headers := &analysisclient.LogHeaders{
 				ServiceName:      gs_commons_constants.ExtPermissionVerification,
 				ModuleName:       "Verification",
 				UserAgent:        rh.userAgent,
+				RefClientId:      rh.refClientId,
 				Device:           rh.userDevice,
 				HasAccessToken:   len(rh.authorization) != 0,
 				HasDurationToken: len(rh.dat) != 0,
-				ClientId:         rh.clientId,
+				FromClientId:     rh.fromClientId,
 				Ip:               rh.ip,
 				Path:             rh.path,
 				TraceId:          traceId,
@@ -148,6 +160,11 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			var conn redis.Conn
 
 			wg.Add(3)
+
+			callClientId := rh.fromClientId
+			if len(rh.refClientId) > 0 {
+				callClientId = rh.refClientId
+			}
 
 			//blacklist(ip)
 			go func() {
@@ -185,7 +202,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			go func() {
 				defer wg.Done()
 				s, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
-					ClientId: rh.clientId,
+					ClientId: callClientId,
 				})
 				if err != nil {
 					resp(errstate.ErrRequest)
@@ -270,17 +287,35 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 
 				out.AppType = appResp.Type
 
-				dat := &durationAccess{}
 				userId := ""
+				cv := ""
 				wg.Add(len(f.AuthTypes))
+
+				var credential *durationAccessCredential
+				var dat *durationAccessToken
+
+				//清除凭证(可能会遇到其他认证不通过的情况，发送验证码的前提是: 其余的验证条件全部满足)
+				cclear := false
+
+				auth := false
+
 				for _, v := range f.AuthTypes {
 					go func() {
 						defer wg.Done()
 						switch v {
 						case gs_commons_constants.AuthTypeOfValcode:
-							//user must login
 							if len(rh.dat) == 0 {
+								//生成生成验证码凭证
+								//(先请求原API，生成凭证，然后调用dat获取验证码，再请求API)
 								resp(errstate.ErrRequest)
+
+								credential = &durationAccessCredential{
+									FromClientId: rh.fromClientId,
+									RefClientId:  rh.refClientId,
+									FuncId:       f.Id,
+									Timestamp:    time.Now().UnixNano(),
+								}
+
 								return
 							}
 
@@ -290,9 +325,9 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								return
 							}
 
-							key := encrypt.SHA1(string(v) + rh.clientId)
-							dat.Key = key
-							b, err := redis.Bytes(conn.Do("hget", key, f.Id))
+							cv = v
+
+							b, err := redis.Bytes(conn.Do("hget", "dat."+f.Id, v))
 							if err != nil && err == redis.ErrNil {
 								resp(errstate.ErrRequest)
 								return
@@ -303,21 +338,16 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								resp(errstate.ErrSystem)
 								return
 							}
-							if dat.Stat != rh.dat || dat.Path != rh.path || dat.ClientId != rh.clientId {
-								resp(errstate.ErrDurationAccess)
-								return
-							}
-							//if time.Now().UnixNano()-dat.ExpiredAt >= 0 {
-							//	resp(errstate.ErrDurationAccessExpired)
-							//	return
-							//}
-							resp(errstate.Success)
+
 							break
 						case gs_commons_constants.AuthTypeOfToken:
 							//1.check token
 
+							auth = true
+
 							if len(rh.authorization) == 0 {
 								resp(errstate.ErrAccessToken)
+								cclear = true
 								return
 							}
 
@@ -325,7 +355,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								"transport-user-agent":      rh.userAgent,
 								"transport-app-id":          appResp.AppId,
 								"transport-ip":              rh.ip,
-								"transport-client-id":       rh.clientId,
+								"transport-from-client-id":  rh.fromClientId,
+								"transport-ref-client-id":   rh.refClientId,
 								"transport-trace-id":        traceId,
 								"transport-user-device":     rh.userDevice,
 								"transport-client-platform": fmt.Sprintf("%d", appResp.ClientPlatform),
@@ -333,13 +364,14 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 
 							status, err := svc.extAuthService.Verify(ac, &gs_ext_service_authentication.VerifyRequest{
 								Token:         rh.authorization,
-								ClientId:      rh.clientId,
+								ClientId:      callClientId,
 								FunctionRoles: f.Roles,
 								Share:         f.Share,
 								Funcs:         appResp.FunctionStructure,
 							})
 							if err != nil {
 								resp(errstate.ErrSystem)
+								cclear = true
 								return
 							}
 
@@ -369,6 +401,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								})
 							}
 
+							cclear = true
 							resp(status.State)
 
 							break
@@ -381,17 +414,6 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				}
 
 				wg.Wait()
-
-				if len(dat.Path) > 0 {
-					if len(userId) == 0 {
-						userId = rh.ip
-					}
-					if dat.User != userId {
-						out.Token = nil
-						return errstate.ErrDurationAccess
-					}
-
-				}
 
 				if !state.Ok {
 					out.State = state
@@ -407,10 +429,72 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 					return nil
 				}
 
+				if dat != nil {
+					from := encrypt.SHA1(rh.ip + rh.userAgent + rh.userAgent + rh.fromClientId)
+					if dat.From != from {
+						return errstate.ErrDurationAccess
+					}
+					user := ""
+					if auth {
+						if len(userId) == 0 {
+							return errstate.ErrRequest
+						}
+						user = userId
+					}
+					if dat.FuncId != f.Id || dat.ClientId != rh.fromClientId || (auth && user != dat.User) {
+						return errstate.ErrDurationAccess
+					}
+
+					if dat.MaxTimes <= dat.Times {
+						dat.Times = dat.Times + 1
+						b, err := msgpack.Marshal(dat)
+						if err != nil {
+
+							return errstate.ErrSystem
+						}
+						_, err = conn.Do("hset", "dat."+f.Id, cv, b)
+						if err != nil {
+							return errstate.ErrSystem
+						}
+					} else {
+						//delete access token
+						conn.Do("del", "dat."+f.Id, cv)
+						return errstate.ErrDurationAccessExpired
+					}
+
+				}
+
+				if cclear {
+					credential = nil
+				}
+
+				//发送验证码凭证
+				if credential != nil {
+
+					//从auth获取发送对象
+					if auth {
+						credential.FromAuth = true
+					}
+
+					b, err := msgpack.Marshal(credential)
+					if err != nil {
+						return errstate.ErrSystem
+					}
+
+					c, err := encrypt.AESEncrypt(b, []byte(svc.configuration.CurrencySecretKey))
+					if err != nil {
+						return errstate.ErrSystem
+					}
+
+					state = errstate.ErrDurationAccessCredential
+					state.Credential = c
+				}
+
 				out.AppId = appResp.AppId
 				out.UserAgent = rh.userAgent
 				out.UserDevice = rh.userDevice
-				out.ClientId = rh.clientId
+				out.FromClient = rh.fromClientId
+				out.RefClientId = rh.refClientId
 				out.Ip = rh.ip
 				out.TraceId = traceId
 				out.Platform = appResp.ClientPlatform
@@ -418,18 +502,31 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 					userId = rh.ip
 				}
 				out.User = userId
+				if dat != nil {
+					var v1 int64
+					if dat.Auth {
+						v1 = 1
+					} else {
+						v1 = 2
+					}
+					out.DatAuth = v1
+					out.DatTo = dat.User
+				}
 
 				svc.log.Info(&analysisclient.LogContent{
 					Headers: &analysisclient.LogHeaders{
 						TraceId: traceId,
 						UserId:  userId,
 					},
-					Action:    "UserRequestApi",
+					Action:    loggeractions.UserRequestApi,
 					Message:   "verification passed",
 					StateCode: 0,
 					Fields: &analysisclient.LogFields{
-						"id":    f.Id,
-						"appId": appResp.AppId,
+						"id":           f.Id,
+						"userId":       userId,
+						"fromClientId": headers.FromClientId,
+						"refClientId":  headers.RefClientId,
+						"appId":        appResp.AppId,
 					},
 				})
 
@@ -444,7 +541,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 
 func NewVerificationService(pool *redis.Pool, session *mgo.Session,
 	extApplicationStatusService gs_ext_service_application.ApplicationStatusService, blacklistService gs_service_safety.BlacklistService,
-	extAuthService gs_ext_service_authentication.AuthService, client *indexutils.Client, log *gslogrus.Logger, logger analysisclient.LogClient) gs_ext_service_permission.VerificationHandler {
+	extAuthService gs_ext_service_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) gs_ext_service_permission.VerificationHandler {
 	return &verificationService{pool: pool, session: session, extApplicationStatusService: extApplicationStatusService,
 		blacklistService: blacklistService, extAuthService: extAuthService, Client: client, log: logger}
 }

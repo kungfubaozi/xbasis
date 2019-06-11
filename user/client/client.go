@@ -6,14 +6,6 @@ import (
 	"konekko.me/gosion/user/pb/ext"
 )
 
-//func client() micro.Service {
-//	s := mircogrpc.NewService(micro.Registry(consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
-//		registry.Secure(false))))
-//
-//	s.Init()
-//	return s
-//}
-
 func NewExtUserClient(client client.Client) gs_ext_service_user.UserService {
 	return gs_ext_service_user.NewUserService(gs_commons_constants.ExtUserService, client)
 }

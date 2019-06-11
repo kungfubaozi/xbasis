@@ -61,6 +61,12 @@ func (repo *functionRepo) FindApiById(structureId, id string) (*function, error)
 	return &f, err
 }
 
+func (repo *functionRepo) FindApiByPrimaryId(id string) (*function, error) {
+	var f function
+	err := repo.functionCollection().Find(bson.M{"_id": id}).One(&f)
+	return &f, err
+}
+
 func (repo *functionRepo) FindGroupExists(groupId string) bool {
 	c, err := repo.groupCollection().Find(bson.M{"_id": groupId}).Count()
 	if err != nil {

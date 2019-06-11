@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"context"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb/ext"
@@ -17,7 +17,7 @@ func getWrapperUser(ctx context.Context) *gs_commons_wrapper.WrapperUser {
 
 type user struct {
 	client            *indexutils.Client
-	log               *gslogrus.Logger
+	log               analysisclient.LogClient
 	userService       gs_ext_service_user.UserService
 	permissionService gs_ext_service_permission.AccessibleService
 }

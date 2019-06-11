@@ -5,9 +5,9 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
@@ -19,7 +19,7 @@ type form struct {
 	session   *mgo.Session
 	pool      *redis.Pool
 	client    *indexutils.Client
-	log       *gslogrus.Logger
+	log       analysisclient.LogClient
 	id        gs_commons_generator.IDGenerator
 	secretKey string
 }
@@ -74,7 +74,7 @@ func (f *form) FindById(id string) (*models.TypeForm, *flowerr.Error) {
 	panic("implement me")
 }
 
-func (f *form) LoadNodeDataToStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, *flowerr.Error) {
+func (f *form) LoadNodeDataFromStore(ctx context.Context, instanceId, nodeId string) (map[string]interface{}, *flowerr.Error) {
 	var s *models.SubmitForm
 	ok, err := f.client.QueryFirst(types.IndexSubmitForm, map[string]interface{}{"instance_id": instanceId, "node_id": nodeId}, &s)
 	if err != nil {

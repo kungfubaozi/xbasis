@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/distribute"
 	"konekko.me/gosion/workflow/modules"
@@ -22,7 +22,7 @@ type workflow struct {
 	session  *mgo.Session
 	pool     *redis.Pool
 	client   *indexutils.Client
-	log      *gslogrus.Logger
+	log      analysisclient.LogClient
 	//
 	ri modules.IRuntime
 	hi modules.IHistory
@@ -57,7 +57,7 @@ func (m *workflow) Form() modules.IForm {
 	return m.fi
 }
 
-func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Client, log *gslogrus.Logger) *Workflow {
+func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Client, log analysisclient.LogClient) *Workflow {
 	return &Workflow{&workflow{
 		shutdown: make(chan error),
 		pool:     pool,

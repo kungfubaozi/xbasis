@@ -6,20 +6,24 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service DurationAccess {
 
-    rpc datu (DurationAccessRequest) returns (DurationAccessResponse);
+    rpc Send (SendRequest) returns (gs.commons.dto.Status);
 
-    rpc datp (DurationAccessRequest) returns (DurationAccessResponse);
-
+    rpc Verify (VerifyRequest) returns (VerifyResponse);
 }
 
-message DurationAccessRequest {
-    string path = 1;
+message VerifyRequest {
+    string credential = 1; //凭证
     int64 code = 2;
     string to = 3;
-    int64 type = 4; //发送方式  40810:weixin  40820:normal
 }
 
-message DurationAccessResponse {
+message VerifyResponse {
     gs.commons.dto.State state = 1;
     string dat = 2;
+}
+
+message SendRequest {
+    string to = 1;
+    int64 type = 2; //发送方式  40810:weixin  40820:normal
+    string credential = 3; //凭证
 }

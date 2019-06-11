@@ -8,6 +8,8 @@ It is generated from these files:
 	pb/form.proto
 
 It has these top-level messages:
+	CheckFiledValueRequest
+	CheckFieldValueResponse
 	GetAllTypeFieldsRequest
 	GetAllTypeFieldsResponse
 	CreatePlaceholderRequest
@@ -62,6 +64,8 @@ type FormService interface {
 	RemoveField(ctx context.Context, in *RemoveFieldRequest, opts ...client.CallOption) (*RemoveFieldResponse, error)
 	UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, opts ...client.CallOption) (*UpdateFieldPropsResponse, error)
 	GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, opts ...client.CallOption) (*GetAllTypeFieldsResponse, error)
+	// 检查form的filed value是否符合
+	CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, opts ...client.CallOption) (*CheckFieldValueResponse, error)
 }
 
 type formService struct {
@@ -152,6 +156,16 @@ func (c *formService) GetAllTypeFields(ctx context.Context, in *GetAllTypeFields
 	return out, nil
 }
 
+func (c *formService) CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, opts ...client.CallOption) (*CheckFieldValueResponse, error) {
+	req := c.c.NewRequest(c.name, "Form.CheckFiledValue", in)
+	out := new(CheckFieldValueResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Form service
 
 type FormHandler interface {
@@ -162,6 +176,8 @@ type FormHandler interface {
 	RemoveField(context.Context, *RemoveFieldRequest, *RemoveFieldResponse) error
 	UpdateFieldProps(context.Context, *UpdateFieldPropsRequest, *UpdateFieldPropsResponse) error
 	GetAllTypeFields(context.Context, *GetAllTypeFieldsRequest, *GetAllTypeFieldsResponse) error
+	// 检查form的filed value是否符合
+	CheckFiledValue(context.Context, *CheckFiledValueRequest, *CheckFieldValueResponse) error
 }
 
 func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.HandlerOption) error {
@@ -173,6 +189,7 @@ func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.Handl
 		RemoveField(ctx context.Context, in *RemoveFieldRequest, out *RemoveFieldResponse) error
 		UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, out *UpdateFieldPropsResponse) error
 		GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, out *GetAllTypeFieldsResponse) error
+		CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, out *CheckFieldValueResponse) error
 	}
 	type Form struct {
 		form
@@ -211,4 +228,8 @@ func (h *formHandler) UpdateFieldProps(ctx context.Context, in *UpdateFieldProps
 
 func (h *formHandler) GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, out *GetAllTypeFieldsResponse) error {
 	return h.FormHandler.GetAllTypeFields(ctx, in, out)
+}
+
+func (h *formHandler) CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, out *CheckFieldValueResponse) error {
+	return h.FormHandler.CheckFiledValue(ctx, in, out)
 }

@@ -3,7 +3,7 @@ package distribute
 import (
 	"context"
 	"fmt"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 	"konekko.me/gosion/workflow/modules"
@@ -13,7 +13,7 @@ import (
 
 type flowscript struct {
 	modules  modules.Modules
-	log      *gslogrus.Logger
+	log      analysisclient.LogClient
 	script   *script.LuaScript
 	ctx      context.Context
 	values   []interface{}
@@ -139,6 +139,6 @@ func (f *flowscript) do() *flowerr.Error {
 	return flowerr.ErrInvalidGatewayScript
 }
 
-func newScript(modules modules.Modules, log *gslogrus.Logger, script *script.LuaScript) Handler {
+func newScript(modules modules.Modules, log analysisclient.LogClient, script *script.LuaScript) Handler {
 	return &flowscript{modules: modules, log: log, script: script}
 }

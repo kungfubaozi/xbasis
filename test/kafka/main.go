@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Shopify/sarama"
-	"konekko.me/gosion/commons/date"
 	"konekko.me/gosion/commons/generator"
 	"time"
 )
@@ -29,7 +28,7 @@ func main() {
 	//		"userId":   "MDk1YThiYTdlMjMxMmU0MjBhYzY5YmYzZjhjN2E0ZjQ2OTc5ZTA2Yw==",
 	//	},
 	//})
-	fmt.Println(gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_I_MM_I_DD))
+
 }
 
 func test() {

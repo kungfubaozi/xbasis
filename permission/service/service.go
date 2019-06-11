@@ -45,12 +45,10 @@ func StartService() {
 	go func() {
 		m := microservice.NewService(gs_commons_constants.ExtPermissionVerification, false)
 
-		log := gslogrus.New(gs_commons_constants.ExtPermissionVerification, client)
-
 		gs_ext_service_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
 			session, applicationclient.NewStatusClient(m.Client()),
 			safetyclient.NewBlacklistClient(m.Client()),
-			authenticationcli.NewAuthClient(m.Client()), client, log, logger))
+			authenticationcli.NewAuthClient(m.Client()), client, logger))
 
 		errc <- m.Run()
 	}()
@@ -67,15 +65,13 @@ func StartService() {
 
 		m := microservice.NewService(gs_commons_constants.PermissionService, true)
 
-		log := gslogrus.New(gs_commons_constants.PermissionService, client)
-
 		us := userclient.NewExtUserClient(m.Client())
 
 		mc := userclient.NewExtMessageClient(m.Client())
 
-		gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us, log))
+		gs_service_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us, logger))
 
-		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, configuration, mc, client, log))
+		gs_service_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, mc, client, logger))
 
 		gs_service_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
 

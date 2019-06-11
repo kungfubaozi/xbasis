@@ -20,7 +20,7 @@ message HasPermissionResponse {
     gs.commons.dto.State state = 1;
     string user = 2;
     string appId = 3;
-    string clientId = 4;
+    string refClientId = 4;
     string traceId = 5;
     string ip = 6;
     string userAgent = 7;
@@ -28,6 +28,10 @@ message HasPermissionResponse {
     int64 platform = 9;
     TokenInfo token = 10;
     int64 appType = 11;
+    string funcS = 12;
+    string fromClient = 13;
+    string datTo = 14;
+    int64 datAuth = 15;
 }
 
 message TokenInfo {

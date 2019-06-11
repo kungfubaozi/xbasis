@@ -13,12 +13,6 @@ const (
 )
 
 const (
-	emailIndexType   = 2 << 3
-	phoneIndexType   = 3 << 9
-	accountIndexType = 4 << 5
-)
-
-const (
 	typeUserIndex = "gs-users"
 )
 

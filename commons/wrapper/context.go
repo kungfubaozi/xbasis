@@ -8,20 +8,29 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"reflect"
 	"strconv"
+	"time"
 )
 
 type WrapperUser struct {
-	User       string
-	AppId      string
-	ClientId   string
-	IP         string
-	TraceId    string
-	UserAgent  string
-	UserDevice string
-	DAU        *DurationAccessUser
-	Platform   int64
-	AppType    int64
-	Token      *WrapperUserToken
+	User         string
+	AppId        string
+	FromClientId string
+	RefClientId  string
+	IP           string
+	TraceId      string
+	UserAgent    string
+	UserDevice   string
+	Access       *DurationAccessUser
+	Platform     int64
+	AppType      int64
+	Token        *WrapperUserToken
+}
+
+func (w *WrapperUser) GetClientId() string {
+	if len(w.RefClientId) == 0 {
+		return w.FromClientId
+	}
+	return w.RefClientId
 }
 
 type WrapperUserToken struct {
@@ -34,7 +43,8 @@ type WrapperUserToken struct {
 }
 
 type DurationAccessUser struct {
-	SendTo string
+	To   string
+	Auth bool
 }
 
 type WrapperEvent func(auth *WrapperUser) *gs_commons_dto.State
@@ -43,7 +53,8 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	auth := &WrapperUser{}
 	auth.User = md["transport-user"]
 	auth.AppId = md["transport-app-id"]
-	auth.ClientId = md["transport-client-id"]
+	auth.FromClientId = md["transport-from-client-id"]
+	auth.RefClientId = md["transport-ref-client-id"]
 	auth.IP = md["transport-ip"]
 	auth.TraceId = md["transport-trace-id"]
 	auth.UserAgent = md["transport-user-agent"]
@@ -75,6 +86,18 @@ func GetData(md metadata.Metadata) *WrapperUser {
 		wut.AppType = a
 	}
 	auth.Token = wut
+	dau := &DurationAccessUser{
+		To: md["transport-duration-access-to"],
+	}
+	a, err = strconv.ParseInt(md["transport-duration-access-auth"], 10, 64)
+	if err == nil && a > 0 {
+		if a == 2 {
+			dau.Auth = false
+		} else {
+			dau.Auth = true
+		}
+	}
+	auth.Access = dau
 	return auth
 }
 
@@ -88,16 +111,14 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 
 	null := func() {
 		if s.IsNil() {
+			v := errstate.ErrRequest
+			v.Timestamp = time.Now().Unix()
 			s.Set(reflect.ValueOf(errstate.ErrRequest))
 		}
 	}
 
 	if ok {
 		auth := GetData(md)
-		//if auth.Platform == -1 || auth.AppType == -1 {
-		//	null()
-		//	return nil
-		//}
 
 		if auth.Token != nil && len(auth.Token.UserId) > 0 {
 			if auth.Token.AppType == -1 || auth.Platform == -1 || auth.AppType == -1 {
@@ -108,6 +129,7 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 
 		v := event(auth)
 		if v != nil {
+			v.Timestamp = time.Now().Unix()
 			s.Set(reflect.ValueOf(v))
 			return nil
 		}

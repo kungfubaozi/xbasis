@@ -8,6 +8,13 @@ It is generated from these files:
 	analysis/pb/logger.proto
 
 It has these top-level messages:
+	UsageFunctionRequest
+	UsageFunctionStatus
+	UsageFunctionResponse
+	TodayVisitRequest
+	TodayVisitResponse
+	VisitInfo
+	PlatformVisitInfo
 	GetDataResponse
 	GetDataRequest
 	XAxisRequest
@@ -48,6 +55,10 @@ var _ server.Option
 
 type LoggerService interface {
 	GetAxisData(ctx context.Context, in *GetDataRequest, opts ...client.CallOption) (*GetDataResponse, error)
+	// 今日使用情况
+	TodayVisit(ctx context.Context, in *TodayVisitRequest, opts ...client.CallOption) (*TodayVisitResponse, error)
+	// 使用功能统计
+	UsageFunction(ctx context.Context, in *UsageFunctionRequest, opts ...client.CallOption) (*UsageFunctionResponse, error)
 }
 
 type loggerService struct {
@@ -78,15 +89,41 @@ func (c *loggerService) GetAxisData(ctx context.Context, in *GetDataRequest, opt
 	return out, nil
 }
 
+func (c *loggerService) TodayVisit(ctx context.Context, in *TodayVisitRequest, opts ...client.CallOption) (*TodayVisitResponse, error) {
+	req := c.c.NewRequest(c.name, "Logger.TodayVisit", in)
+	out := new(TodayVisitResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *loggerService) UsageFunction(ctx context.Context, in *UsageFunctionRequest, opts ...client.CallOption) (*UsageFunctionResponse, error) {
+	req := c.c.NewRequest(c.name, "Logger.UsageFunction", in)
+	out := new(UsageFunctionResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Logger service
 
 type LoggerHandler interface {
 	GetAxisData(context.Context, *GetDataRequest, *GetDataResponse) error
+	// 今日使用情况
+	TodayVisit(context.Context, *TodayVisitRequest, *TodayVisitResponse) error
+	// 使用功能统计
+	UsageFunction(context.Context, *UsageFunctionRequest, *UsageFunctionResponse) error
 }
 
 func RegisterLoggerHandler(s server.Server, hdlr LoggerHandler, opts ...server.HandlerOption) error {
 	type logger interface {
 		GetAxisData(ctx context.Context, in *GetDataRequest, out *GetDataResponse) error
+		TodayVisit(ctx context.Context, in *TodayVisitRequest, out *TodayVisitResponse) error
+		UsageFunction(ctx context.Context, in *UsageFunctionRequest, out *UsageFunctionResponse) error
 	}
 	type Logger struct {
 		logger
@@ -101,4 +138,12 @@ type loggerHandler struct {
 
 func (h *loggerHandler) GetAxisData(ctx context.Context, in *GetDataRequest, out *GetDataResponse) error {
 	return h.LoggerHandler.GetAxisData(ctx, in, out)
+}
+
+func (h *loggerHandler) TodayVisit(ctx context.Context, in *TodayVisitRequest, out *TodayVisitResponse) error {
+	return h.LoggerHandler.TodayVisit(ctx, in, out)
+}
+
+func (h *loggerHandler) UsageFunction(ctx context.Context, in *UsageFunctionRequest, out *UsageFunctionResponse) error {
+	return h.LoggerHandler.UsageFunction(ctx, in, out)
 }

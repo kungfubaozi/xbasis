@@ -1,15 +1,26 @@
 syntax = "proto3";
 
+package gs.service.workflow;
+
 service Debugger {
 
     rpc Run (RunRequest) returns (RunResponse);
 
+    rpc Next (NextRequest) returns (NextResponse);
+}
+
+message NextRequest {
+    string instanceId = 1;
+}
+
+message NextResponse {
+
 }
 
 message RunRequest {
-
+    string json = 1;
 }
 
 message RunResponse {
-
+    string instanceId = 1;
 }

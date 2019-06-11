@@ -56,6 +56,8 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 			for _, v := range in.FunctionRoles {
 				if roles[v] == "ok" {
 					ok = true
+					//这里还没有做角色认证, 需要判断角色是否有效
+
 					break
 				}
 			}

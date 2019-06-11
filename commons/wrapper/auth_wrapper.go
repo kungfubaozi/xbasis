@@ -43,13 +43,16 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			cm := make(map[string]string)
 			cm["transport-user"] = status.User
 			cm["transport-app-id"] = status.AppId
-			cm["transport-client-id"] = status.ClientId
+			cm["transport-from-client-id"] = status.FromClient
+			cm["transport-ref-client-id"] = status.RefClientId
 			cm["transport-trace-id"] = status.TraceId
 			cm["transport-ip"] = status.Ip
 			cm["transport-user-device"] = status.UserDevice
 			cm["transport-user-agent"] = status.UserAgent
 			cm["transport-app-type"] = fmt.Sprintf("%d", status.AppType)
 			cm["transport-client-platform"] = fmt.Sprintf("%d", status.Platform)
+			cm["transport-duration-access-to"] = status.DatTo
+			cm["transport-duration-access-auth"] = fmt.Sprintf("%d", status.DatAuth)
 
 			if status.Token != nil {
 				cm["transport-token-user-id"] = status.Token.UserId

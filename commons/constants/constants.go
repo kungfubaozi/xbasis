@@ -1,14 +1,15 @@
 package gs_commons_constants
 
+//isoi: internal service open interface ....
 const (
-	PermissionService     = "gs.svc.permission"
-	AnalysisService       = "gs.svc.analysis"
-	MessageService        = "gs.svc.message"
-	ConnectionService     = "gs.svc.connection"
-	UserService           = "gs.svc.user"
-	ApplicationService    = "gs.svc.apps"
-	SafetyService         = "gs.svc.safety"
-	AuthenticationService = "gs.svc.authentication"
+	PermissionService     = "gs.svc.isoi.permission"
+	AnalysisService       = "gs.svc.isoi.analysis"
+	MessageService        = "gs.svc.isoi.message"
+	ConnectionService     = "gs.svc.isoi.connection"
+	UserService           = "gs.svc.isoi.user"
+	ApplicationService    = "gs.svc.isoi.apps"
+	SafetyService         = "gs.svc.isoi.safety"
+	AuthenticationService = "gs.svc.isoi.authentication"
 )
 
 const (

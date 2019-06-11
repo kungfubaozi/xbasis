@@ -43,6 +43,10 @@ var _ server.Option
 // Client API for Invite service
 
 type InviteService interface {
+	// 邀请用户
+	// 邀请的流程并不是直接把用户放在库中
+	// 需要被邀请
+	// 1.如果没有注册，需要注册再进行
 	User(ctx context.Context, in *InviteRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
@@ -77,6 +81,10 @@ func (c *inviteService) User(ctx context.Context, in *InviteRequest, opts ...cli
 // Server API for Invite service
 
 type InviteHandler interface {
+	// 邀请用户
+	// 邀请的流程并不是直接把用户放在库中
+	// 需要被邀请
+	// 1.如果没有注册，需要注册再进行
 	User(context.Context, *InviteRequest, *gs_commons_dto.Status) error
 }
 

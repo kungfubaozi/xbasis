@@ -4,6 +4,6 @@ RUN mkdir /app
 
 WORKDIR /app
 
-ADD logger /app/logger
+ADD analysis /app/analysis
 
-CMD ["./logger"]
+CMD ["./analysis"]

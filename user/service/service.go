@@ -4,6 +4,7 @@ import (
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/indexutils"
@@ -36,14 +37,12 @@ func StartService() {
 		panic(err)
 	}
 
-	configuration := &gs_commons_config.GosionConfiguration{}
-
 	logger := analysisclient.NewLoggerClient()
 
 	go func() {
 		s := microservice.NewService(gs_commons_constants.ExtUserService, true)
 
-		gs_ext_service_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms))
+		gs_ext_service_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms, session))
 
 		gs_ext_service_user.RegisterUserHandler(s.Server(), userhandlers.NewExtUserService())
 
@@ -64,6 +63,8 @@ func StartService() {
 
 		gs_service_user.RegisterUpdateHandler(s.Server(), userhandlers.NewUpdateService(session))
 
+		gs_service_user.RegisterInviteHandler(s.Server(), userhandlers.NewInviteService(session, logger))
+
 		errc <- s.Run()
 	}()
 
@@ -75,9 +76,7 @@ func StartService() {
 	}()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(func(config *gs_commons_config.GosionConfiguration) {
-			configuration = config
-		})
+		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	if err := <-errc; err != nil {

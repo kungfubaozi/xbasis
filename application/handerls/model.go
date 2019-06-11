@@ -18,6 +18,7 @@ type appInfo struct {
 	Type         int64         `bson:"type" json:"type"` //main application, provider sso, permission, user and so more
 	UserS        *appStructure `bson:"user_s" json:"user_s"`
 	FunctionS    *appStructure `bson:"function_s" json:"function_s"`
+	SecretKey    string        `json:"secret_key" json:"secret_key"` //密钥，主要是用来加密传输数据
 }
 
 type appSetting struct {

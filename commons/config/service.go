@@ -73,10 +73,6 @@ func NewConnect(url string) *zk.Conn {
 	return c
 }
 
-func WatchPath(url, path string, event OnNodeDataChanged) {
-	watch(NewConnect(url), path, event)
-}
-
 func watch(c *zk.Conn, path string, event OnNodeDataChanged) {
 	if event == nil {
 		panic("invalid config listener event")
@@ -96,6 +92,7 @@ func watch(c *zk.Conn, path string, event OnNodeDataChanged) {
 		select {
 		case e := <-ch:
 			if e.Type == zk.EventNodeDataChanged {
+				fmt.Println("changed")
 				v, s, err := c.Get(path)
 				if err != nil {
 					fmt.Println("err", err)

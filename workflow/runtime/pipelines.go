@@ -6,7 +6,7 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/gslogrus"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/workflow/modules"
 	"runtime/debug"
 )
@@ -15,7 +15,7 @@ type pipelines struct {
 	processes processes
 	session   *mgo.Session
 	pool      *redis.Pool
-	log       *gslogrus.Logger
+	log       analysisclient.LogClient
 	c         *freecache.Cache
 }
 
@@ -79,9 +79,10 @@ func (p *pipelines) Get(processId string) (modules.Pipeline, error) {
 }
 
 func newPipelines(session *mgo.Session,
-	log *gslogrus.Logger, pool *redis.Pool) modules.Pipelines {
+	log analysisclient.LogClient, pool *redis.Pool) modules.Pipelines {
 	cacheSize := 100 * 1024 * 1024
 	cache := freecache.NewCache(cacheSize)
 	debug.SetGCPercent(20)
+
 	return &pipelines{c: cache, session: session, pool: pool, log: log}
 }
