@@ -4,12 +4,11 @@ import (
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/handerls"
 	"konekko.me/gosion/application/pb"
-	"konekko.me/gosion/application/pb/ext"
+	"konekko.me/gosion/application/pb/inner"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
 )
@@ -47,14 +46,12 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtApplicationService, true)
+		s := microservice.NewService(gs_commons_constants.InternalApplicationService, true)
 		s.Init()
 
-		log := gslogrus.New(gs_commons_constants.ExtApplicationService, c)
+		gosionsvc_internal_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, logger))
 
-		gs_ext_service_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, log))
-
-		gs_ext_service_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(c, session))
+		gosionsvc_internal_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(c, session))
 
 		errc <- s.Run()
 	}()
@@ -63,9 +60,9 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.ApplicationService, true)
 		s.Init()
 
-		gs_service_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger))
+		gosionsvc_external_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger))
 
-		gs_service_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, c))
+		gosionsvc_external_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, c))
 
 		errc <- s.Run()
 	}()

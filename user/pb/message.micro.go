@@ -2,7 +2,7 @@
 // source: user/pb/message.proto
 
 /*
-Package gs_service_user is a generated protocol buffer package.
+Package gosionsvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/message.proto
@@ -10,7 +10,7 @@ It is generated from these files:
 It has these top-level messages:
 	SendRequest
 */
-package gs_service_user
+package gosionsvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -56,7 +56,7 @@ func NewMessageService(name string, c client.Client) MessageService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.user"
+		name = "gosionsvc.external.user"
 	}
 	return &messageService{
 		c:    c,

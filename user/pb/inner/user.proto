@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package gosionsvc.internal.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service User {
+
+    rpc isExists (ExistsRequest) returns (gs.commons.dto.Status);
+
+}
+
+message ExistsRequest {
+    string userId = 1;
+}

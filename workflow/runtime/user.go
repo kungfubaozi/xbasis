@@ -5,8 +5,8 @@ import (
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb/ext"
-	"konekko.me/gosion/user/pb/ext"
+	"konekko.me/gosion/permission/pb/inner"
+	"konekko.me/gosion/user/pb/inner"
 	"konekko.me/gosion/workflow/flowerr"
 	"konekko.me/gosion/workflow/models"
 )
@@ -18,8 +18,8 @@ func getWrapperUser(ctx context.Context) *gs_commons_wrapper.WrapperUser {
 type user struct {
 	client            *indexutils.Client
 	log               analysisclient.LogClient
-	userService       gs_ext_service_user.UserService
-	permissionService gs_ext_service_permission.AccessibleService
+	userService       gosionsvc_internal_user.UserService
+	permissionService gosionsvc_internal_permission.AccessibleService
 }
 
 func (u *user) Notify(ctx context.Context, userTask *models.UserTask) {

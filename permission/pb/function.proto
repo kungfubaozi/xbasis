@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gs.service.permission;
+package gosionsvc.external.permission;
 
 import "konekko.me/gosion/commons/dto/commons.proto";
 
@@ -59,7 +59,7 @@ message FunctionItemDetail {
     repeated FunctionAuthTypes authTypes = 5;
     repeated FunctionGrantPlatforms platforms = 6;
     bool share = 7;
-    int64 valTokenLife = 8;
+    int64 valTokenTimes = 8;
     string id = 9;
     int64 todayVisit = 10;
     int64 todayVisitUser = 11;

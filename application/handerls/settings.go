@@ -3,7 +3,7 @@ package applicationhanderls
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/application/pb"
+	external "konekko.me/gosion/application/pb"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -20,7 +20,7 @@ func (svc *settingsService) GetRepo() *applicationRepo {
 	return &applicationRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
-func (svc *settingsService) Update(ctx context.Context, in *gs_service_application.UpdateRequest, out *gs_commons_dto.Status) error {
+func (svc *settingsService) Update(ctx context.Context, in *external.UpdateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -48,7 +48,7 @@ func (svc *settingsService) Update(ctx context.Context, in *gs_service_applicati
 	})
 }
 
-func (svc *settingsService) EnabledClient(ctx context.Context, in *gs_service_application.EnabledRequest, out *gs_commons_dto.Status) error {
+func (svc *settingsService) EnabledClient(ctx context.Context, in *external.EnabledRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -81,6 +81,6 @@ func (svc *settingsService) EnabledClient(ctx context.Context, in *gs_service_ap
 	})
 }
 
-func NewSettingsService(session *mgo.Session, client *indexutils.Client) gs_service_application.SettingsHandler {
+func NewSettingsService(session *mgo.Session, client *indexutils.Client) external.SettingsHandler {
 	return &settingsService{session: session, Client: client}
 }

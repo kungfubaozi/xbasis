@@ -2,7 +2,7 @@
 // source: user/pb/invite.proto
 
 /*
-Package gs_service_user is a generated protocol buffer package.
+Package gosionsvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/invite.proto
@@ -10,7 +10,7 @@ It is generated from these files:
 It has these top-level messages:
 	InviteRequest
 */
-package gs_service_user
+package gosionsvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -60,7 +60,7 @@ func NewInviteService(name string, c client.Client) InviteService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.user"
+		name = "gosionsvc.external.user"
 	}
 	return &inviteService{
 		c:    c,

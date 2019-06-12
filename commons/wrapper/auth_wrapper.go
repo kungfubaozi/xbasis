@@ -10,7 +10,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/permission/client"
-	"konekko.me/gosion/permission/pb/ext"
+	"konekko.me/gosion/permission/pb/inner"
 	"reflect"
 )
 
@@ -27,7 +27,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 	verificationClient := permissioncli.NewVerificationClient(c)
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 
-		status, err := verificationClient.Check(ctx, &gs_ext_service_permission.HasPermissionRequest{})
+		status, err := verificationClient.Check(ctx, &gosionsvc_internal_permission.HasPermissionRequest{})
 		if err != nil {
 			return set(rsp, errstate.ErrRequest)
 		}

@@ -2,7 +2,7 @@
 // source: application/pb/application.proto
 
 /*
-Package gs_service_application is a generated protocol buffer package.
+Package gosionsvc_external_application is a generated protocol buffer package.
 
 It is generated from these files:
 	application/pb/application.proto
@@ -18,7 +18,7 @@ It has these top-level messages:
 	AppInfo
 	AppClientInfo
 */
-package gs_service_application
+package gosionsvc_external_application
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -70,7 +70,7 @@ func NewApplicationService(name string, c client.Client) ApplicationService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.application"
+		name = "gosionsvc.external.application"
 	}
 	return &applicationService{
 		c:    c,

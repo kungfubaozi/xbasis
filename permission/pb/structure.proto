@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gs.service.permission;
+package gosionsvc.external.permission;
 
 import "konekko.me/gosion/commons/dto/commons.proto";
 

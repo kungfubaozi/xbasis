@@ -292,6 +292,17 @@
           ]
         },
         {
+          "api": "/role/effectUserSize",
+          "name": "GetEffectUserSize",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
           "api": "/role/rename",
           "name": "RenameRole",
           "roles": [

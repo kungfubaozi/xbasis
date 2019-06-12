@@ -2,7 +2,7 @@
 // source: analysis/pb/logger.proto
 
 /*
-Package gs_service_analysis is a generated protocol buffer package.
+Package gosionsvc_external_analysis is a generated protocol buffer package.
 
 It is generated from these files:
 	analysis/pb/logger.proto
@@ -22,7 +22,7 @@ It has these top-level messages:
 	YAxisRequest
 	YAxisFactor
 */
-package gs_service_analysis
+package gosionsvc_external_analysis
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -71,7 +71,7 @@ func NewLoggerService(name string, c client.Client) LoggerService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.analysis"
+		name = "gosionsvc.external.analysis"
 	}
 	return &loggerService{
 		c:    c,

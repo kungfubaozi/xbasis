@@ -6,12 +6,11 @@ import (
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/authentication/handlers"
 	"konekko.me/gosion/authentication/pb"
-	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/authentication/pb/inner"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/gslogrus"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/connection/cmd/connectioncli"
@@ -47,15 +46,15 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtAuthenticationService, true)
+		s := microservice.NewService(gs_commons_constants.InternalAuthenticationService, true)
 		s.Init()
 
-		gs_ext_service_authentication.RegisterAuthHandler(s.Server(),
+		gosionsvc_internal_authentication.RegisterAuthHandler(s.Server(),
 			authenticationhandlers.NewAuthService(pool, safetyclient.NewSecurityClient(s.Client()), conn, client,
 				applicationclient.NewStatusClient(s.Client()),
 				safetyclient.NewBlacklistClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), logger))
 
-		gs_ext_service_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn, logger))
+		gosionsvc_internal_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn, logger))
 
 		errc <- s.Run()
 
@@ -65,7 +64,7 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.AuthenticationService, true)
 		s.Init()
 
-		gs_service_authentication.RegisterRouterHandler(s.Server(), authenticationhandlers.NewRouteService(client, pool, applicationclient.NewStatusClient(s.Client()),
+		gosionsvc_external_authentication.RegisterRouterHandler(s.Server(), authenticationhandlers.NewRouteService(client, pool, applicationclient.NewStatusClient(s.Client()),
 			applicationclient.NewSyncClient(s.Client()), authenticationcli.NewTokenClient(s.Client()), conn))
 
 		errc <- s.Run()

@@ -2,19 +2,21 @@
 // source: permission/pb/role.proto
 
 /*
-Package gs_service_permission is a generated protocol buffer package.
+Package gosionsvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/role.proto
 
 It has these top-level messages:
+	EffectUserSizeRequest
+	EffectUserSizeResponse
 	GetStructureRolesRequest
 	GetRoleRequest
 	GetRoleResponse
 	SimpleRoleInfo
 	RoleRequest
 */
-package gs_service_permission
+package gosionsvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -52,6 +54,7 @@ type RoleService interface {
 	Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error)
+	EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, opts ...client.CallOption) (*EffectUserSizeResponse, error)
 }
 
 type roleService struct {
@@ -64,7 +67,7 @@ func NewRoleService(name string, c client.Client) RoleService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.permission"
+		name = "gosionsvc.external.permission"
 	}
 	return &roleService{
 		c:    c,
@@ -122,6 +125,16 @@ func (c *roleService) GetStructureRoles(ctx context.Context, in *GetStructureRol
 	return out, nil
 }
 
+func (c *roleService) EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, opts ...client.CallOption) (*EffectUserSizeResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.EffectUserSize", in)
+	out := new(EffectUserSizeResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Role service
 
 type RoleHandler interface {
@@ -130,6 +143,7 @@ type RoleHandler interface {
 	Rename(context.Context, *RoleRequest, *gs_commons_dto.Status) error
 	GetRole(context.Context, *GetRoleRequest, *GetRoleResponse) error
 	GetStructureRoles(context.Context, *GetStructureRolesRequest, *GetRoleResponse) error
+	EffectUserSize(context.Context, *EffectUserSizeRequest, *EffectUserSizeResponse) error
 }
 
 func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.HandlerOption) error {
@@ -139,6 +153,7 @@ func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.Handl
 		Rename(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
 		GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error
 		GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, out *GetRoleResponse) error
+		EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error
 	}
 	type Role struct {
 		role
@@ -169,4 +184,8 @@ func (h *roleHandler) GetRole(ctx context.Context, in *GetRoleRequest, out *GetR
 
 func (h *roleHandler) GetStructureRoles(ctx context.Context, in *GetStructureRolesRequest, out *GetRoleResponse) error {
 	return h.RoleHandler.GetStructureRoles(ctx, in, out)
+}
+
+func (h *roleHandler) EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error {
+	return h.RoleHandler.EffectUserSize(ctx, in, out)
 }

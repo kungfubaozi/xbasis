@@ -1,24 +1,22 @@
 package gs_commons_constants
 
-//isoi: internal service open interface ....
 const (
-	PermissionService     = "gs.svc.isoi.permission"
-	AnalysisService       = "gs.svc.isoi.analysis"
-	MessageService        = "gs.svc.isoi.message"
-	ConnectionService     = "gs.svc.isoi.connection"
-	UserService           = "gs.svc.isoi.user"
-	ApplicationService    = "gs.svc.isoi.apps"
-	SafetyService         = "gs.svc.isoi.safety"
-	AuthenticationService = "gs.svc.isoi.authentication"
+	PermissionService     = "gosionsvc.external.permission"
+	AnalysisService       = "gosionsvc.external.analysis"
+	MessageService        = "gosionsvc.external.message"
+	ConnectionService     = "gosionsvc.external.connection"
+	UserService           = "gosionsvc.external.user"
+	ApplicationService    = "gosionsvc.external.apps"
+	SafetyService         = "gosionsvc.external.safety"
+	AuthenticationService = "gosionsvc.external.authentication"
 )
 
 const (
-	ExtPermissionVerification = "gs.ext.svc.permission.verification"
-	ExtAccessibleVerification = "gs.ext.svc.permission.accessible"
-	ExtUserService            = "gs.ext.svc.user"
-	ExtSafetyService          = "gs.ext.svc.safety"
-	ExtApplicationService     = "gs.ext.svc.application"
-	ExtAuthenticationService  = "gs.ext.svc.authentication"
+	InternalPermission            = "gosionsvc.internal.permission" //permission
+	InternalUserService           = "gosionsvc.internal.user"
+	InternalSafetyService         = "gosionsvc.internal.safety"
+	InternalApplicationService    = "gosionsvc.internal.application"
+	InternalAuthenticationService = "gosionsvc.internal.authentication"
 )
 
 const (

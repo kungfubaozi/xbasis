@@ -7,14 +7,14 @@
       "prefix": "/safety",
       "functions": [
         {
-          "api": "/frozen/request",
+          "api": "/userlock/request",
           "name": "Frozen",
           "auth_type": [
             352
           ]
         },
         {
-          "api": "/frozen/unblock",
+          "api": "/userlock/unblock",
           "name": "Unblock",
           "auth_type": [
             352

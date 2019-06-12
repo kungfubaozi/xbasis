@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package gosionsvc.internal.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Message {
+
+    rpc SendVerificationCode (SendRequest) returns (gs.commons.dto.Status);
+
+}
+
+message SendRequest {
+    string to = 1;
+    bool auth = 2;
+    string code = 3;
+    int64 messageType = 4;
+}

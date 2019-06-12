@@ -11,8 +11,8 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/b
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/dat.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/structure.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/verify.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/ext/verification.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/ext/accessible.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/inner/verification.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/inner/accessible.proto
 
 #user
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/update.proto
@@ -26,25 +26,25 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/grant.p
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/oauth.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/message.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/authorization.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/ext/message.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/ext/user.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/inner/message.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/inner/user.proto
 
 #safety
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/frozen.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/blacklist.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/userlock.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/locking.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/ext/security.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. safety/pb/inner/security.proto
 
 #authentication
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/ext/auth.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/ext/token.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/inner/auth.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/inner/token.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. authentication/pb/router.proto
 
 #application
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/application.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/settings.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/ext/status.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/ext/sync.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/inner/status.proto
+protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. application/pb/inner/sync.proto
 
 #analysis
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. analysis/pb/logger.proto

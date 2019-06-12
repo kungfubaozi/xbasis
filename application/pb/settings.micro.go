@@ -2,7 +2,7 @@
 // source: application/pb/settings.proto
 
 /*
-Package gs_service_application is a generated protocol buffer package.
+Package gosionsvc_external_application is a generated protocol buffer package.
 
 It is generated from these files:
 	application/pb/settings.proto
@@ -12,7 +12,7 @@ It has these top-level messages:
 	EnabledRequest
 	GetRequest
 */
-package gs_service_application
+package gosionsvc_external_application
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -59,7 +59,7 @@ func NewSettingsService(name string, c client.Client) SettingsService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.application"
+		name = "gosionsvc.external.application"
 	}
 	return &settingsService{
 		c:    c,

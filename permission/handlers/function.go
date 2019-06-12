@@ -14,7 +14,7 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
+	external "konekko.me/gosion/permission/pb"
 	"sync"
 	"time"
 )
@@ -26,7 +26,7 @@ type functionService struct {
 	log     analysisclient.LogClient
 }
 
-func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service_permission.GetFunctionItemsRequest, out *gs_service_permission.GetFunctionItemsResponse) error {
+func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.GetFunctionItemsRequest, out *external.GetFunctionItemsResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.StructureId) == 0 {
 			return nil
@@ -40,9 +40,9 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service
 			return nil
 		}
 
-		var data []*gs_service_permission.FindItemResponse
+		var data []*external.FindItemResponse
 		for _, v := range groups {
-			data = append(data, &gs_service_permission.FindItemResponse{
+			data = append(data, &external.FindItemResponse{
 				Function: false,
 				Id:       v.Id,
 				Name:     v.Name,
@@ -56,7 +56,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service
 				return nil
 			}
 			for _, v := range functions {
-				data = append(data, &gs_service_permission.FindItemResponse{
+				data = append(data, &external.FindItemResponse{
 					Function: true,
 					Id:       v.Id,
 					Name:     v.Name,
@@ -69,7 +69,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *gs_service
 	})
 }
 
-func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_service_permission.GetFunctionItemRequest, out *gs_service_permission.GetFunctionItemResponse) error {
+func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *external.GetFunctionItemRequest, out *external.GetFunctionItemResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Id) == 0 || len(in.StructureId) == 0 {
 			return nil
@@ -93,13 +93,13 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_se
 			return nil
 		}
 
-		function := &gs_service_permission.FunctionItemDetail{
-			Name:         f.Name,
-			Id:           f.Id,
-			ValTokenLife: f.ValTokenLife,
-			Api:          f.Api,
-			CreateAt:     f.CreateAt,
-			Share:        f.Share,
+		function := &external.FunctionItemDetail{
+			Name:          f.Name,
+			Id:            f.Id,
+			ValTokenTimes: f.ValTokenTimes,
+			Api:           f.Api,
+			CreateAt:      f.CreateAt,
+			Share:         f.Share,
 		}
 
 		if len(f.Roles) > 0 {
@@ -110,7 +110,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_se
 			var err error
 
 			setRole := func(r *role) {
-				function.Roles = append(function.Roles, &gs_service_permission.FunctionBindRole{
+				function.Roles = append(function.Roles, &external.FunctionBindRole{
 					Name: r.Name,
 					Id:   r.Id,
 				})
@@ -172,7 +172,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_se
 			return false
 		}
 
-		function.AuthTypes = []*gs_service_permission.FunctionAuthTypes{
+		function.AuthTypes = []*external.FunctionAuthTypes{
 			{
 				Name:    "ValCode",
 				Type:    gs_commons_constants.AuthTypeOfValcode,
@@ -209,7 +209,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *gs_se
 			return false
 		}
 
-		function.Platforms = []*gs_service_permission.FunctionGrantPlatforms{
+		function.Platforms = []*external.FunctionGrantPlatforms{
 			{
 				Name:    "Web",
 				Type:    gs_commons_constants.PlatformOfWeb,
@@ -316,7 +316,7 @@ func (svc *functionService) GetRoleRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone()}
 }
 
-func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
+func (svc *functionService) Add(ctx context.Context, in *external.FunctionRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -385,20 +385,20 @@ func (svc *functionService) Add(ctx context.Context, in *gs_service_permission.F
 	})
 }
 
-func (svc *functionService) Rename(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
+func (svc *functionService) Rename(ctx context.Context, in *external.FunctionRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *functionService) Move(ctx context.Context, in *gs_service_permission.FunctionRequest, out *gs_commons_dto.Status) error {
+func (svc *functionService) Move(ctx context.Context, in *external.FunctionRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 //one application one root group, bindGroupId = appId
-func (svc *functionService) AddGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
+func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		if len(in.Name) == 0 && len(in.StructureId) == 0 {
@@ -429,18 +429,18 @@ func (svc *functionService) AddGroup(ctx context.Context, in *gs_service_permiss
 	})
 }
 
-func (svc *functionService) MoveGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
+func (svc *functionService) MoveGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *functionService) RenameGroup(ctx context.Context, in *gs_service_permission.FunctionGroupRequest, out *gs_commons_dto.Status) error {
+func (svc *functionService) RenameGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func NewFunctionService(client *indexutils.Client, session *mgo.Session, log analysisclient.LogClient) gs_service_permission.FunctionHandler {
+func NewFunctionService(client *indexutils.Client, session *mgo.Session, log analysisclient.LogClient) external.FunctionHandler {
 	return &functionService{Client: client, session: session, id: gs_commons_generator.NewIDG(), log: log}
 }

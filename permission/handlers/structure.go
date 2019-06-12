@@ -9,18 +9,18 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
+	external "konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/utils"
 	"time"
 )
 
 type structureService struct {
 	session            *mgo.Session
-	applicationService gs_service_application.ApplicationService
+	applicationService gosionsvc_external_application.ApplicationService
 	*indexutils.Client
 }
 
-func (svc *structureService) GetInfo(ctx context.Context, in *gs_service_permission.GetInfoRequest, out *gs_service_permission.GetInfoResponse) error {
+func (svc *structureService) GetInfo(ctx context.Context, in *external.GetInfoRequest, out *external.GetInfoResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -28,7 +28,7 @@ func (svc *structureService) GetInfo(ctx context.Context, in *gs_service_permiss
 		if err != nil {
 			return nil
 		}
-		d := &gs_service_permission.SimpleStructure{
+		d := &external.SimpleStructure{
 			Name:     s.Name,
 			CreateAt: s.CreateAt,
 			Id:       s.Id,
@@ -39,13 +39,13 @@ func (svc *structureService) GetInfo(ctx context.Context, in *gs_service_permiss
 	})
 }
 
-func (svc *structureService) CreateUserStructure(ctx context.Context, in *gs_service_permission.CreateRequest, out *gs_commons_dto.Status) error {
+func (svc *structureService) CreateUserStructure(ctx context.Context, in *external.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return svc.Create(ctx, in.Name, auth.User, in.AppId, permissionutils.TypeUserStructure)
 	})
 }
 
-func (svc *structureService) CreateFunctionStructure(ctx context.Context, in *gs_service_permission.CreateRequest, out *gs_commons_dto.Status) error {
+func (svc *structureService) CreateFunctionStructure(ctx context.Context, in *external.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return svc.Create(ctx, in.Name, auth.User, in.AppId, permissionutils.TypeFunctionStructure)
 	})
@@ -83,7 +83,7 @@ func (svc *structureService) Create(ctx context.Context, name, user, appId strin
 	return nil
 }
 
-func (svc *structureService) GetList(ctx context.Context, in *gs_service_permission.GetListRequest, out *gs_service_permission.GetListResponse) error {
+func (svc *structureService) GetList(ctx context.Context, in *external.GetListRequest, out *external.GetListResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		if len(in.AppId) == 0 {
@@ -93,7 +93,7 @@ func (svc *structureService) GetList(ctx context.Context, in *gs_service_permiss
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		app, err := svc.applicationService.FindByAppId(ctx, &gs_service_application.FindRequest{
+		app, err := svc.applicationService.FindByAppId(ctx, &gosionsvc_external_application.FindRequest{
 			Content: in.AppId,
 		})
 		if err != nil {
@@ -114,7 +114,7 @@ func (svc *structureService) GetList(ctx context.Context, in *gs_service_permiss
 			return nil
 		}
 
-		var data []*gs_service_permission.SimpleStructure
+		var data []*external.SimpleStructure
 		for _, v := range s {
 			opening := false
 			if v.Type == permissionutils.TypeFunctionStructure && v.Id == app.Info.FuncS {
@@ -122,7 +122,7 @@ func (svc *structureService) GetList(ctx context.Context, in *gs_service_permiss
 			} else if v.Type == permissionutils.TypeUserStructure && v.Id == app.Info.UserS {
 				opening = true
 			}
-			data = append(data, &gs_service_permission.SimpleStructure{
+			data = append(data, &external.SimpleStructure{
 				Name:     v.Name,
 				CreateAt: v.CreateAt,
 				Opening:  opening,
@@ -135,6 +135,6 @@ func (svc *structureService) GetList(ctx context.Context, in *gs_service_permiss
 	})
 }
 
-func NewStructureService(session *mgo.Session, client *indexutils.Client, application gs_service_application.ApplicationService) gs_service_permission.StructureHandler {
+func NewStructureService(session *mgo.Session, client *indexutils.Client, application gosionsvc_external_application.ApplicationService) external.StructureHandler {
 	return &structureService{session: session, Client: client, applicationService: application}
 }

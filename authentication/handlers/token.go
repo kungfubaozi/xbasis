@@ -5,7 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/authentication/pb/ext"
+	inner "konekko.me/gosion/authentication/pb/inner"
 	"konekko.me/gosion/commons/actions"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
@@ -27,17 +27,17 @@ func (svc *tokenService) GetRepo() *tokenRepo {
 	return &tokenRepo{conn: svc.pool.Get()}
 }
 
-func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authentication.GenerateRequest, out *gs_ext_service_authentication.GenerateResponse) error {
+func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest, out *inner.GenerateResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(auth.ClientId) <= 10 {
+		if len(auth.FromClientId) <= 10 {
 			return nil
 		}
 
 		headers := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
 			ModuleName:  "Token",
-			ServiceName: gs_commons_constants.ExtAuthenticationService,
+			ServiceName: gs_commons_constants.InternalAuthenticationService,
 		}
 
 		repo := svc.GetRepo()
@@ -131,6 +131,6 @@ func (svc *tokenService) Generate(ctx context.Context, in *gs_ext_service_authen
 	})
 }
 
-func NewTokenService(pool *redis.Pool, connectioncli connectioncli.ConnectionClient, log analysisclient.LogClient) gs_ext_service_authentication.TokenHandler {
+func NewTokenService(pool *redis.Pool, connectioncli connectioncli.ConnectionClient, log analysisclient.LogClient) inner.TokenHandler {
 	return &tokenService{pool: pool, connectioncli: connectioncli, log: log}
 }

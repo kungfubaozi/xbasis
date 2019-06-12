@@ -13,7 +13,7 @@ import (
 	"konekko.me/gosion/safety/client"
 	"konekko.me/gosion/user/handlers"
 	"konekko.me/gosion/user/pb"
-	"konekko.me/gosion/user/pb/ext"
+	"konekko.me/gosion/user/pb/inner"
 )
 
 func StartService() {
@@ -40,11 +40,11 @@ func StartService() {
 	logger := analysisclient.NewLoggerClient()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtUserService, true)
+		s := microservice.NewService(gs_commons_constants.InternalUserService, true)
 
-		gs_ext_service_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms, session))
+		gosionsvc_internal_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms, session))
 
-		gs_ext_service_user.RegisterUserHandler(s.Server(), userhandlers.NewExtUserService())
+		gosionsvc_internal_user.RegisterUserHandler(s.Server(), userhandlers.NewExtUserService(session, logger))
 
 		errc <- s.Run()
 	}()
@@ -55,15 +55,15 @@ func StartService() {
 		ss := safetyclient.NewSecurityClient(s.Client())
 		ts := authenticationcli.NewTokenClient(s.Client())
 
-		gs_service_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client, logger))
+		gosionsvc_external_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client, logger))
 
-		gs_service_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session))
+		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session))
 
-		gs_service_user.RegisterSafetyHandler(s.Server(), userhandlers.NewSafetyService(session))
+		gosionsvc_external_user.RegisterSafetyHandler(s.Server(), userhandlers.NewSafetyService(session))
 
-		gs_service_user.RegisterUpdateHandler(s.Server(), userhandlers.NewUpdateService(session))
+		gosionsvc_external_user.RegisterUpdateHandler(s.Server(), userhandlers.NewUpdateService(session))
 
-		gs_service_user.RegisterInviteHandler(s.Server(), userhandlers.NewInviteService(session, logger))
+		gosionsvc_external_user.RegisterInviteHandler(s.Server(), userhandlers.NewInviteService(session, logger))
 
 		errc <- s.Run()
 	}()

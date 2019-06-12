@@ -8,8 +8,8 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/pb/ext"
-	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/application/pb/inner"
+	"konekko.me/gosion/authentication/pb/inner"
 	"konekko.me/gosion/commons/actions"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
@@ -20,19 +20,19 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb/ext"
+	inner "konekko.me/gosion/permission/pb/inner"
 	"konekko.me/gosion/safety/pb"
 	"sync"
 	"time"
 )
 
 type verificationService struct {
-	pool                        *redis.Pool
-	session                     *mgo.Session
-	configuration               *gs_commons_config.GosionConfiguration
-	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
-	blacklistService            gs_service_safety.BlacklistService
-	extAuthService              gs_ext_service_authentication.AuthService
+	pool                          *redis.Pool
+	session                       *mgo.Session
+	configuration                 *gs_commons_config.GosionConfiguration
+	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService
+	blacklistService              gosionsvc_external_safety.BlacklistService
+	innerAuthService              gosionsvc_internal_authentication.AuthService
 	*indexutils.Client
 	log analysisclient.LogClient
 }
@@ -57,7 +57,7 @@ var whiteApiList = []string{"/authentication/router/refresh", "/authentication/r
 //application verify
 //ip, userDevice blacklist verify
 //api exists and authType verify
-func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_permission.HasPermissionRequest, out *gs_ext_service_permission.HasPermissionResponse) error {
+func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissionRequest, out *inner.HasPermissionResponse) error {
 	var wg sync.WaitGroup
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
@@ -133,7 +133,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			调用的顺序是refClientId第一
 			*/
 			headers := &analysisclient.LogHeaders{
-				ServiceName:      gs_commons_constants.ExtPermissionVerification,
+				ServiceName:      gs_commons_constants.InternalPermission,
 				ModuleName:       "Verification",
 				UserAgent:        rh.userAgent,
 				RefClientId:      rh.refClientId,
@@ -170,7 +170,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			go func() {
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
-					&gs_service_safety.CheckRequest{
+					&gosionsvc_external_safety.CheckRequest{
 						Type:    gs_commons_constants.BlacklistOfIP,
 						Content: rh.ip,
 					})
@@ -185,7 +185,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 			go func() {
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
-					&gs_service_safety.CheckRequest{
+					&gosionsvc_external_safety.CheckRequest{
 						Type:    gs_commons_constants.BlacklistOfUserDevice,
 						Content: rh.userDevice,
 					})
@@ -196,12 +196,12 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 				resp(s.State)
 			}()
 
-			var appResp *gs_ext_service_application.GetAppClientStatusResponse
+			var appResp *gosionsvc_internal_application.GetAppClientStatusResponse
 
 			////application
 			go func() {
 				defer wg.Done()
-				s, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
+				s, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
 					ClientId: callClientId,
 				})
 				if err != nil {
@@ -362,7 +362,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 								"transport-client-platform": fmt.Sprintf("%d", appResp.ClientPlatform),
 							})
 
-							status, err := svc.extAuthService.Verify(ac, &gs_ext_service_authentication.VerifyRequest{
+							status, err := svc.innerAuthService.Verify(ac, &gosionsvc_internal_authentication.VerifyRequest{
 								Token:         rh.authorization,
 								ClientId:      callClientId,
 								FunctionRoles: f.Roles,
@@ -376,7 +376,7 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 							}
 
 							if status.State.Ok {
-								out.Token = &gs_ext_service_permission.TokenInfo{
+								out.Token = &inner.TokenInfo{
 									UserId:   status.UserId,
 									ClientId: status.ClientId,
 									Platform: status.ClientPlatform,
@@ -540,8 +540,8 @@ func (svc *verificationService) Check(ctx context.Context, in *gs_ext_service_pe
 }
 
 func NewVerificationService(pool *redis.Pool, session *mgo.Session,
-	extApplicationStatusService gs_ext_service_application.ApplicationStatusService, blacklistService gs_service_safety.BlacklistService,
-	extAuthService gs_ext_service_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) gs_ext_service_permission.VerificationHandler {
-	return &verificationService{pool: pool, session: session, extApplicationStatusService: extApplicationStatusService,
-		blacklistService: blacklistService, extAuthService: extAuthService, Client: client, log: logger}
+	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService, blacklistService gosionsvc_external_safety.BlacklistService,
+	innerAuthService gosionsvc_internal_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) inner.VerificationHandler {
+	return &verificationService{pool: pool, session: session, innerApplicationStatusService: innerApplicationStatusService,
+		blacklistService: blacklistService, innerAuthService: innerAuthService, Client: client, log: logger}
 }

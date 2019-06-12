@@ -50,5 +50,7 @@ var (
 	ErrDurationAccessUnsentCode    = &gs_commons_dto.State{Ok: false, Code: 20042, Message: "err duration access unsent code"} //
 	ErrDurationAccessCode          = &gs_commons_dto.State{Ok: false, Code: 20043, Message: "err duration access code"}        //
 	ErrUnbindEmail                 = &gs_commons_dto.State{Ok: false, Code: 20044, Message: "err unbind email"}                //
-	ErrUnbindPhone                 = &gs_commons_dto.State{Ok: false, Code: 20045, Message: "err unbind phone"}                //
+	ErrUnbindPhone                 = &gs_commons_dto.State{Ok: false, Code: 20045, Message: "err unbind phone"}
+	ErrAlreadyLocking              = &gs_commons_dto.State{Ok: false, Code: 20046, Message: "err user already locking"}
+	ErrNotFound                    = &gs_commons_dto.State{Ok: false, Code: 20047, Message: "err not found"}
 )

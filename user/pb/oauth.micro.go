@@ -2,7 +2,7 @@
 // source: user/pb/oauth.proto
 
 /*
-Package gs_service_user is a generated protocol buffer package.
+Package gosionsvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/oauth.proto
@@ -12,7 +12,7 @@ It has these top-level messages:
 	OAuthLoginRequest
 	OAuthLoginResponse
 */
-package gs_service_user
+package gosionsvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -59,7 +59,7 @@ func NewOAuthService(name string, c client.Client) OAuthService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.user"
+		name = "gosionsvc.external.user"
 	}
 	return &oAuthService{
 		c:    c,

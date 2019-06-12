@@ -1,21 +1,32 @@
 syntax = "proto3";
 
-package gs.service.permission;
+package gosionsvc.external.permission;
 
 import "konekko.me/gosion/commons/dto/commons.proto";
 
 //角色
 service Role {
 
-    rpc Add(RoleRequest) returns (gs.commons.dto.Status);
+    rpc Add (RoleRequest) returns (gs.commons.dto.Status);
 
-    rpc Remove(RoleRequest) returns (gs.commons.dto.Status);
+    rpc Remove (RoleRequest) returns (gs.commons.dto.Status);
 
-    rpc Rename(RoleRequest) returns (gs.commons.dto.Status);
+    rpc Rename (RoleRequest) returns (gs.commons.dto.Status);
 
-    rpc GetRole(GetRoleRequest) returns (GetRoleResponse);
+    rpc GetRole (GetRoleRequest) returns (GetRoleResponse);
 
-    rpc GetStructureRoles(GetStructureRolesRequest) returns (GetRoleResponse);
+    rpc GetStructureRoles (GetStructureRolesRequest) returns (GetRoleResponse);
+
+    rpc EffectUserSize (EffectUserSizeRequest) returns (EffectUserSizeResponse);
+}
+
+message EffectUserSizeRequest {
+    string roleId = 1;
+}
+
+message EffectUserSizeResponse {
+    gs.commons.dto.State state = 1;
+    int64 size = 2;
 }
 
 message GetStructureRolesRequest {
@@ -25,7 +36,7 @@ message GetStructureRolesRequest {
 }
 
 message GetRoleRequest {
-   repeated string ids = 1;
+    repeated string ids = 1;
 }
 
 message GetRoleResponse {

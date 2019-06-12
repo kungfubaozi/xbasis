@@ -2,7 +2,7 @@
 // source: permission/pb/dat.proto
 
 /*
-Package gs_service_permission is a generated protocol buffer package.
+Package gosionsvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/dat.proto
@@ -12,7 +12,7 @@ It has these top-level messages:
 	VerifyResponse
 	SendRequest
 */
-package gs_service_permission
+package gosionsvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -59,7 +59,7 @@ func NewDurationAccessService(name string, c client.Client) DurationAccessServic
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.permission"
+		name = "gosionsvc.external.permission"
 	}
 	return &durationAccessService{
 		c:    c,

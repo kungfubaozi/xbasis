@@ -9,15 +9,15 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/user/pb/ext"
+	external "konekko.me/gosion/permission/pb"
+	"konekko.me/gosion/user/pb/inner"
 )
 
 type bindingService struct {
-	pool           *redis.Pool
-	session        *mgo.Session
-	extUserService gs_ext_service_user.UserService
-	log            analysisclient.LogClient
+	pool             *redis.Pool
+	session          *mgo.Session
+	innerUserService gosionsvc_internal_user.UserService
+	log              analysisclient.LogClient
 }
 
 func (svc *bindingService) GetRepo() *bindingRepo {
@@ -29,7 +29,7 @@ func (svc *bindingService) verifyRoleEffectiveness() {
 
 }
 
-func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
+func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.StructureId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
 			//check roles
@@ -63,7 +63,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 					err = nil
 					//check user exists
 					//....
-					s, err := svc.extUserService.IsExists(ctx, &gs_ext_service_user.ExistsRequest{
+					s, err := svc.innerUserService.IsExists(ctx, &gosionsvc_internal_user.ExistsRequest{
 						UserId: v,
 					})
 					if err != nil {
@@ -116,7 +116,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *gs_service_permissi
 	})
 }
 
-func (svc *bindingService) FunctionRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
+func (svc *bindingService) FunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.StructureId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
 
@@ -142,7 +142,7 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *gs_service_perm
 	})
 }
 
-func (svc *bindingService) UnbindUserRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
+func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		if len(in.StructureId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
@@ -161,7 +161,7 @@ func (svc *bindingService) UnbindUserRole(ctx context.Context, in *gs_service_pe
 	})
 }
 
-func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *gs_service_permission.BindingRoleRequest, out *gs_commons_dto.Status) error {
+func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		if len(in.StructureId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
@@ -180,6 +180,6 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *gs_servic
 	})
 }
 
-func NewBindingService(pool *redis.Pool, session *mgo.Session, extUserService gs_ext_service_user.UserService, log analysisclient.LogClient) gs_service_permission.BindingHandler {
-	return &bindingService{pool: pool, session: session, extUserService: extUserService, log: log}
+func NewBindingService(pool *redis.Pool, session *mgo.Session, innerUserService gosionsvc_internal_user.UserService, log analysisclient.LogClient) external.BindingHandler {
+	return &bindingService{pool: pool, session: session, innerUserService: innerUserService, log: log}
 }

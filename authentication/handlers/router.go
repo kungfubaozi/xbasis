@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/application/pb/ext"
-	"konekko.me/gosion/authentication/pb"
-	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/application/pb/inner"
+	external "konekko.me/gosion/authentication/pb"
+	"konekko.me/gosion/authentication/pb/inner"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -20,15 +20,15 @@ import (
 )
 
 type routeService struct {
-	extApplicationStatusService gs_ext_service_application.ApplicationStatusService
-	extUsersyncService          gs_ext_service_application.UsersyncService
-	extTokenService             gs_ext_service_authentication.TokenService
-	connectioncli               connectioncli.ConnectionClient
+	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService
+	innerUsersyncService          gosionsvc_internal_application.UsersyncService
+	innerTokenService             gosionsvc_internal_authentication.TokenService
+	connectioncli                 connectioncli.ConnectionClient
 	*indexutils.Client
 	pool *redis.Pool
 }
 
-func (svc *routeService) Logout(ctx context.Context, in *gs_service_authentication.LogoutRequest, out *gs_commons_dto.Status) error {
+func (svc *routeService) Logout(ctx context.Context, in *external.LogoutRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -57,7 +57,7 @@ func (svc *routeService) GetRepo() *tokenRepo {
 	return &tokenRepo{conn: svc.pool.Get()}
 }
 
-func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authentication.RefreshRequest, out *gs_service_authentication.RefreshResponse) error {
+func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshRequest, out *external.RefreshResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.RefreshToken) >= 100 {
 
@@ -71,7 +71,7 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 
 				if claims.Valid() != nil {
 					//offline
-					s := offlineUser(svc.connectioncli, repo, claims.Token.UserId, auth.ClientId)
+					s := offlineUser(svc.connectioncli, repo, claims.Token.UserId, auth.FromClientId)
 					if s.Ok {
 						return errstate.ErrRefreshTokenExpired
 					}
@@ -79,7 +79,7 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 				}
 
 				//刷新必须是当前的clientId对应token里的clientId
-				if auth.ClientId != claims.Token.ClientId {
+				if auth.FromClientId != claims.Token.ClientId {
 					return errstate.ErrAccessTokenOrClient
 				}
 
@@ -139,7 +139,7 @@ func (svc *routeService) Refresh(ctx context.Context, in *gs_service_authenticat
 
 //just support root application web client
 //It passes on to the caller new accessToken and refreshToken!
-func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication.PushRequest, out *gs_service_authentication.PushResponse) error {
+func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out *external.PushResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.RouteTo) == 0 {
 			return nil
@@ -150,7 +150,7 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 			return errstate.ErrRouteNotMainClient
 		}
 
-		app, err := svc.extApplicationStatusService.GetAppClientStatus(ctx, &gs_ext_service_application.GetAppClientStatusRequest{
+		app, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
 			ClientId: in.RouteTo,
 			Redirect: in.Redirect,
 		})
@@ -174,7 +174,7 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 
 				//check sync log
 
-				s, err := svc.extUsersyncService.Check(ctx, &gs_ext_service_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
+				s, err := svc.innerUsersyncService.Check(ctx, &gosionsvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
 				if err != nil {
 					return nil
 				}
@@ -213,7 +213,7 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 					}
 
 					//jump to app
-					token, err := svc.extTokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
+					token, err := svc.innerTokenService.Generate(ctx, &gosionsvc_internal_authentication.GenerateRequest{
 						RelationId: auth.Token.Relation,
 						Route:      true,
 						Auth: &gs_commons_dto.Authorize{
@@ -256,7 +256,11 @@ func (svc *routeService) Push(ctx context.Context, in *gs_service_authentication
 	})
 }
 
-func NewRouteService(client *indexutils.Client, pool *redis.Pool, extApplicationStatusService gs_ext_service_application.ApplicationStatusService,
-	extUsersyncService gs_ext_service_application.UsersyncService, extTokenService gs_ext_service_authentication.TokenService, connectioncli connectioncli.ConnectionClient) gs_service_authentication.RouterHandler {
-	return &routeService{Client: client, pool: pool, extTokenService: extTokenService, extUsersyncService: extUsersyncService, extApplicationStatusService: extApplicationStatusService, connectioncli: connectioncli}
+func NewRouteService(client *indexutils.Client, pool *redis.Pool, innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService,
+	innerUsersyncService gosionsvc_internal_application.UsersyncService,
+	innerTokenService gosionsvc_internal_authentication.TokenService,
+	connectioncli connectioncli.ConnectionClient) external.RouterHandler {
+	return &routeService{Client: client, pool: pool, innerTokenService: innerTokenService,
+		innerUsersyncService:          innerUsersyncService,
+		innerApplicationStatusService: innerApplicationStatusService, connectioncli: connectioncli}
 }

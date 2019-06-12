@@ -2,7 +2,7 @@
 // source: authentication/pb/router.proto
 
 /*
-Package gs_service_authentication is a generated protocol buffer package.
+Package gosionsvc_external_authentication is a generated protocol buffer package.
 
 It is generated from these files:
 	authentication/pb/router.proto
@@ -14,7 +14,7 @@ It has these top-level messages:
 	PushRequest
 	PushResponse
 */
-package gs_service_authentication
+package gosionsvc_external_authentication
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -62,7 +62,7 @@ func NewRouterService(name string, c client.Client) RouterService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.authentication"
+		name = "gosionsvc.external.authentication"
 	}
 	return &routerService{
 		c:    c,

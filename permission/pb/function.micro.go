@@ -2,7 +2,7 @@
 // source: permission/pb/function.proto
 
 /*
-Package gs_service_permission is a generated protocol buffer package.
+Package gosionsvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/function.proto
@@ -20,7 +20,7 @@ It has these top-level messages:
 	FunctionRequest
 	FunctionGroupRequest
 */
-package gs_service_permission
+package gosionsvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -73,7 +73,7 @@ func NewFunctionService(name string, c client.Client) FunctionService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.permission"
+		name = "gosionsvc.external.permission"
 	}
 	return &functionService{
 		c:    c,

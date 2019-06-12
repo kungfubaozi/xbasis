@@ -41,11 +41,11 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 		var config GosionConfiguration
 		err := msgpack.Unmarshal(b, &config)
 		if err != nil {
-			return false
+			return true
 		}
 		fmt.Println("receiver new config")
 		event(&config)
-		return false
+		return true
 	}
 
 	v, _, err := c.Get(gs_commons_constants.GosionConfiguration)

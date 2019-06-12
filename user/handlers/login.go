@@ -5,23 +5,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/pb/ext"
-	"konekko.me/gosion/authentication/pb/ext"
+	"konekko.me/gosion/application/pb/inner"
+	"konekko.me/gosion/authentication/pb/inner"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/safety/pb/ext"
-	"konekko.me/gosion/user/pb"
+	"konekko.me/gosion/safety/pb/inner"
+	external "konekko.me/gosion/user/pb"
 )
 
 type loginService struct {
-	session            *mgo.Session
-	extSecurityService gs_ext_service_safety.SecurityService
-	extTokenService    gs_ext_service_authentication.TokenService
-	extSyncCheck       gs_ext_service_application.UsersyncService
+	session              *mgo.Session
+	innerSecurityService gosionsvc_internal_safety.SecurityService
+	innerTokenService    gosionsvc_internal_authentication.TokenService
+	innerSyncCheck       gosionsvc_internal_application.UsersyncService
 	*indexutils.Client
 	log analysisclient.LogClient
 }
@@ -34,7 +34,7 @@ func (svc *loginService) GetRepo() *userRepo {
 1）登录生成的token只适用于当前登录的项目(x-client-id)
 */
 //web client just support the root project, you need the login to root project and then route to the target client
-func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithAccountResponse) error {
+func (svc *loginService) WithAccount(ctx context.Context, in *external.EntryRequest, out *external.EntryWithAccountResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Account) > 0 && len(in.Content) > 0 {
 			repo := svc.GetRepo()
@@ -71,7 +71,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			if err != nil {
 				svc.log.Info(&analysisclient.LogContent{
 					Headers: headers,
-					Action:  "LoginFailed",
+					Action:  "LoginFailedError",
 					Message: err.Error(),
 				})
 				return eiup()
@@ -80,7 +80,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			if len(info.Id) == 0 {
 				svc.log.Info(&analysisclient.LogContent{
 					Headers: headers,
-					Action:  "LoginFailed",
+					Action:  "LoginFailedIdNil",
 					Message: "userId nil",
 				})
 				return nil
@@ -89,7 +89,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			if info != nil && len(info.Id) > 0 {
 				//check state
 
-				s, err := svc.extSecurityService.Get(ctx, &gs_ext_service_safety.GetRequest{
+				s, err := svc.innerSecurityService.Get(ctx, &gosionsvc_internal_safety.GetRequest{
 					UserId: info.Id,
 				})
 
@@ -104,8 +104,12 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				if s.Current != gs_commons_constants.UserStateOfClear {
 					svc.log.Info(&analysisclient.LogContent{
 						Headers: headers,
-						Action:  "SecurityCheck",
+						Action:  "UserSecurityCheck",
 						Message: "user state not clear",
+						Fields: &analysisclient.LogFields{
+							"userId": info.Id,
+							"ip":     auth.IP,
+						},
 					})
 					return errstate.ErrLoginFailed
 				}
@@ -117,14 +121,18 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 				if err != nil {
 					svc.log.Info(&analysisclient.LogContent{
 						Headers: headers,
-						Action:  "UserCheck",
+						Action:  "PasswordError",
 						Message: "password error",
+						Fields: &analysisclient.LogFields{
+							"userId": info.Id,
+							"ip":     auth.IP,
+						},
 					})
 					return eiup()
 				}
 
 				//generate token
-				s1, err := svc.extTokenService.Generate(ctx, &gs_ext_service_authentication.GenerateRequest{
+				s1, err := svc.innerTokenService.Generate(ctx, &gosionsvc_internal_authentication.GenerateRequest{
 					Auth: &gs_commons_dto.Authorize{
 						ClientId:  auth.FromClientId,
 						UserId:    info.Id,
@@ -136,6 +144,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 					Route:      false,
 					RelationId: "",
 				})
+
 				if err != nil {
 					return nil
 				}
@@ -153,7 +162,7 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 			}
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
-				Action:  "LoginFailed",
+				Action:  "UserInfoNotFound",
 				Message: "cannot find user info",
 			})
 			return eiup()
@@ -163,20 +172,20 @@ func (svc *loginService) WithAccount(ctx context.Context, in *gs_service_user.En
 }
 
 //web client just support the root project, you need the login to root project and then route to the target client
-func (svc *loginService) WithValidateCode(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithQRCodeResponse) error {
+func (svc *loginService) WithValidateCode(ctx context.Context, in *external.EntryRequest, out *external.EntryWithQRCodeResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 //web client just support the root project, you need the login to root project and then route to the target client
-func (svc *loginService) WithQRCode(ctx context.Context, in *gs_service_user.EntryRequest, out *gs_service_user.EntryWithQRCodeResponse) error {
+func (svc *loginService) WithQRCode(ctx context.Context, in *external.EntryRequest, out *external.EntryWithQRCodeResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func NewLoginService(session *mgo.Session, securityService gs_ext_service_safety.SecurityService,
-	tokenService gs_ext_service_authentication.TokenService, client *indexutils.Client, log analysisclient.LogClient) gs_service_user.LoginHandler {
-	return &loginService{session: session, extSecurityService: securityService, extTokenService: tokenService, Client: client, log: log}
+func NewLoginService(session *mgo.Session, securityService gosionsvc_internal_safety.SecurityService,
+	tokenService gosionsvc_internal_authentication.TokenService, client *indexutils.Client, log analysisclient.LogClient) external.LoginHandler {
+	return &loginService{session: session, innerSecurityService: securityService, innerTokenService: tokenService, Client: client, log: log}
 }

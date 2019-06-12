@@ -9,7 +9,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
+	external "konekko.me/gosion/permission/pb"
 )
 
 type roleService struct {
@@ -17,7 +17,11 @@ type roleService struct {
 	pool    *redis.Pool
 }
 
-func (svc *roleService) GetStructureRoles(ctx context.Context, in *gs_service_permission.GetStructureRolesRequest, out *gs_service_permission.GetRoleResponse) error {
+func (svc *roleService) EffectUserSize(context.Context, *external.EffectUserSizeRequest, *external.EffectUserSizeResponse) error {
+	panic("implement me")
+}
+
+func (svc *roleService) GetStructureRoles(ctx context.Context, in *external.GetStructureRolesRequest, out *external.GetRoleResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.StructureId) == 0 {
 			return nil
@@ -31,9 +35,9 @@ func (svc *roleService) GetStructureRoles(ctx context.Context, in *gs_service_pe
 		}
 
 		fmt.Println("data", len(roles))
-		var rs []*gs_service_permission.SimpleRoleInfo
+		var rs []*external.SimpleRoleInfo
 		for _, v := range roles {
-			rs = append(rs, &gs_service_permission.SimpleRoleInfo{
+			rs = append(rs, &external.SimpleRoleInfo{
 				Id:       v.Id,
 				Name:     v.Name,
 				CreateAt: v.CreateAt,
@@ -45,7 +49,7 @@ func (svc *roleService) GetStructureRoles(ctx context.Context, in *gs_service_pe
 	})
 }
 
-func (svc *roleService) GetRole(ctx context.Context, in *gs_service_permission.GetRoleRequest, out *gs_service_permission.GetRoleResponse) error {
+func (svc *roleService) GetRole(ctx context.Context, in *external.GetRoleRequest, out *external.GetRoleResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
@@ -57,7 +61,7 @@ func (svc *roleService) GetRepo() *roleRepo {
 }
 
 //add new role if not exists
-func (svc *roleService) Add(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
+func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -85,18 +89,20 @@ func (svc *roleService) Add(ctx context.Context, in *gs_service_permission.RoleR
 }
 
 //remove role
-func (svc *roleService) Remove(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
+//需要删除所有关联的角色对象包括(gs-user-roles-relation)
+func (svc *roleService) Remove(ctx context.Context, in *external.RoleRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		return nil
+	})
+}
+
+func (svc *roleService) Rename(ctx context.Context, in *external.RoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *roleService) Rename(ctx context.Context, in *gs_service_permission.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
-	})
-}
-
-func NewRoleService(session *mgo.Session, pool *redis.Pool) gs_service_permission.RoleHandler {
+func NewRoleService(session *mgo.Session, pool *redis.Pool) external.RoleHandler {
 	return &roleService{session: session, pool: pool}
 }

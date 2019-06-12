@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package gosionsvc.internal.authentication;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Token {
+
+    rpc Generate (GenerateRequest) returns (GenerateResponse);
+
+}
+
+message GenerateRequest {
+    gs.commons.dto.Authorize auth = 1;
+    bool route = 2;
+    string relationId = 3;
+}
+
+message GenerateResponse {
+    gs.commons.dto.State state = 1;
+    string accessToken = 2;
+    string refreshToken = 3;
+}

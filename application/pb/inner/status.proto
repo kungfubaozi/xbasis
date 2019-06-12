@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package gosionsvc.internal.application;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service ApplicationStatus {
+
+    rpc GetAppClientStatus (GetAppClientStatusRequest) returns (GetAppClientStatusResponse);
+
+}
+
+message GetAppClientStatusRequest {
+    string clientId = 1;
+    string redirect = 2;
+}
+
+message GetAppClientStatusResponse {
+    gs.commons.dto.State state = 1;
+    string appId = 2;
+    int64 appQuarantine = 3;
+    int64 clientPlatform = 4;
+    int64 clientEnabled = 5;
+    string userStructure = 6;
+    string functionStructure = 7;
+    bool mustsync = 8;
+    int64 type = 9;
+    bool canRedirect = 10;
+    string secretKey = 11;
+}

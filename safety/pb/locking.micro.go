@@ -2,7 +2,7 @@
 // source: safety/pb/locking.proto
 
 /*
-Package gs_service_safety is a generated protocol buffer package.
+Package gosionsvc_external_safety is a generated protocol buffer package.
 
 It is generated from these files:
 	safety/pb/locking.proto
@@ -11,7 +11,7 @@ It has these top-level messages:
 	LockRequest
 	UnlockRequest
 */
-package gs_service_safety
+package gosionsvc_external_safety
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -58,7 +58,7 @@ func NewLockingService(name string, c client.Client) LockingService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.safety"
+		name = "gosionsvc.external.safety"
 	}
 	return &lockingService{
 		c:    c,

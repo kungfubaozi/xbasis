@@ -2,7 +2,7 @@
 // source: user/pb/grant.proto
 
 /*
-Package gs_service_user is a generated protocol buffer package.
+Package gosionsvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/grant.proto
@@ -11,7 +11,7 @@ It has these top-level messages:
 	StatusRequest
 	GrantRequest
 */
-package gs_service_user
+package gosionsvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -57,7 +57,7 @@ func NewGrantService(name string, c client.Client) GrantService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.user"
+		name = "gosionsvc.external.user"
 	}
 	return &grantService{
 		c:    c,

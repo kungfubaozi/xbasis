@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/pb"
+	external "konekko.me/gosion/application/pb"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -28,7 +28,7 @@ func (svc *applicationService) GetRepo() *applicationRepo {
 }
 
 //create new application if not exists(name)
-func (svc *applicationService) Create(ctx context.Context, in *gs_service_application.CreateRequest, out *gs_commons_dto.Status) error {
+func (svc *applicationService) Create(ctx context.Context, in *external.CreateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		headers := &analysisclient.LogHeaders{
@@ -127,7 +127,7 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 			},
 		}
 
-		err := repo.Add(info)
+		err = repo.Add(info)
 		if err == nil {
 			return errstate.Success
 		}
@@ -141,19 +141,19 @@ func (svc *applicationService) Create(ctx context.Context, in *gs_service_applic
 	})
 }
 
-func (svc *applicationService) Remove(ctx context.Context, in *gs_service_application.RemoveRequest, out *gs_commons_dto.Status) error {
+func (svc *applicationService) Remove(ctx context.Context, in *external.RemoveRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return errstate.Success
 	})
 }
 
-func (svc *applicationService) ChangeName(ctx context.Context, in *gs_service_application.ChangeNameRequest, out *gs_commons_dto.Status) error {
+func (svc *applicationService) ChangeName(ctx context.Context, in *external.ChangeNameRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_application.FindRequest, out *gs_service_application.SimpleApplicationResponse) error {
+func (svc *applicationService) FindByAppId(ctx context.Context, in *external.FindRequest, out *external.SimpleApplicationResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -168,7 +168,7 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 			return errstate.ErrRequest
 		}
 
-		out.Info = &gs_service_application.AppInfo{
+		out.Info = &external.AppInfo{
 			Name:  info.Name,
 			AppId: info.Id,
 			Settings: &gs_commons_dto.AppSettings{
@@ -184,9 +184,9 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 			out.Info.UserS = info.UserS.Id
 		}
 
-		var ar []*gs_service_application.AppClientInfo
+		var ar []*external.AppClientInfo
 		for _, k := range info.Clients {
-			c := &gs_service_application.AppClientInfo{
+			c := &external.AppClientInfo{
 				ClientId: k.Id,
 				Enabled:  k.Enabled,
 				Platform: k.Platform,
@@ -202,11 +202,11 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *gs_service_a
 	})
 }
 
-func (svc *applicationService) FindByClientId(context.Context, *gs_service_application.FindRequest, *gs_service_application.SimpleApplicationResponse) error {
+func (svc *applicationService) FindByClientId(context.Context, *external.FindRequest, *external.SimpleApplicationResponse) error {
 	panic("implement me")
 }
 
-func (svc *applicationService) List(ctx context.Context, in *gs_service_application.FindRequest, out *gs_service_application.ListResponse) error {
+func (svc *applicationService) List(ctx context.Context, in *external.FindRequest, out *external.ListResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -218,7 +218,7 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 			return nil
 		}
 
-		var l []*gs_service_application.AppInfo
+		var l []*external.AppInfo
 		for _, v := range list {
 			t := "user"
 			switch v.Type {
@@ -226,7 +226,7 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 				t = "sys"
 			}
 
-			l = append(l, &gs_service_application.AppInfo{
+			l = append(l, &external.AppInfo{
 				AppId:    v.Id,
 				Enabled:  v.Settings.Enabled,
 				CreateAt: v.CreateAt,
@@ -245,10 +245,10 @@ func (svc *applicationService) List(ctx context.Context, in *gs_service_applicat
 	})
 }
 
-func (svc *applicationService) Switch(context.Context, *gs_service_application.SwitchRequest, *gs_commons_dto.Status) error {
+func (svc *applicationService) Switch(context.Context, *external.SwitchRequest, *gs_commons_dto.Status) error {
 	panic("implement me")
 }
 
-func NewApplicationService(session *mgo.Session, client *indexutils.Client, log analysisclient.LogClient) gs_service_application.ApplicationHandler {
+func NewApplicationService(session *mgo.Session, client *indexutils.Client, log analysisclient.LogClient) external.ApplicationHandler {
 	return &applicationService{session: session, Client: client, log: log}
 }

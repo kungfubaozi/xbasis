@@ -9,7 +9,7 @@ import (
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/safety/handers"
 	"konekko.me/gosion/safety/pb"
-	"konekko.me/gosion/safety/pb/ext"
+	"konekko.me/gosion/safety/pb/inner"
 )
 
 func StartService() {
@@ -37,11 +37,11 @@ func StartService() {
 		s := microservice.NewService(gs_commons_constants.SafetyService, true)
 		s.Init()
 
-		gs_service_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, client))
+		gosionsvc_external_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, client))
 
-		gs_service_safety.RegisterFrozenHandler(s.Server(), safetyhanders.NewFrozenService())
+		gosionsvc_external_safety.RegisterLockingHandler(s.Server(), safetyhanders.NewLockingService())
 
-		gs_service_safety.RegisterLockingHandler(s.Server(), safetyhanders.NewLockingService())
+		gosionsvc_external_safety.RegisterUserlockHandler(s.Server(), safetyhanders.NewUserlockService())
 
 		errc <- s.Run()
 	}()
@@ -51,9 +51,9 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ExtSafetyService, true)
+		s := microservice.NewService(gs_commons_constants.InternalSafetyService, true)
 		s.Init()
-		gs_ext_service_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session))
+		gosionsvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session))
 
 		errc <- s.Run()
 	}()

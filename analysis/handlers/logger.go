@@ -6,7 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
 	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/analysis/pb"
+	external "konekko.me/gosion/analysis/pb"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
@@ -18,7 +18,15 @@ type loggerService struct {
 	log analysisclient.LogClient
 }
 
-func (svc *loggerService) GetAxisData(ctx context.Context, in *gs_service_analysis.GetDataRequest, out *gs_service_analysis.GetDataResponse) error {
+func (svc *loggerService) TodayVisit(context.Context, *external.TodayVisitRequest, *external.TodayVisitResponse) error {
+	panic("implement me")
+}
+
+func (svc *loggerService) UsageFunction(context.Context, *external.UsageFunctionRequest, *external.UsageFunctionResponse) error {
+	panic("implement me")
+}
+
+func (svc *loggerService) GetAxisData(ctx context.Context, in *external.GetDataRequest, out *external.GetDataResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.XAxis.Factors) == 0 || len(in.YAxis.Factors) == 0 {
 			return nil
@@ -97,7 +105,7 @@ func (svc *loggerService) GetAxisData(ctx context.Context, in *gs_service_analys
 	})
 }
 
-func loopYAxis(search *elastic.SearchSource, factors []*gs_service_analysis.YAxisFactor, getValue func(j string) interface{}) {
+func loopYAxis(search *elastic.SearchSource, factors []*external.YAxisFactor, getValue func(j string) interface{}) {
 	for _, v := range factors {
 		if v.Operation == "terms" {
 			agg := elastic.NewTermsAggregation().Field(v.Field)
@@ -117,7 +125,7 @@ func loopYAxis(search *elastic.SearchSource, factors []*gs_service_analysis.YAxi
 	}
 }
 
-func getAgg(v *gs_service_analysis.YAxisFactor, getValue func(j string) interface{}) (string, elastic.Aggregation) {
+func getAgg(v *external.YAxisFactor, getValue func(j string) interface{}) (string, elastic.Aggregation) {
 	if v != nil {
 		if v.Operation == "range" {
 			agg1 := elastic.NewRangeAggregation().Field(v.Field).AddRange(getValue(v.Value+"-1"), getValue(v.Value+"-2"))
@@ -127,6 +135,6 @@ func getAgg(v *gs_service_analysis.YAxisFactor, getValue func(j string) interfac
 	return "", nil
 }
 
-func NewLoggerService(log analysisclient.LogClient, client *indexutils.Client) gs_service_analysis.LoggerHandler {
+func NewLoggerService(log analysisclient.LogClient, client *indexutils.Client) external.LoggerHandler {
 	return &loggerService{log: log, Client: client}
 }

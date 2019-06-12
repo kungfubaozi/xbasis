@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package gosionsvc.internal.permission;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Accessible {
+
+    rpc Check (CheckRequest) returns (gs.commons.dto.Status);
+
+}
+
+message CheckRequest {
+    repeated string functionRoles = 1;
+    string userId = 2;
+    string structureId = 3;
+}

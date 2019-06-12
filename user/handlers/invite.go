@@ -9,7 +9,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/user/pb"
+	external "konekko.me/gosion/user/pb"
 )
 
 type inviteService struct {
@@ -22,7 +22,7 @@ type inviteService struct {
 当用户注册时会检测(按照registerType查找对应的数据匹配)是否有对应邀请用户，如果有则会合并数据，没有则进入正常流程
 如果被邀请用户已经注册会不通过
 */
-func (svc *inviteService) User(ctx context.Context, in *gs_service_user.InviteRequest, out *gs_commons_dto.Status) error {
+func (svc *inviteService) User(ctx context.Context, in *external.InviteRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
 		if len(in.Phone) > 0 && gs_commons_regx.Phone(in.Phone) {
@@ -44,6 +44,6 @@ func (svc *inviteService) User(ctx context.Context, in *gs_service_user.InviteRe
 	})
 }
 
-func NewInviteService(session *mgo.Session, log analysisclient.LogClient) gs_service_user.InviteHandler {
+func NewInviteService(session *mgo.Session, log analysisclient.LogClient) external.InviteHandler {
 	return &inviteService{session: session, log: log}
 }

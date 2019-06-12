@@ -8,7 +8,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/safety/pb"
+	external "konekko.me/gosion/safety/pb"
 )
 
 type blacklistService struct {
@@ -20,7 +20,7 @@ func (svc *blacklistService) GetRepo() blacklistRepo {
 	return blacklistRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
-func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.CheckRequest, out *gs_commons_dto.Status) error {
+func (svc *blacklistService) Check(ctx context.Context, in *external.CheckRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		if len(in.Content) > 0 {
@@ -41,7 +41,7 @@ func (svc *blacklistService) Check(ctx context.Context, in *gs_service_safety.Ch
 	})
 }
 
-func (svc *blacklistService) Add(ctx context.Context, in *gs_service_safety.AddRequest, out *gs_commons_dto.Status) error {
+func (svc *blacklistService) Add(ctx context.Context, in *external.AddRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -62,7 +62,7 @@ func (svc *blacklistService) Add(ctx context.Context, in *gs_service_safety.AddR
 	})
 }
 
-func (svc *blacklistService) Remove(ctx context.Context, in *gs_service_safety.RemoveRequest, out *gs_commons_dto.Status) error {
+func (svc *blacklistService) Remove(ctx context.Context, in *external.RemoveRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -77,6 +77,6 @@ func (svc *blacklistService) Remove(ctx context.Context, in *gs_service_safety.R
 	})
 }
 
-func NewBlacklistService(session *mgo.Session, client *indexutils.Client) gs_service_safety.BlacklistHandler {
+func NewBlacklistService(session *mgo.Session, client *indexutils.Client) external.BlacklistHandler {
 	return &blacklistService{session: session, Client: client}
 }

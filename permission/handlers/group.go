@@ -8,7 +8,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
+	external "konekko.me/gosion/permission/pb"
 )
 
 type groupService struct {
@@ -16,11 +16,11 @@ type groupService struct {
 	session *mgo.Session
 }
 
-func (svc *groupService) GetGroupItems(context.Context, *gs_service_permission.GetGroupItemsRequest, *gs_service_permission.GetGroupItemsResponse) error {
+func (svc *groupService) GetGroupItems(context.Context, *external.GetGroupItemsRequest, *external.GetGroupItemsResponse) error {
 	panic("implement me")
 }
 
-func (svc *groupService) GetGroupItemDetail(context.Context, *gs_service_permission.GetGroupItemDetailRequest, *gs_service_permission.GetGroupItemDetailResponse) error {
+func (svc *groupService) GetGroupItemDetail(context.Context, *external.GetGroupItemDetailRequest, *external.GetGroupItemDetailResponse) error {
 	panic("implement me")
 }
 
@@ -28,7 +28,7 @@ func (svc *groupService) GetRepo() *groupRepo {
 	return &groupRepo{session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
 }
 
-func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
+func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		repo := svc.GetRepo()
@@ -59,44 +59,44 @@ func (svc *groupService) Add(ctx context.Context, in *gs_service_permission.Simp
 }
 
 //You can link to other application groups, or to this application group.
-func (svc *groupService) LinkTo(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
+func (svc *groupService) LinkTo(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *groupService) Unlink(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
+func (svc *groupService) Unlink(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *groupService) Rename(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
+func (svc *groupService) Rename(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 //User cannot be in the same group under the same application
-func (svc *groupService) AddUser(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
+func (svc *groupService) AddUser(ctx context.Context, in *external.SimpleUserNode, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func (svc *groupService) MoveUser(ctx context.Context, in *gs_service_permission.SimpleUserNode, out *gs_commons_dto.Status) error {
+func (svc *groupService) MoveUser(ctx context.Context, in *external.SimpleUserNode, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
 //If there are users under the current group, they cannot be deleted
-func (svc *groupService) Remove(ctx context.Context, in *gs_service_permission.SimpleGroup, out *gs_commons_dto.Status) error {
+func (svc *groupService) Remove(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
 }
 
-func NewGroupService(pool *redis.Pool, session *mgo.Session) gs_service_permission.UserGroupHandler {
+func NewGroupService(pool *redis.Pool, session *mgo.Session) external.UserGroupHandler {
 	return &groupService{pool: pool, session: session}
 }

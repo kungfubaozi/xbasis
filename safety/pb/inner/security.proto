@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package gosionsvc.internal.safety;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service Security {
+
+    rpc Get (GetRequest) returns (GetResponse);
+
+}
+
+message GetRequest {
+    string userId = 1;
+}
+
+message GetResponse {
+    gs.commons.dto.State state = 1;
+    int64 current = 2;
+}

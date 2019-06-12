@@ -6,7 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/user/pb"
+	external "konekko.me/gosion/user/pb"
 )
 
 type grantService struct {
@@ -14,13 +14,13 @@ type grantService struct {
 	pool    *redis.Pool
 }
 
-func (svc *grantService) Yes(ctx context.Context, in *gs_service_user.GrantRequest, out *gs_commons_dto.Status) error {
+func (svc *grantService) Yes(ctx context.Context, in *external.GrantRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		return nil
 	})
 }
 
-func NewGrantService(session *mgo.Session, pool *redis.Pool) gs_service_user.GrantHandler {
+func NewGrantService(session *mgo.Session, pool *redis.Pool) external.GrantHandler {
 	return &grantService{session: session, pool: pool}
 }

@@ -8,7 +8,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb/ext"
+	inner "konekko.me/gosion/permission/pb/inner"
 )
 
 type accessibleService struct {
@@ -16,7 +16,7 @@ type accessibleService struct {
 	log analysisclient.LogClient
 }
 
-func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_permission.CheckRequest, out *gs_commons_dto.Status) error {
+func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		//get user require roles
 		var userroles map[string]interface{}
@@ -24,7 +24,7 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 		headers := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
 			ModuleName:  "Accessible",
-			ServiceName: gs_commons_constants.ExtAccessibleVerification,
+			ServiceName: gs_commons_constants.InternalPermission,
 		}
 
 		ok, err := svc.Client.QueryFirst("gs-user-roles-relation",
@@ -90,6 +90,6 @@ func (svc *accessibleService) Check(ctx context.Context, in *gs_ext_service_perm
 	})
 }
 
-func NewAccessibleService(c *indexutils.Client, log analysisclient.LogClient) gs_ext_service_permission.AccessibleHandler {
+func NewAccessibleService(c *indexutils.Client, log analysisclient.LogClient) inner.AccessibleHandler {
 	return &accessibleService{Client: c, log: log}
 }

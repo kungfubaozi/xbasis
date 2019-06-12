@@ -3,13 +3,13 @@ package userclient
 import (
 	"github.com/micro/go-micro/client"
 	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/user/pb/ext"
+	"konekko.me/gosion/user/pb/inner"
 )
 
-func NewExtUserClient(client client.Client) gs_ext_service_user.UserService {
-	return gs_ext_service_user.NewUserService(gs_commons_constants.ExtUserService, client)
+func NewExtUserClient(client client.Client) gosionsvc_internal_user.UserService {
+	return gosionsvc_internal_user.NewUserService(gs_commons_constants.InternalUserService, client)
 }
 
-func NewExtMessageClient(client client.Client) gs_ext_service_user.MessageService {
-	return gs_ext_service_user.NewMessageService(gs_commons_constants.ExtUserService, client)
+func NewExtMessageClient(client client.Client) gosionsvc_internal_user.MessageService {
+	return gosionsvc_internal_user.NewMessageService(gs_commons_constants.InternalUserService, client)
 }

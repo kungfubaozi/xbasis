@@ -16,8 +16,8 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/user/pb/ext"
+	external "konekko.me/gosion/permission/pb"
+	"konekko.me/gosion/user/pb/inner"
 	"math/rand"
 	"time"
 )
@@ -26,7 +26,7 @@ type durationAccessService struct {
 	pool    *redis.Pool
 	session *mgo.Session
 	*indexutils.Client
-	messageService gs_ext_service_user.MessageService
+	messageService gosionsvc_internal_user.MessageService
 	log            analysisclient.LogClient
 	zk             *zk.Conn
 }
@@ -35,7 +35,7 @@ func (svc *durationAccessService) GetRepo() functionRepo {
 	return functionRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
-func (svc *durationAccessService) Send(ctx context.Context, in *gs_service_permission.SendRequest, out *gs_commons_dto.Status) error {
+func (svc *durationAccessService) Send(ctx context.Context, in *external.SendRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Credential) > 0 {
 			return errstate.ErrRequest
@@ -158,7 +158,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *gs_service_permi
 			return errstate.ErrSystem
 		}
 
-		st, err := svc.messageService.SendVerificationCode(ctx, &gs_ext_service_user.SendRequest{
+		st, err := svc.messageService.SendVerificationCode(ctx, &gosionsvc_internal_user.SendRequest{
 			To:          to,
 			Auth:        credential.FromAuth,
 			Code:        fmt.Sprintf("%d", dat.Code),
@@ -190,7 +190,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *gs_service_permi
 	})
 }
 
-func (svc *durationAccessService) Verify(ctx context.Context, in *gs_service_permission.VerifyRequest, out *gs_service_permission.VerifyResponse) error {
+func (svc *durationAccessService) Verify(ctx context.Context, in *external.VerifyRequest, out *external.VerifyResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.Credential) > 0 && len(in.To) <= 8 && (in.Code <= 1000000 && in.Code >= 100000) {
 			return errstate.ErrRequest
@@ -297,6 +297,6 @@ func (svc *durationAccessService) getCredential(credential string) (*durationAcc
 }
 
 func NewDurationAccessService(pool *redis.Pool, session *mgo.Session,
-	messageService gs_ext_service_user.MessageService, client *indexutils.Client, log analysisclient.LogClient) gs_service_permission.DurationAccessHandler {
+	messageService gosionsvc_internal_user.MessageService, client *indexutils.Client, log analysisclient.LogClient) external.DurationAccessHandler {
 	return &durationAccessService{pool: pool, Client: client, session: session, messageService: messageService, log: log}
 }

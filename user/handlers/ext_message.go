@@ -8,7 +8,7 @@ import (
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/message/cmd/messagecli"
-	"konekko.me/gosion/user/pb/ext"
+	inner "konekko.me/gosion/user/pb/inner"
 )
 
 type messageService struct {
@@ -29,7 +29,7 @@ func (svc *messageService) GetRepo() *userRepo {
 	return &userRepo{session: svc.session.Clone()}
 }
 
-func (svc *messageService) SendVerificationCode(ctx context.Context, in *gs_ext_service_user.SendRequest, out *gs_commons_dto.Status) error {
+func (svc *messageService) SendVerificationCode(ctx context.Context, in *inner.SendRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, in, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		to := in.To
 		if in.Auth {
@@ -65,6 +65,6 @@ func (svc *messageService) SendVerificationCode(ctx context.Context, in *gs_ext_
 	})
 }
 
-func NewMessageService(message messagecli.MessageClient, session *mgo.Session) gs_ext_service_user.MessageHandler {
+func NewMessageService(message messagecli.MessageClient, session *mgo.Session) inner.MessageHandler {
 	return &messageService{message: message, session: session}
 }
