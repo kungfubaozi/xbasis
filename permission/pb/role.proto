@@ -48,6 +48,7 @@ message SimpleRoleInfo {
     string id = 1;
     string name = 2;
     int64 createAt = 3;
+    string structureId = 4;
 }
 
 message RoleRequest {

@@ -10,6 +10,7 @@ import (
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
+	"konekko.me/gosion/permission/client"
 	"konekko.me/gosion/permission/handlers"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/pb/inner"
@@ -60,7 +61,7 @@ func StartService() {
 
 		mc := userclient.NewExtMessageClient(m.Client())
 
-		gosionsvc_external_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(pool, session, us, logger))
+		gosionsvc_external_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(client, session, us, logger))
 
 		gosionsvc_external_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, mc, client, logger))
 
@@ -68,7 +69,8 @@ func StartService() {
 
 		gosionsvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session))
 
-		gosionsvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool))
+		gosionsvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool,
+			permissioncli.NewBindingClient(m.Client())))
 
 		gosionsvc_external_permission.RegisterStructureHandler(m.Server(), permissionhandlers.NewStructureService(session, client, applicationclient.NewClient(m.Client())))
 

@@ -5,7 +5,9 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/permission/utils"
+	"sync"
 	"time"
 )
 
@@ -13,6 +15,7 @@ type roleRepo struct {
 	session *mgo.Session
 	id      gs_commons_generator.IDGenerator
 	conn    redis.Conn
+	*indexutils.Client
 }
 
 func (repo *roleRepo) FindByName(structureId, name string) (*role, error) {
@@ -22,14 +25,47 @@ func (repo *roleRepo) FindByName(structureId, name string) (*role, error) {
 }
 
 func (repo *roleRepo) Remove(structureId, roleId string) error {
-	_, err := repo.conn.Do("hdel", permissionutils.GetStructureRoleKey(structureId), roleId)
-	if err != nil && err == redis.ErrNil {
-		err = nil
-	}
+	names, err := repo.session.DB(dbName).CollectionNames()
 	if err != nil {
 		return err
 	}
-	return repo.collection().Remove(bson.M{"structure_id": structureId, "_id": roleId})
+	var relations []string
+	for _, v := range names {
+		if len(v) > 19 && v[:19] == userRoleRelationCollection {
+			relations = append(relations, v)
+		}
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(relations) + 2)
+	b := bson.M{"structure_id": structureId}
+	u := bson.M{"$pull": bson.M{"roles": roleId}}
+	resp := func(e error) {
+		if err == nil {
+			err = e
+		}
+	}
+
+	for _, v := range relations {
+		go func() {
+			defer wg.Done()
+			resp(repo.session.DB(dbName).C(v).Update(b, u))
+		}()
+	}
+
+	go func() {
+		defer wg.Done()
+
+	}()
+
+	go func() {
+		defer wg.Done()
+		resp(repo.collection().Remove(bson.M{"_id": roleId}))
+	}()
+
+	wg.Wait()
+
+	return err
+
 }
 
 func (repo *roleRepo) Save(name, structureId, userId string) error {

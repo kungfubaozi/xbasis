@@ -8,11 +8,18 @@ service OAuth {
 
     rpc Login (OAuthLoginRequest) returns (OAuthLoginResponse);
 
-    rpc bindOAuth (BindOAuthRequest) returns (gs.commons.dto.Status);
+    rpc BindOAuth (BindOAuthRequest) returns (gs.commons.dto.Status);
+
+    rpc UnbindOAuth (UnbindOAuthRequest) returns (gs.commons.dto.Status);
 }
 
 message BindOAuthRequest {
     string openId = 1;
+    string type = 2;
+    string accessToken = 3;
+}
+
+message UnbindOAuthRequest {
 
 }
 

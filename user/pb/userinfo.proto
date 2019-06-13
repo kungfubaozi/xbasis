@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package gosionsvc.external.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service UserInfo {
+
+    rpc GetLocalInfo (GetInfoByIdRequest) returns (GetInfoResponse);
+
+}
+
+message GetInfoResponse {
+    gs.commons.dto.State state = 1;
+    string username = 2;
+    string groupName = 3;
+    string icon = 4;
+    string userInfo = 5;
+}
+
+message GetInfoByIdRequest {
+    //string userId = 1;
+}

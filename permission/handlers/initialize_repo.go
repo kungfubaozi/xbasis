@@ -8,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"io/ioutil"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/hashcode"
 	"konekko.me/gosion/permission/utils"
@@ -33,6 +34,7 @@ type functionData struct {
 	AuthType []int64  `json:"auth_type"`
 	Roles    []string `json:"roles"`
 	Share    bool     `json:"share"`
+	Desc     string   `json:"desc"`
 }
 
 type initializeRepo struct {
@@ -152,7 +154,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 
 		repo.userRolesRelation = append(repo.userRolesRelation, u)
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-roles-relation").Type("_doc").Doc(u))
+		//		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-roles-relation").Type("_doc").Doc(u))
 
 	}
 
@@ -182,19 +184,44 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 				CreateAt:     time.Now().UnixNano(),
 				CreateUserId: repo.config.UserId,
 				Id:           repo.id.UUID(),
+				Share:        v.Share,
 			}
-
-			repo.functions = append(repo.functions, f)
 
 			if v.Roles != nil && len(v.Roles) > 0 {
 				var nr []string
 				for _, r := range v.Roles {
-					nr = append(nr, roleMap[r])
+					id := roleMap[r]
+					nr = append(nr, id)
+					for _, v := range adminRoles {
+						if id == v {
+							dr := &directrelation{
+								Function:   true,
+								User:       true,
+								UserId:     repo.config.UserId,
+								FunctionId: f.Id,
+								RoleId:     v,
+							}
+
+							id := encrypt.Md5(dr.FunctionId + dr.UserId)
+
+							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("gosion-urf-relations_.i%d", hashcode.Get(repo.config.UserId)%5)).Id(id).Type("_doc").Doc(dr))
+						}
+					}
 				}
 				f.Roles = nr
 			}
 
-			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-functions").Type("_doc").Doc(f))
+			repo.functions = append(repo.functions, f)
+
+			sf := &simplifiedFunction{
+				Id:            f.Id,
+				AuthTypes:     f.AuthTypes,
+				Share:         f.Share,
+				ValTokenTimes: f.ValTokenTimes,
+				Roles:         f.Roles,
+			}
+
+			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-functions").Type("_doc").Doc(sf))
 		}
 	}
 }

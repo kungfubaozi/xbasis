@@ -79,6 +79,27 @@
           "auth_type": [
             5632
           ]
+        },
+        {
+          "api": "/oauth/unbindOAuth",
+          "name": "UnbindOAuth",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/userInfo/getLocalInfo",
+          "name": "GetSelfUserInfo",
+          "roles": [
+            "User"
+          ],
+          "share": true,
+          "auth_type": [
+            5632
+          ]
         }
       ]
     }

@@ -188,15 +188,17 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 
 			if !in.Share {
 
+				//如果功能没有操作角色则忽略
 				if len(in.FunctionRoles) == 0 {
 					resp(errstate.Success)
 					return
 				}
 
 				s, err := svc.innerAccessibleService.Check(ctx, &gosionsvc_internal_permission.CheckRequest{
-					UserId:        claims.Token.UserId,
-					StructureId:   in.Funcs,
-					FunctionRoles: in.FunctionRoles,
+					UserId:      claims.Token.UserId,
+					StructureId: in.Funcs,
+					//FunctionRoles: in.FunctionRoles,
+					FunctionId: in.FunctionId,
 				})
 
 				if err != nil {

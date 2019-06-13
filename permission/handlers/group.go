@@ -16,12 +16,16 @@ type groupService struct {
 	session *mgo.Session
 }
 
-func (svc *groupService) GetGroupItems(context.Context, *external.GetGroupItemsRequest, *external.GetGroupItemsResponse) error {
-	panic("implement me")
+func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGroupItemsRequest, out *external.GetGroupItemsResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
-func (svc *groupService) GetGroupItemDetail(context.Context, *external.GetGroupItemDetailRequest, *external.GetGroupItemDetailResponse) error {
-	panic("implement me")
+func (svc *groupService) GetGroupItemDetail(ctx context.Context, in *external.GetGroupItemDetailRequest, out *external.GetGroupItemDetailResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
 func (svc *groupService) GetRepo() *groupRepo {

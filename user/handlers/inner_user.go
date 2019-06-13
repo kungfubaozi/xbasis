@@ -10,16 +10,22 @@ import (
 	inner "konekko.me/gosion/user/pb/inner"
 )
 
-type extUserService struct {
+type innerUserService struct {
 	session *mgo.Session
 	log     analysisclient.LogClient
 }
 
-func (svc *extUserService) GetRepo() *userRepo {
+func (svc *innerUserService) GetUserInfoById(ctx context.Context, in *inner.GetUserInfoByIdRequest, out *inner.SimpleUserInfo) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
+}
+
+func (svc *innerUserService) GetRepo() *userRepo {
 	return &userRepo{session: svc.session.Clone()}
 }
 
-func (svc *extUserService) IsExists(ctx context.Context, in *inner.ExistsRequest, out *gs_commons_dto.Status) error {
+func (svc *innerUserService) IsExists(ctx context.Context, in *inner.ExistsRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.UserId) < 9 {
 			return nil
@@ -40,6 +46,6 @@ func (svc *extUserService) IsExists(ctx context.Context, in *inner.ExistsRequest
 	})
 }
 
-func NewExtUserService(session *mgo.Session, log analysisclient.LogClient) inner.UserHandler {
-	return &extUserService{session: session, log: log}
+func NewInnerUserService(session *mgo.Session, log analysisclient.LogClient) inner.UserHandler {
+	return &innerUserService{session: session, log: log}
 }

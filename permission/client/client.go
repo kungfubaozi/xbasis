@@ -3,6 +3,7 @@ package permissioncli
 import (
 	"github.com/micro/go-micro/client"
 	"konekko.me/gosion/commons/constants"
+	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/pb/inner"
 )
 
@@ -12,4 +13,8 @@ func NewVerificationClient(client client.Client) gosionsvc_internal_permission.V
 
 func NewAccessibleClient(client client.Client) gosionsvc_internal_permission.AccessibleService {
 	return gosionsvc_internal_permission.NewAccessibleService(gs_commons_constants.InternalPermission, client)
+}
+
+func NewBindingClient(client client.Client) gosionsvc_external_permission.BindingService {
+	return gosionsvc_external_permission.NewBindingService(gs_commons_constants.PermissionService, client)
 }

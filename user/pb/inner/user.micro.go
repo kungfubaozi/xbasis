@@ -9,6 +9,8 @@ It is generated from these files:
 
 It has these top-level messages:
 	ExistsRequest
+	SimpleUserInfo
+	GetUserInfoByIdRequest
 */
 package gosionsvc_internal_user
 
@@ -44,6 +46,7 @@ var _ server.Option
 
 type UserService interface {
 	IsExists(ctx context.Context, in *ExistsRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRequest, opts ...client.CallOption) (*SimpleUserInfo, error)
 }
 
 type userService struct {
@@ -74,15 +77,27 @@ func (c *userService) IsExists(ctx context.Context, in *ExistsRequest, opts ...c
 	return out, nil
 }
 
+func (c *userService) GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRequest, opts ...client.CallOption) (*SimpleUserInfo, error) {
+	req := c.c.NewRequest(c.name, "User.GetUserInfoById", in)
+	out := new(SimpleUserInfo)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for User service
 
 type UserHandler interface {
 	IsExists(context.Context, *ExistsRequest, *gs_commons_dto.Status) error
+	GetUserInfoById(context.Context, *GetUserInfoByIdRequest, *SimpleUserInfo) error
 }
 
 func RegisterUserHandler(s server.Server, hdlr UserHandler, opts ...server.HandlerOption) error {
 	type user interface {
 		IsExists(ctx context.Context, in *ExistsRequest, out *gs_commons_dto.Status) error
+		GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRequest, out *SimpleUserInfo) error
 	}
 	type User struct {
 		user
@@ -97,4 +112,8 @@ type userHandler struct {
 
 func (h *userHandler) IsExists(ctx context.Context, in *ExistsRequest, out *gs_commons_dto.Status) error {
 	return h.UserHandler.IsExists(ctx, in, out)
+}
+
+func (h *userHandler) GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRequest, out *SimpleUserInfo) error {
+	return h.UserHandler.GetUserInfoById(ctx, in, out)
 }

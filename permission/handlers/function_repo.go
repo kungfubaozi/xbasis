@@ -1,7 +1,6 @@
 package permissionhandlers
 
 import (
-	"errors"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -75,27 +74,12 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 	return c > 0
 }
 
-func (repo *functionRepo) FindApiInCache(structureId, api string) (*function, error) {
-	var function function
-	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{
-		"api":          api,
-		"structure_id": structureId,
-	}, &function)
-	if err != nil {
-		return nil, err
-	}
-	if ok {
-		return &function, nil
-	}
-	return nil, errors.New("not found")
-}
-
 func (repo *functionRepo) SimplifiedLookupApi(structureId, api string) (*simplifiedFunction, error) {
 	var sf simplifiedFunction
 
 	fmt.Println("st", structureId)
 
-	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf, "id", "roles", "auth_types", "grant_platforms", "share")
+	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf)
 	if err != nil {
 		return nil, err
 	}

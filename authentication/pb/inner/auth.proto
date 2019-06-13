@@ -18,6 +18,7 @@ message VerifyRequest {
     string funcs = 4;
     int64 access = 5;
     bool share = 6;
+    string functionId = 7;
 }
 
 message VerifyResponse {

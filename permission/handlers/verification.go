@@ -363,11 +363,12 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 							})
 
 							status, err := svc.innerAuthService.Verify(ac, &gosionsvc_internal_authentication.VerifyRequest{
-								Token:         rh.authorization,
-								ClientId:      callClientId,
-								FunctionRoles: f.Roles,
-								Share:         f.Share,
-								Funcs:         appResp.FunctionStructure,
+								Token:    rh.authorization,
+								ClientId: callClientId,
+								//FunctionRoles: f.Roles,
+								FunctionId: f.Id,
+								Share:      f.Share,
+								Funcs:      appResp.FunctionStructure,
 							})
 							if err != nil {
 								resp(errstate.ErrSystem)

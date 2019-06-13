@@ -44,7 +44,7 @@ func StartService() {
 
 		gosionsvc_internal_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms, session))
 
-		gosionsvc_internal_user.RegisterUserHandler(s.Server(), userhandlers.NewExtUserService(session, logger))
+		gosionsvc_internal_user.RegisterUserHandler(s.Server(), userhandlers.NewInnerUserService(session, logger))
 
 		errc <- s.Run()
 	}()
@@ -64,6 +64,8 @@ func StartService() {
 		gosionsvc_external_user.RegisterUpdateHandler(s.Server(), userhandlers.NewUpdateService(session))
 
 		gosionsvc_external_user.RegisterInviteHandler(s.Server(), userhandlers.NewInviteService(session, logger))
+
+		gosionsvc_external_user.RegisterUserInfoHandler(s.Server(), userhandlers.NewUserInfoService(session, logger))
 
 		errc <- s.Run()
 	}()

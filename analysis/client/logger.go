@@ -32,6 +32,7 @@ type LogContent struct {
 	Headers   *LogHeaders `json:"headers"`
 	Fields    *LogFields  `json:"fields"`
 	Action    string      `json:"action"`
+	SubAction string      `json:"sub_action"`
 	Message   string      `json:"message"`
 	Timestamp int64       `json:"timestamp"`
 	Level     string      `json:"level"`

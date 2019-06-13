@@ -9,6 +9,7 @@ It is generated from these files:
 
 It has these top-level messages:
 	BindOAuthRequest
+	UnbindOAuthRequest
 	OAuthLoginRequest
 	OAuthLoginResponse
 */
@@ -47,6 +48,7 @@ var _ server.Option
 type OAuthService interface {
 	Login(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error)
 	BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type oAuthService struct {
@@ -78,7 +80,17 @@ func (c *oAuthService) Login(ctx context.Context, in *OAuthLoginRequest, opts ..
 }
 
 func (c *oAuthService) BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "OAuth.bindOAuth", in)
+	req := c.c.NewRequest(c.name, "OAuth.BindOAuth", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *oAuthService) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "OAuth.UnbindOAuth", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -92,12 +104,14 @@ func (c *oAuthService) BindOAuth(ctx context.Context, in *BindOAuthRequest, opts
 type OAuthHandler interface {
 	Login(context.Context, *OAuthLoginRequest, *OAuthLoginResponse) error
 	BindOAuth(context.Context, *BindOAuthRequest, *gs_commons_dto.Status) error
+	UnbindOAuth(context.Context, *UnbindOAuthRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterOAuthHandler(s server.Server, hdlr OAuthHandler, opts ...server.HandlerOption) error {
 	type oAuth interface {
 		Login(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error
 		BindOAuth(ctx context.Context, in *BindOAuthRequest, out *gs_commons_dto.Status) error
+		UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, out *gs_commons_dto.Status) error
 	}
 	type OAuth struct {
 		oAuth
@@ -116,4 +130,8 @@ func (h *oAuthHandler) Login(ctx context.Context, in *OAuthLoginRequest, out *OA
 
 func (h *oAuthHandler) BindOAuth(ctx context.Context, in *BindOAuthRequest, out *gs_commons_dto.Status) error {
 	return h.OAuthHandler.BindOAuth(ctx, in, out)
+}
+
+func (h *oAuthHandler) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, out *gs_commons_dto.Status) error {
+	return h.OAuthHandler.UnbindOAuth(ctx, in, out)
 }

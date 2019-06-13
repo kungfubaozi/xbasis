@@ -1,40 +1,56 @@
 package permissionhandlers
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"fmt"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/permission/utils"
+	"konekko.me/gosion/commons/hashcode"
+	"konekko.me/gosion/commons/indexutils"
 )
 
 type bindingRepo struct {
 	session *mgo.Session
-	conn    redis.Conn
-	id      gs_commons_generator.IDGenerator
-}
-
-func (repo *bindingRepo) GetFunctionRoleMembers(structureId, functionId string) ([]interface{}, error) {
-	return redis.Values(repo.conn.Do("SMEMBERS", permissionutils.GetStructureFunctionRoleKey(structureId, functionId)))
-}
-
-func (repo *bindingRepo) GetUserRoleMembers(structureId, userId string) ([]interface{}, error) {
-	return redis.Values(repo.conn.Do("SMEMBERS", permissionutils.GetStructureUserRoleKey(structureId, userId)))
-}
-
-func (repo *bindingRepo) SetUserRoleMembersInCache(userId, structureId string, roles []string) error {
-	_, err := repo.conn.Do("sadd", permissionutils.GetStructureUserRoleKey(structureId, userId), roles)
-	return err
-}
-
-func (repo *bindingRepo) SetUserRoleMembersInDB(userId, structureId string, roles []string) {
-
-}
-
-func (repo *bindingRepo) Exists(structureId, roleId string) (bool, error) {
-	return redis.Bool(repo.conn.Do("hexists", permissionutils.GetStructureRoleKey(structureId), roleId))
+	*indexutils.Client
+	id gs_commons_generator.IDGenerator
 }
 
 func (repo *bindingRepo) Close() {
-	repo.conn.Close()
 	repo.session.Close()
+}
+
+func (repo *bindingRepo) functionCollection() *mgo.Collection {
+	return repo.session.DB(dbName).C(functionCollection)
+}
+
+func (repo *bindingRepo) userRelationCollection(userId string) *mgo.Collection {
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Get(userId)%5))
+}
+
+func (repo *bindingRepo) FindFunctionById(id string) (*function, error) {
+	f := &function{}
+	err := repo.functionCollection().Find(bson.M{"_id": id}).One(f)
+	return f, err
+}
+
+func (repo *bindingRepo) FindUserById(id, structureId string) (*userRolesRelation, error) {
+	f := &userRolesRelation{}
+	err := repo.functionCollection().Find(bson.M{"user_id": id, "structure_id": structureId}).One(f)
+	return f, err
+}
+
+func (repo *bindingRepo) UpdateFunctionRole(id, role string) error {
+	return repo.functionCollection().Update(bson.M{"_id": id}, bson.M{"$push": bson.M{"roles": role}})
+}
+
+func (repo *bindingRepo) UpdateUserRole(id, structureId, role string) error {
+	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "structure_id": structureId}, bson.M{"$push": bson.M{"roles": role}})
+}
+
+func (repo *bindingRepo) RemoveRoleFromFunctions(id, role string) error {
+	return repo.functionCollection().Update(bson.M{"_id": id}, bson.M{"$pull": bson.M{"roles": role}})
+}
+
+func (repo *bindingRepo) RemoveRoleFromUserRelation(userId, role string) error {
+	return repo.userRelationCollection(userId).Update(bson.M{"user_id": userId}, bson.M{"$pull": bson.M{"roles": role}})
 }

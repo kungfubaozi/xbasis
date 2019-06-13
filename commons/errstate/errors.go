@@ -53,4 +53,7 @@ var (
 	ErrUnbindPhone                 = &gs_commons_dto.State{Ok: false, Code: 20045, Message: "err unbind phone"}
 	ErrAlreadyLocking              = &gs_commons_dto.State{Ok: false, Code: 20046, Message: "err user already locking"}
 	ErrNotFound                    = &gs_commons_dto.State{Ok: false, Code: 20047, Message: "err not found"}
+	ErrUserAlreadyBindRole         = &gs_commons_dto.State{Ok: false, Code: 20048, Message: "err user already bind role"}
+	ErrFunctionAlreadyBindRole     = &gs_commons_dto.State{Ok: false, Code: 20049, Message: "err function already bind role"}
+	ErrBindStructure               = &gs_commons_dto.State{Ok: false, Code: 20050, Message: "err bind structure"}
 )

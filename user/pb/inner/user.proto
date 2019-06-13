@@ -8,8 +8,21 @@ service User {
 
     rpc isExists (ExistsRequest) returns (gs.commons.dto.Status);
 
+    rpc GetUserInfoById (GetUserInfoByIdRequest) returns (SimpleUserInfo);
 }
 
 message ExistsRequest {
+    string userId = 1;
+}
+
+message SimpleUserInfo {
+    gs.commons.dto.State state = 1;
+    string userId = 2;
+    string username = 3;
+    string icon = 4;
+    string realName = 5;
+}
+
+message GetUserInfoByIdRequest {
     string userId = 1;
 }

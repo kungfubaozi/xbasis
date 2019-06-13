@@ -17,6 +17,6 @@ service Binding {
 
 message BindingRoleRequest {
     string structureId = 1;
-    repeated string id = 2;
-    repeated string roleId = 3;
+    string id = 2;
+    string roleId = 3;
 }

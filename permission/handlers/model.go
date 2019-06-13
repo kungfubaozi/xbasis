@@ -12,7 +12,19 @@ const (
 	functionCollection = "functions"
 
 	functionGroupCollection = "function_groups"
+
+	userRoleRelationCollection = "user_roles_relation"
 )
+
+//直接联系(用在es上)
+type directrelation struct {
+	RoleId     string `bson:"role_id" json:"roleId"`
+	UserId     string `bson:"user_id" json:"userId"`
+	FunctionId string `bson:"function_id" json:"functionId"`
+	User       bool   `bson:"user" json:"user"`
+	Function   bool   `bson:"function" json:"function"`
+	Enabled    bool   `bson:"enabled" json:"enabled"`
+}
 
 type cacheStructure struct {
 	UserStructureId     string
@@ -116,6 +128,7 @@ type functionGroup struct {
 type function struct {
 	Id           string  `bson:"_id" json:"id"`
 	SID          string  `bson:"sid" json:"sid"`
+	Desc         string  `bson:"desc" json:"desc"`
 	Name         string  `bson:"name" json:"name" es:"not_analyzed"`
 	Api          string  `bson:"api" json:"api"`
 	Type         int64   `bson:"type" json:"type"`

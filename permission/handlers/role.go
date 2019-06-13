@@ -8,6 +8,7 @@ import (
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/permission/pb"
 )
@@ -15,10 +16,15 @@ import (
 type roleService struct {
 	session *mgo.Session
 	pool    *redis.Pool
+	*indexutils.Client
+	bindingService external.BindingService
 }
 
-func (svc *roleService) EffectUserSize(context.Context, *external.EffectUserSizeRequest, *external.EffectUserSizeResponse) error {
-	panic("implement me")
+//获取和角色关联的用户数量
+func (svc *roleService) EffectUserSize(ctx context.Context, in *external.EffectUserSizeRequest, out *external.EffectUserSizeResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
 func (svc *roleService) GetStructureRoles(ctx context.Context, in *external.GetStructureRolesRequest, out *external.GetRoleResponse) error {
@@ -57,7 +63,7 @@ func (svc *roleService) GetRole(ctx context.Context, in *external.GetRoleRequest
 
 func (svc *roleService) GetRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone(),
-		id: gs_commons_generator.NewIDG(), conn: svc.pool.Get()}
+		id: gs_commons_generator.NewIDG(), conn: svc.pool.Get(), Client: svc.Client}
 }
 
 //add new role if not exists
@@ -103,6 +109,6 @@ func (svc *roleService) Rename(ctx context.Context, in *external.RoleRequest, ou
 	})
 }
 
-func NewRoleService(session *mgo.Session, pool *redis.Pool) external.RoleHandler {
-	return &roleService{session: session, pool: pool}
+func NewRoleService(session *mgo.Session, pool *redis.Pool, bindingService external.BindingService) external.RoleHandler {
+	return &roleService{session: session, pool: pool, bindingService: bindingService}
 }

@@ -226,7 +226,7 @@
           ]
         },
         {
-          "api": "/userGroup/getFunctionItems",
+          "api": "/userGroup/getGroupItems",
           "name": "GetGroupItems",
           "roles": [
             "Administrator",
@@ -237,8 +237,20 @@
           ]
         },
         {
-          "api": "/userGroup/getFunctionItemDetail",
+          "api": "/userGroup/getGroupItemDetail",
           "name": "GetGroupItemDetail",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/effectUserSize",
+          "name": "EffectUserSize",
+          "desc": "获取影响用户数量",
           "roles": [
             "Administrator",
             "AppManage"
