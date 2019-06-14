@@ -149,7 +149,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 			}
 
 			//check //uai.UserAgent != auth.UserAgent
-			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation || uai.Device != auth.UserDevice {
+			if claims.Token.UserId != uai.UserId || claims.Token.Relation != uai.Relation || uai.Device != auth.UserDevice || claims.Token.ClientId != auth.FromClientId {
 				resp(errstate.ErrAccessToken)
 				svc.log.Info(&analysisclient.LogContent{
 					Headers: headers,

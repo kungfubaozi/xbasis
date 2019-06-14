@@ -32,7 +32,7 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 	c := NewConnect("192.168.2.57:2181")
 	//one same service process
 	acl := zk.WorldACL(zk.PermAll)
-	_, err := c.Create(gs_commons_constants.GosionConfiguration, nil, 1, acl)
+	_, err := c.Create(gs_commons_constants.GosionConfiguration, nil, 0, acl)
 	if err != nil {
 		fmt.Println("node register error:", err)
 		//return
@@ -50,6 +50,9 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 	}
 
 	v, _, err := c.Get(gs_commons_constants.GosionConfiguration)
+	//fmt.Println("v", v)
+	//fmt.Println("s", s)
+	//spew.Dump(s)
 	if err != nil {
 		fmt.Println("err", err)
 	} else {

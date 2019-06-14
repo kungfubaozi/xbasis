@@ -47,6 +47,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			cm["transport-ref-client-id"] = status.RefClientId
 			cm["transport-trace-id"] = status.TraceId
 			cm["transport-ip"] = status.Ip
+			cm["transport-function-id"] = status.FunctionId
 			cm["transport-user-device"] = status.UserDevice
 			cm["transport-user-agent"] = status.UserAgent
 			cm["transport-app-type"] = fmt.Sprintf("%d", status.AppType)

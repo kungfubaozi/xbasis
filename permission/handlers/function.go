@@ -37,6 +37,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 
 		groups, err := repo.FindChildGroups(in.AppId, in.Id)
 		if err != nil {
+			fmt.Println("123")
 			return nil
 		}
 

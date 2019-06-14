@@ -53,7 +53,7 @@ func StartService() {
 	go func() {
 		s := microservice.NewService(gs_commons_constants.InternalSafetyService, true)
 		s.Init()
-		gosionsvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session))
+		gosionsvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session, pool))
 
 		errc <- s.Run()
 	}()

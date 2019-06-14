@@ -21,9 +21,9 @@ service UserGroup {
 
     rpc MoveUser (SimpleUserNode) returns (gs.commons.dto.Status);
 
-    rpc GetGroupItems(GetGroupItemsRequest) returns (GetGroupItemsResponse);
+    rpc GetGroupItems (GetGroupItemsRequest) returns (GetGroupItemsResponse);
 
-    rpc GetGroupItemDetail(GetGroupItemDetailRequest) returns (GetGroupItemDetailResponse);
+    rpc GetGroupItemDetail (GetGroupItemDetailRequest) returns (GetGroupItemDetailResponse);
 }
 
 message GetGroupItemsRequest {
@@ -38,6 +38,7 @@ message GetGroupItemsResponse {
 
 message GetGroupItemDetailRequest {
     string id = 1;
+    string appId = 2;
 }
 
 message GroupItem {
@@ -49,13 +50,14 @@ message GroupItem {
 
 message GetGroupItemDetailResponse {
     gs.commons.dto.State state = 1;
-    repeated DetailItem data = 2;
+    DetailItem data = 2;
 }
 
 message DetailItem {
-    string name = 1;
+    string username = 1;
     string icon = 2;
     repeated DetailBindRole roles = 3;
+    string realName = 4;
 }
 
 message DetailBindRole {

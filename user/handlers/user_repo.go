@@ -64,6 +64,12 @@ func (repo *userRepo) infoCollection(userId string) *mgo.Collection {
 	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userInfoCollection, hashcode.Get(userId)))
 }
 
+func (repo *userRepo) FindUserInfo(userId string) (*userInfo, error) {
+	u := &userInfo{}
+	err := repo.infoCollection(userId).Find(bson.M{"_id": userId}).One(u)
+	return u, err
+}
+
 func (repo *userRepo) Close() {
 	repo.session.Close()
 }

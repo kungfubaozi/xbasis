@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-micro/metadata"
 	"github.com/vmihailenco/msgpack"
@@ -34,7 +35,8 @@ type verificationService struct {
 	blacklistService              gosionsvc_external_safety.BlacklistService
 	innerAuthService              gosionsvc_internal_authentication.AuthService
 	*indexutils.Client
-	log analysisclient.LogClient
+	log  analysisclient.LogClient
+	_log *logrus.Logger
 }
 
 type requestHeaders struct {
@@ -100,6 +102,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				refClientId:   md["gs-client-sci"],
 			}
 
+			start := time.Now().UnixNano()
+
 			//check
 			if len(rh.userDevice) == 0 ||
 				len(rh.fromClientId) == 0 || len(rh.userAgent) == 0 || len(rh.ip) == 0 ||
@@ -111,8 +115,6 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 			if len(rh.refClientId) == 0 {
 				rh.refClientId = rh.fromClientId
 			}
-
-			fmt.Println("start check process")
 
 			state := errstate.Success
 
@@ -247,7 +249,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 					}
 				}
 				if f == nil {
-					f, err = repo.SimplifiedLookupApi(appResp.AppId, rh.path)
+					f, err = repo.SimplifiedLookupApi(appResp.AppId, encrypt.SHA1(rh.path))
 					if err != nil {
 						svc.log.Info(&analysisclient.LogContent{
 							Headers: &analysisclient.LogHeaders{
@@ -496,6 +498,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				out.FromClient = rh.fromClientId
 				out.RefClientId = rh.refClientId
 				out.Ip = rh.ip
+				out.FunctionId = f.Id
 				out.TraceId = traceId
 				out.Platform = appResp.ClientPlatform
 				if len(userId) == 0 {
@@ -530,6 +533,10 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 					},
 				})
 
+				svc._log.WithFields(logrus.Fields{
+					"taking": fmt.Sprintf("%dms", (time.Now().UnixNano()-start)/1e6),
+				}).Info("Time consuming")
+
 				return errstate.Success
 			}
 
@@ -543,5 +550,5 @@ func NewVerificationService(pool *redis.Pool, session *mgo.Session,
 	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService, blacklistService gosionsvc_external_safety.BlacklistService,
 	innerAuthService gosionsvc_internal_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) inner.VerificationHandler {
 	return &verificationService{pool: pool, session: session, innerApplicationStatusService: innerApplicationStatusService,
-		blacklistService: blacklistService, innerAuthService: innerAuthService, Client: client, log: logger}
+		blacklistService: blacklistService, innerAuthService: innerAuthService, Client: client, log: logger, _log: logrus.New()}
 }

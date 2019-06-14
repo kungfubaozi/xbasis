@@ -24,6 +24,7 @@ type WrapperUser struct {
 	Platform     int64
 	AppType      int64
 	Token        *WrapperUserToken
+	FunctionId   string
 }
 
 func (w *WrapperUser) GetClientId() string {
@@ -53,6 +54,7 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	auth := &WrapperUser{}
 	auth.User = md["transport-user"]
 	auth.AppId = md["transport-app-id"]
+	auth.FunctionId = md["transport-function-id"]
 	auth.FromClientId = md["transport-from-client-id"]
 	auth.RefClientId = md["transport-ref-client-id"]
 	auth.IP = md["transport-ip"]

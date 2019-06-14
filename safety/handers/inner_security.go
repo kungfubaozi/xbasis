@@ -2,7 +2,6 @@ package safetyhanders
 
 import (
 	"context"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/constants"
@@ -26,8 +25,6 @@ func (svc *securityService) GetRepo() *lockingRepo {
 //different places
 func (svc *securityService) Get(ctx context.Context, in *inner.GetRequest, out *inner.GetResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-
-		fmt.Println("check user security")
 
 		if len(in.UserId) == 0 {
 			return nil
@@ -59,13 +56,14 @@ func (svc *securityService) Get(ctx context.Context, in *inner.GetRequest, out *
 			}
 		}()
 
-		wg.Add(1)
+		wg.Wait()
 
 		out.Current = int64(sc)
+		out.State = state
 		return nil
 	})
 }
 
-func NewSecurityService(session *mgo.Session) inner.SecurityHandler {
-	return &securityService{session: session}
+func NewSecurityService(session *mgo.Session, pool *redis.Pool) inner.SecurityHandler {
+	return &securityService{session: session, pool: pool}
 }

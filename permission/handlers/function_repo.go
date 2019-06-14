@@ -76,7 +76,7 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 func (repo *functionRepo) SimplifiedLookupApi(appId, api string) (*simplifiedFunction, error) {
 	var sf simplifiedFunction
 
-	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"app_id": appId, "api": api}, &sf)
+	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"app_id": appId, "path": api}, &sf)
 	if err != nil {
 		return nil, err
 	}

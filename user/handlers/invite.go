@@ -10,11 +10,31 @@ import (
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/user/pb"
+	"konekko.me/gosion/user/pb/inner"
 )
 
 type inviteService struct {
-	session *mgo.Session
-	log     analysisclient.LogClient
+	session     *mgo.Session
+	userService gosionsvc_internal_user.UserService
+	log         analysisclient.LogClient
+}
+
+func (svc *inviteService) List(ctx context.Context, in *external.ListRequest, out *external.ListResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
+}
+
+func (svc *inviteService) Find(ctx context.Context, in *external.FindInviteRequest, out *external.FindInviteResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
+}
+
+func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
 /**
@@ -40,6 +60,7 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteRequest, 
 				return errstate.ErrRequest
 			}
 		}
+
 		return nil
 	})
 }

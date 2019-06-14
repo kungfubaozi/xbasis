@@ -12,6 +12,34 @@ service Invite {
     //1.如果没有注册，需要注册再进行
     rpc User (InviteRequest) returns (gs.commons.dto.Status);
 
+    rpc List (ListRequest) returns (ListResponse);
+
+    rpc Find (FindInviteRequest) returns (FindInviteResponse);
+
+    //是否被邀请
+    rpc HasInvited(HasInvitedRequest) returns (gs.commons.dto.Status);
+}
+
+message HasInvitedRequest {
+    string phone = 1;
+    string email = 2;
+}
+
+message FindInviteRequest {
+    string key = 1;
+}
+
+message FindInviteResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message ListRequest {
+    int64 pageIndex = 1;
+    int64 pageSize = 2;
+}
+
+message ListResponse {
+    gs.commons.dto.State state = 1;
 }
 
 message InviteRequest {
@@ -19,6 +47,12 @@ message InviteRequest {
     string email = 2;
     string username = 3;
     string realName = 4;
-    string bindGroupId = 5;
-    repeated int64 roles = 6;
+    repeated InviteItem items = 5;
+    int64 expiredAt = 6;
+}
+
+message InviteItem {
+    string appId = 1;
+    repeated int64 roles = 2;
+    string bindGroupId = 3;
 }

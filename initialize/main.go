@@ -76,17 +76,17 @@ func main() {
 	secretKey := encrypt.Md5(time.Now().String())
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
-		AppName:     enterprise,
-		UserId:      id.Get(),
-		Desc:        desc,
-		Username:    username,
-		Phone:       phone,
-		Email:       email,
-		SecretKey:   secretKey,
-		UserAppId:   id.Short(),
-		RouteAppId:  id.Short(),
-		SafeAppId:   id.Short(),
-		ManageAppId: id.Short(),
+		AppName:    enterprise,
+		UserId:     id.Get(),
+		Desc:       desc,
+		Username:   username,
+		Phone:      phone,
+		Email:      email,
+		SecretKey:  secretKey,
+		UserAppId:  id.Short(),
+		RouteAppId: id.Short(),
+		SafeAppId:  id.Short(),
+		AdminAppId: id.Short(),
 	}
 
 	configuration := &gs_commons_config.GosionConfiguration{
@@ -108,39 +108,39 @@ func main() {
 
 	if len(b) > 0 {
 		fmt.Println(string(b))
-		return
+
 	}
 
 	//once
 	c := gs_commons_config.NewConnect(config)
 	//set def configs
-	_, s, err := c.Get(gs_commons_constants.ZKWatchInitializeConfigPath)
-	if err != nil {
-		panic(err)
-	}
+	//_, s, err := c.Get(gs_commons_constants.ZKWatchInitializeConfigPath)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//fmt.Println("version", s.Version)
+	//v := 0
+	//if s.DataLength == 0 && s.Version == 0 {
+	//	v = 0
+	//	fmt.Println("r")
+	//} else {
+	//	v = int(s.Version)
+	//}
+	//
+	//fmt.Println("version -", s.Version)
+	//
+	//_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, int32(v))
+	//if err != nil {
+	//	fmt.Println("set init config err", err)
+	//}
 
+	_, s, err := c.Get(gs_commons_constants.GosionConfiguration)
+	if err != nil {
+
+	}
 	fmt.Println("version", s.Version)
 	v := 0
-	if s.DataLength == 0 && s.Version == 0 {
-		v = 0
-		fmt.Println("r")
-	} else {
-		v = int(s.Version)
-	}
-
-	fmt.Println("version -", s.Version)
-
-	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, int32(v))
-	if err != nil {
-		fmt.Println("set init config err", err)
-	}
-
-	_, s, err = c.Get(gs_commons_constants.GosionConfiguration)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("version", s.Version)
-	v = 0
 	if s.DataLength == 0 && s.Version == 0 {
 		v = 0
 		fmt.Println("r")
@@ -155,7 +155,7 @@ func main() {
 	}
 	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, int32(v))
 	if err != nil {
-		panic(err)
+		//panic(err)
 	}
 
 }

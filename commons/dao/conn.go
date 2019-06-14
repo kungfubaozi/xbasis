@@ -20,12 +20,6 @@ func CreatePool(addr string) (*redis.Pool, error) {
 		},
 	}
 
-	conn, err := pool.Dial()
-	if err != nil {
-		return nil, err
-	}
-	conn.Close()
-
 	return pool, nil
 }
 

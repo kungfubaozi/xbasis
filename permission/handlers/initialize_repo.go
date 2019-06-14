@@ -186,11 +186,12 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig) {
 								UserId:     repo.config.UserId,
 								FunctionId: f.Id,
 								RoleId:     v,
+								Enabled:    true,
 							}
 
 							id := encrypt.Md5(dr.FunctionId + dr.UserId)
 
-							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("gosion-urf-relations_.i%d", hashcode.Get(repo.config.UserId)%5)).Id(id).Type("_doc").Doc(dr))
+							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("gosion-urf-relations.%d", hashcode.Get(repo.config.UserId)%5)).Id(id).Type("_doc").Doc(dr))
 						}
 					}
 				}
@@ -203,8 +204,10 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig) {
 				Id:            f.Id,
 				AuthTypes:     f.AuthTypes,
 				Share:         f.Share,
+				AppId:         appId,
 				ValTokenTimes: f.ValTokenTimes,
 				Roles:         f.Roles,
+				Path:          encrypt.SHA1(f.Api),
 			}
 
 			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-functions").Type("_doc").Doc(sf))

@@ -99,9 +99,9 @@ const (
 )
 
 const (
-	ZKWatchInitializeConfigPath        = "/_gosion-initialize-config"
-	ZKWatchInitializeVersionListenPath = "/_gosion-initialize-version"
-	GosionConfiguration                = "/_gosion-configuration"
+	ZKWatchInitializeConfigPath        = "/gosion-initialize-configuration"
+	ZKWatchInitializeVersionListenPath = "/gosion-initialize-version"
+	GosionConfiguration                = "/gosion-configuration"
 )
 
 const (

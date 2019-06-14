@@ -10,6 +10,8 @@ const (
 	userInfoCollection = "user_info"
 
 	userOAuthCollection = "user_oauth"
+
+	inviteCollection = "invites"
 )
 
 const (
@@ -20,6 +22,23 @@ const (
 	Boy  = 3 << 2
 	Girl = 3 << 4
 )
+
+type inviteModel struct {
+	Phone        string        `bson:"phone"`
+	Email        string        `bson:"email"`
+	CreateAt     int64         `bson:"create_at"`
+	CreateUserId string        `bson:"create_user_id"`
+	Username     string        `bson:"username"`
+	RealName     string        `bson:"real_name"`
+	Items        []*inviteItem `bson:"items"`
+	Type         int64         `bson:"type"` //邀请类型
+}
+
+type inviteItem struct {
+	AppId       string   `bson:"app_id"`
+	BingGroupId string   `bson:"bing_group_id"`
+	Roles       []string `bson:"roles"`
+}
 
 type userOAuth struct {
 	OpenId   string `bson:"open_id" json:"open_id"`

@@ -9,11 +9,14 @@ import (
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/permission/pb"
+	"konekko.me/gosion/user/pb/inner"
+	"sync"
 )
 
 type groupService struct {
-	pool    *redis.Pool
-	session *mgo.Session
+	pool             *redis.Pool
+	session          *mgo.Session
+	innerUserService gosionsvc_internal_user.UserService
 }
 
 func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGroupItemsRequest, out *external.GetGroupItemsResponse) error {
@@ -25,13 +28,133 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		return nil
+		if len(in.Id) == 0 {
+			in.Id = ""
+		}
+
+		var groupItems []*external.GroupItem
+
+		groups, err := repo.FindGroupItems(in.AppId, in.Id)
+		if !mgoignore(err) {
+			return nil
+		}
+
+		for _, v := range groups {
+			groupItems = append(groupItems, &external.GroupItem{
+				Id:    v.Id,
+				Group: true,
+				Name:  v.Name,
+			})
+		}
+
+		users, err := repo.FindGroupUsers(in.AppId, in.Id)
+		if !mgoignore(err) {
+			return nil
+		}
+
+		var wg sync.WaitGroup
+		if len(users) > 0 {
+			s := errstate.Success
+			resp := func(s1 *gs_commons_dto.State) {
+				if s.Ok {
+					s = s1
+				}
+			}
+
+			getUserInfo := func(userId string) (string, bool) {
+				s, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
+					UserId: userId,
+				})
+				if err != nil {
+					resp(errstate.ErrRequest)
+					return "", false
+				}
+				if !s.State.Ok {
+					resp(s.State)
+					return "", false
+				}
+				resp(errstate.Success)
+				return s.Username, true
+			}
+
+			if len(users) >= 2 {
+				wg.Add(2)
+				a := len(users) / 2
+
+				go func() {
+					defer wg.Done()
+					a := users[:a]
+					for _, v := range a {
+						n, s := getUserInfo(v.UserId)
+						if s {
+							groupItems = append(groupItems, &external.GroupItem{
+								Id:    v.UserId,
+								Group: false,
+								Name:  n,
+							})
+						}
+					}
+				}()
+
+				go func() {
+					defer wg.Done()
+					a := users[:a]
+					for _, v := range a {
+						n, s := getUserInfo(v.UserId)
+						if s {
+							groupItems = append(groupItems, &external.GroupItem{
+								Id:    v.UserId,
+								Group: false,
+								Name:  n,
+							})
+						}
+					}
+				}()
+			} else {
+				for _, v := range users {
+					n, s := getUserInfo(v.UserId)
+					if s {
+						groupItems = append(groupItems, &external.GroupItem{
+							Id:    v.UserId,
+							Group: false,
+							Name:  n,
+						})
+					}
+				}
+			}
+			wg.Wait()
+
+			if !s.Ok {
+				return s
+			}
+		}
+
+		out.Data = groupItems
+
+		return errstate.Success
 	})
 }
 
 func (svc *groupService) GetGroupItemDetail(ctx context.Context, in *external.GetGroupItemDetailRequest, out *external.GetGroupItemDetailResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+		if len(in.AppId) < 8 {
+			return nil
+		}
+
+		s, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
+			UserId: in.Id,
+		})
+
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		out.Data = &external.DetailItem{
+			Username: s.Username,
+			RealName: s.RealName,
+		}
+
+		return errstate.Success
 	})
 }
 

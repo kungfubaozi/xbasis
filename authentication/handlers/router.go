@@ -190,16 +190,17 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 
 				//Todo 等待优化
 				// check permission
-				c, err := svc.Client.Count("gosion-urf-relations.*", map[string]interface{}{"app_id": app.AppId, "user_id": auth.User})
+
+				fmt.Println("function", auth.FunctionId, "userId", auth.Token.UserId)
+
+				c, err := svc.Client.Count("gosion-urf-relations.*", map[string]interface{}{"functionId": auth.FunctionId, "userId": auth.Token.UserId})
 				if err != nil {
 					return nil
 				}
 
 				if c == 0 {
 					return errstate.ErrUserAppPermission
-				} else if c > 1 {
-					return errstate.ErrSystem
-				} else if c == 1 {
+				} else if c >= 1 {
 					//process
 
 					//must same platform
@@ -231,8 +232,11 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 					}
 
 					if !token.State.Ok {
+						fmt.Println("token", token.State)
 						return token.State
 					}
+
+					fmt.Println("1")
 
 					out.RefreshToken = token.RefreshToken
 

@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -87,11 +88,14 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 
 		c, err := svc.Client.Count(getURFIndex(in.UserId), map[string]interface{}{"userId": in.UserId, "functionId": in.FunctionId})
 		if err != nil {
+			fmt.Println("err 1")
 			return errstate.ErrSystem
 		}
 		if c == 1 {
+			fmt.Println("err 2")
 			return errstate.Success
 		}
+		fmt.Println("err 3")
 		return errstate.ErrUserPermission
 	})
 }

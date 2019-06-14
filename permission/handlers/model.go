@@ -129,4 +129,5 @@ type simplifiedFunction struct {
 	Roles          []string `json:"roles" bson:"roles"`
 	Share          bool     `bson:"share" json:"share"`
 	AppId          string   `bson:"app_id" json:"app_id"`
+	Path           string   `bson:"path" json:"path"`
 }

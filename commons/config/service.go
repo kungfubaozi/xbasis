@@ -36,7 +36,8 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 	acl := zk.WorldACL(zk.PermAll)
 	_, err := c.Create(path, nil, 1, acl)
 	if err != nil { //delete and recreate
-		return
+		//fmt.Println("end")
+		//return
 	}
 
 	fmt.Println("start watch:", serviceName)

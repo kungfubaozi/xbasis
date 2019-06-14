@@ -17,7 +17,23 @@ type innerUserService struct {
 
 func (svc *innerUserService) GetUserInfoById(ctx context.Context, in *inner.GetUserInfoByIdRequest, out *inner.SimpleUserInfo) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+		if len(in.UserId) < 10 {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		s, err := repo.FindUserInfo(in.UserId)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		out.RealName = s.RealName
+		out.Username = s.Username
+		out.Icon = s.Icon
+
+		return errstate.Success
 	})
 }
 
