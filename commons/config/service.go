@@ -10,25 +10,17 @@ import (
 )
 
 type GosionInitializeConfig struct {
-	UserId       string
-	Phone        string
-	AppName      string
-	Desc         string
-	Username     string
-	Email        string
-	SecretKey    string
-	UserAppId    string
-	UserAppUSId  string
-	UserAppFSId  string
-	RouteAppId   string
-	RouteAppUSId string
-	RouteAppFSId string
-	SafeAppId    string
-	SafeAppUSId  string
-	SafeAppFSId  string
-	ManageAppId  string
-	ManageUSId   string
-	ManageFSId   string
+	UserId     string
+	Phone      string
+	AppName    string
+	Desc       string
+	Username   string
+	Email      string
+	SecretKey  string
+	UserAppId  string
+	RouteAppId string
+	SafeAppId  string
+	AdminAppId string
 }
 
 type OnNodeDataChanged func(data []byte, version int32) bool

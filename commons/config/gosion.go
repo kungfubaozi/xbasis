@@ -23,6 +23,7 @@ type GosionConfiguration struct {
 	LoginType                         int64 //def: all
 	DurationAccessTokenRetryTime      int64 //def: 60s
 	DurationAccessTokenSendCodeToType int64 //def: 1001
+	OAuth                             map[string]interface{}
 }
 
 type OnGosionConfigurationChanged func(config *GosionConfiguration)

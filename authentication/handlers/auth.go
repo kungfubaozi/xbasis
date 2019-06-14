@@ -195,8 +195,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 				}
 
 				s, err := svc.innerAccessibleService.Check(ctx, &gosionsvc_internal_permission.CheckRequest{
-					UserId:      claims.Token.UserId,
-					StructureId: in.Funcs,
+					UserId: claims.Token.UserId,
 					//FunctionRoles: in.FunctionRoles,
 					FunctionId: in.FunctionId,
 				})

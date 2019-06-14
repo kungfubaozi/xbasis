@@ -27,15 +27,15 @@ func (svc *roleService) EffectUserSize(ctx context.Context, in *external.EffectU
 	})
 }
 
-func (svc *roleService) GetStructureRoles(ctx context.Context, in *external.GetStructureRolesRequest, out *external.GetRoleResponse) error {
+func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRolesRequest, out *external.GetRoleResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.StructureId) == 0 {
+		if len(in.AppId) == 0 {
 			return nil
 		}
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		roles, err := repo.FindRolesByStructure(in.StructureId, in.Page, in.Size)
+		roles, err := repo.FindRolesByAppId(in.AppId, in.Page, in.Size)
 		if err != nil {
 			return nil
 		}
@@ -72,14 +72,9 @@ func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		//check
-		if isStructureExists(repo.session, in.StructureId) == 0 {
-			return errstate.ErrInvalidStructure
-		}
-
-		_, err := repo.FindByName(in.Name, in.StructureId)
+		_, err := repo.FindByName(in.Name, in.AppId)
 		if err != nil && err == mgo.ErrNotFound {
-			err = repo.Save(in.Name, auth.User, in.StructureId)
+			err = repo.Save(in.Name, auth.User, in.AppId)
 			if err != nil {
 				return nil
 			}

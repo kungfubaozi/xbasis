@@ -32,8 +32,6 @@ var (
 	ErrClientClosed                = &gs_commons_dto.State{Ok: false, Code: 20025, Message: "err client closed"}
 	ErrAccessTokenOrClient         = &gs_commons_dto.State{Ok: false, Code: 20026, Message: "err access token or client"}
 	ErrUserPermission              = &gs_commons_dto.State{Ok: false, Code: 20027, Message: "err access function without permission"}
-	ErrAppStructureNotOpening      = &gs_commons_dto.State{Ok: false, Code: 20028, Message: "err app structure not opening"}
-	ErrInvalidStructure            = &gs_commons_dto.State{Ok: false, Code: 20029, Message: "err invalid structure"}
 	ErrInvalidClientId             = &gs_commons_dto.State{Ok: false, Code: 20030, Message: "err invalid client"}
 	ErrUserAppPermission           = &gs_commons_dto.State{Ok: false, Code: 20031, Message: "err access application without permission"}
 	ErrRoutePlatform               = &gs_commons_dto.State{Ok: false, Code: 20032, Message: "err route platform"}
@@ -55,5 +53,5 @@ var (
 	ErrNotFound                    = &gs_commons_dto.State{Ok: false, Code: 20047, Message: "err not found"}
 	ErrUserAlreadyBindRole         = &gs_commons_dto.State{Ok: false, Code: 20048, Message: "err user already bind role"}
 	ErrFunctionAlreadyBindRole     = &gs_commons_dto.State{Ok: false, Code: 20049, Message: "err function already bind role"}
-	ErrBindStructure               = &gs_commons_dto.State{Ok: false, Code: 20050, Message: "err bind structure"}
+	ErrOAuthTypeNotFound           = &gs_commons_dto.State{Ok: false, Code: 20050, Message: "err oauth type not found"}
 )

@@ -227,7 +227,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				return state
 			}
 
-			if appResp != nil && len(appResp.UserStructure) > 0 && len(appResp.FunctionStructure) > 0 {
+			if appResp != nil && len(appResp.AppId) > 0 {
 
 				if appResp.ClientEnabled != gs_commons_constants.Enabled {
 					return errstate.ErrClientClosed
@@ -247,8 +247,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 					}
 				}
 				if f == nil {
-					//fmt.Println("function structure id", ccs.FunctionStructureId)
-					f, err = repo.SimplifiedLookupApi(appResp.FunctionStructure, rh.path)
+					f, err = repo.SimplifiedLookupApi(appResp.AppId, rh.path)
 					if err != nil {
 						svc.log.Info(&analysisclient.LogContent{
 							Headers: &analysisclient.LogHeaders{
@@ -368,7 +367,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 								//FunctionRoles: f.Roles,
 								FunctionId: f.Id,
 								Share:      f.Share,
-								Funcs:      appResp.FunctionStructure,
+								AppId:      appResp.AppId,
 							})
 							if err != nil {
 								resp(errstate.ErrSystem)

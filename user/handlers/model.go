@@ -22,34 +22,34 @@ const (
 )
 
 type userOAuth struct {
-	OpenId   string
-	Type     int64
-	CreateAt int64
+	OpenId   string `bson:"open_id" json:"open_id"`
+	UnionId  string `bson:"union_id" json:"union_id"`
+	Type     int64  `bson:"type" json:"type"` //facebook, wechat, qq, dingding, google
+	UserId   string `bson:"user_id" json:"user_id"`
+	CreateAt int64  `bson:"create_at" json:"create_at"`
 }
 
-type userPersonInfo struct {
-	Icon     string `bson:"icon"`
-	FromCity string `bson:"from_city"`
-	Birthday int64  `bson:"birthday"`
-	Age      int32  `bson:"age"`
-	Sex      int32  `bson:"sex"`
-	Username string `bson:"username"`
-	RealName string `bson:"real_name"`
-	Desc     string `bson:"desc"`
-	ModifyAt int64  `bson:"modify_at"`
+type userInfo struct {
+	Icon     string `bson:"icon" json:"icon"`
+	FromCity string `bson:"from_city" json:"from_city"`
+	Birthday int64  `bson:"birthday" json:"birthday"`
+	Age      int32  `bson:"age" json:"age"`
+	Sex      int32  `bson:"sex" json:"sex"`
+	Username string `bson:"username" json:"username"`
+	RealName string `bson:"real_name" json:"real_name"`
+	Desc     string `bson:"desc" json:"desc"`
+	ModifyAt int64  `bson:"modify_at" json:"modify_at"`
+	CreateAt int64  `bson:"create_at" json:"create_at"`
 }
 
 type userModel struct {
-	Id         string         `bson:"_id"`
-	SID        string         `bson:"sid"`
-	CreateAt   int64          `bson:"create_at"`
-	Account    string         `bson:"account"`
-	Phone      string         `bson:"phone"`
-	Email      string         `bson:"email"`
-	Password   string         `bson:"password"`
-	RegisterAt string         `bson:"register_at"`
-	OAuth      []userOAuth    `bson:"o_auth"`
-	Info       userPersonInfo `bson:"info"`
+	Id         string `bson:"_id"`
+	CreateAt   int64  `bson:"create_at"`
+	Account    string `bson:"account"`
+	Phone      string `bson:"phone"`
+	Email      string `bson:"email"`
+	Password   string `bson:"password"`
+	RegisterAt string `bson:"register_at"`
 }
 
 type userModelIndex struct {
@@ -78,21 +78,6 @@ func (um *userModel) Index() *userModelIndex {
 	}
 	if len(um.RegisterAt) > 10 {
 		index.RegisterAt = um.RegisterAt
-	}
-	if len(um.Info.Username) > 2 {
-		index.Username = um.Info.Username
-	}
-	if len(um.Info.RealName) > 2 {
-		index.RealName = um.Info.RealName
-	}
-	if um.Info.Sex == Boy || um.Info.Sex == Girl {
-		index.Sex = um.Info.Sex
-	}
-	if um.Info.Age > 0 {
-		index.Age = um.Info.Age
-	}
-	if um.Info.Birthday > 0 {
-		index.Birthday = um.Info.Birthday
 	}
 	return index
 }

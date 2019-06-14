@@ -186,11 +186,11 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 			}
 
 			//push op
-			//The application to be transferred must have the following two structures
-			if len(app.FunctionStructure) > 0 && len(app.UserStructure) > 0 {
+			if len(app.AppId) > 0 {
 
+				//Todo 等待优化
 				// check permission
-				c, err := svc.Client.Count("gs-user-roles-relation", map[string]interface{}{"structure_id": app.FunctionStructure, "user_id": auth.User})
+				c, err := svc.Client.Count("gosion-urf-relations.*", map[string]interface{}{"app_id": app.AppId, "user_id": auth.User})
 				if err != nil {
 					return nil
 				}

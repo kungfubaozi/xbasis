@@ -28,14 +28,14 @@ type functionService struct {
 
 func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.GetFunctionItemsRequest, out *external.GetFunctionItemsResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.StructureId) == 0 {
+		if len(in.AppId) == 0 {
 			return nil
 		}
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		groups, err := repo.FindChildGroups(in.StructureId, in.Id)
+		groups, err := repo.FindChildGroups(in.AppId, in.Id)
 		if err != nil {
 			return nil
 		}
@@ -51,7 +51,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 
 		//find group and function
 		if len(in.Id) > 0 {
-			functions, err := repo.FindChildFunctions(in.StructureId, in.Id)
+			functions, err := repo.FindChildFunctions(in.AppId, in.Id)
 			if err != nil {
 				return nil
 			}
@@ -71,7 +71,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 
 func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *external.GetFunctionItemRequest, out *external.GetFunctionItemResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.Id) == 0 || len(in.StructureId) == 0 {
+		if len(in.Id) == 0 || len(in.AppId) == 0 {
 			return nil
 		}
 		repo := svc.GetRepo()
@@ -83,7 +83,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 			ServiceName: gs_commons_constants.PermissionService,
 		}
 
-		f, err := repo.FindApiById(in.StructureId, in.Id)
+		f, err := repo.FindApiById(in.AppId, in.Id)
 		if err != nil {
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
@@ -322,12 +322,8 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		if len(in.StructureId) == 0 || len(in.BindGroupId) == 0 || len(in.Name) == 0 {
+		if len(in.AppId) == 0 || len(in.BindGroupId) == 0 || len(in.Name) == 0 {
 			return errstate.ErrRequest
-		}
-
-		if isStructureExists(repo.session, in.StructureId) == 0 {
-			return errstate.ErrInvalidStructure
 		}
 
 		//find group exists
@@ -351,7 +347,7 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 			}
 		}
 
-		_, err := repo.FindApi(in.StructureId, in.Api)
+		_, err := repo.FindApi(in.AppId, in.Api)
 		if err != nil && err == mgo.ErrNotFound {
 
 			f := &function{
@@ -361,7 +357,7 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 				CreateUserId: auth.Token.UserId,
 				CreateAt:     time.Now().UnixNano(),
 				BindGroupId:  in.BindGroupId,
-				StructureId:  in.StructureId,
+				AppId:        in.AppId,
 				Api:          in.Api,
 				AuthTypes:    in.AuthTypes,
 				GrantPlatforms: []int64{
@@ -401,7 +397,7 @@ func (svc *functionService) Move(ctx context.Context, in *external.FunctionReque
 func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(in.Name) == 0 && len(in.StructureId) == 0 {
+		if len(in.Name) == 0 && len(in.AppId) == 0 {
 			return nil
 		}
 
@@ -413,7 +409,7 @@ func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionG
 		err := repo.AddGroup(&functionGroup{
 			Id:           i,
 			Name:         in.Name,
-			StructureId:  in.StructureId,
+			AppId:        in.AppId,
 			BindGroupId:  in.BindGroupId,
 			CreateAt:     time.Now().UnixNano(),
 			CreateUserId: auth.Token.UserId,

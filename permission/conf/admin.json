@@ -271,8 +271,8 @@
           ]
         },
         {
-          "api": "/role/getStructureRoles",
-          "name": "GetStructureRoles",
+          "api": "/role/getAppRoles",
+          "name": "GetAppRoles",
           "roles": [
             "Administrator",
             "AppManage"
@@ -317,50 +317,6 @@
         {
           "api": "/role/rename",
           "name": "RenameRole",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/structure/createUserStructure",
-          "name": "CreateUserStructure",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/structure/createFunctionStructure",
-          "name": "CreateFunctionStructure",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/structure/getInfo",
-          "name": "GetStructureInfo",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/structure/getList",
-          "name": "GetStructureList",
           "roles": [
             "Administrator",
             "AppManage"

@@ -1,7 +1,6 @@
 package permissionhandlers
 
 import (
-	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/indexutils"
@@ -36,27 +35,27 @@ func (repo *functionRepo) AddGroup(group *functionGroup) error {
 	return indexutils.ErrNotFound
 }
 
-func (repo *functionRepo) FindChildGroups(structureId, parentId string) ([]*functionGroup, error) {
+func (repo *functionRepo) FindChildGroups(appId, parentId string) ([]*functionGroup, error) {
 	var groups []*functionGroup
-	err := repo.groupCollection().Find(bson.M{"bind_group_id": parentId, "structure_id": structureId}).All(&groups)
+	err := repo.groupCollection().Find(bson.M{"bind_group_id": parentId, "app_id": appId}).All(&groups)
 	return groups, err
 }
 
-func (repo *functionRepo) FindChildFunctions(structureId, parentId string) ([]*function, error) {
+func (repo *functionRepo) FindChildFunctions(appId, parentId string) ([]*function, error) {
 	var functions []*function
-	err := repo.functionCollection().Find(bson.M{"bind_group_id": parentId, "structure_id": structureId}).All(&functions)
+	err := repo.functionCollection().Find(bson.M{"bind_group_id": parentId, "app_id": appId}).All(&functions)
 	return functions, err
 }
 
-func (repo *functionRepo) FindApi(structureId, api string) (*function, error) {
+func (repo *functionRepo) FindApi(appId, api string) (*function, error) {
 	var f function
-	err := repo.functionCollection().Find(bson.M{"structure_id": structureId, "api": api}).One(&f)
+	err := repo.functionCollection().Find(bson.M{"app_id": appId, "api": api}).One(&f)
 	return &f, err
 }
 
-func (repo *functionRepo) FindApiById(structureId, id string) (*function, error) {
+func (repo *functionRepo) FindApiById(appId, id string) (*function, error) {
 	var f function
-	err := repo.functionCollection().Find(bson.M{"structure_id": structureId, "_id": id}).One(&f)
+	err := repo.functionCollection().Find(bson.M{"app_id": appId, "_id": id}).One(&f)
 	return &f, err
 }
 
@@ -74,12 +73,10 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 	return c > 0
 }
 
-func (repo *functionRepo) SimplifiedLookupApi(structureId, api string) (*simplifiedFunction, error) {
+func (repo *functionRepo) SimplifiedLookupApi(appId, api string) (*simplifiedFunction, error) {
 	var sf simplifiedFunction
 
-	fmt.Println("st", structureId)
-
-	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"structure_id": structureId, "api": api}, &sf)
+	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"app_id": appId, "api": api}, &sf)
 	if err != nil {
 		return nil, err
 	}

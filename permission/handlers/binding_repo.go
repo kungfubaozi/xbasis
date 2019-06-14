@@ -33,9 +33,9 @@ func (repo *bindingRepo) FindFunctionById(id string) (*function, error) {
 	return f, err
 }
 
-func (repo *bindingRepo) FindUserById(id, structureId string) (*userRolesRelation, error) {
+func (repo *bindingRepo) FindUserById(id, appId string) (*userRolesRelation, error) {
 	f := &userRolesRelation{}
-	err := repo.functionCollection().Find(bson.M{"user_id": id, "structure_id": structureId}).One(f)
+	err := repo.functionCollection().Find(bson.M{"user_id": id, "app_id": appId}).One(f)
 	return f, err
 }
 
@@ -43,8 +43,8 @@ func (repo *bindingRepo) UpdateFunctionRole(id, role string) error {
 	return repo.functionCollection().Update(bson.M{"_id": id}, bson.M{"$push": bson.M{"roles": role}})
 }
 
-func (repo *bindingRepo) UpdateUserRole(id, structureId, role string) error {
-	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "structure_id": structureId}, bson.M{"$push": bson.M{"roles": role}})
+func (repo *bindingRepo) UpdateUserRole(id, appId, role string) error {
+	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "app_id": appId}, bson.M{"$push": bson.M{"roles": role}})
 }
 
 func (repo *bindingRepo) RemoveRoleFromFunctions(id, role string) error {

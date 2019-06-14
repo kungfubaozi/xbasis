@@ -28,7 +28,7 @@ service UserGroup {
 
 message GetGroupItemsRequest {
     string id = 1;
-    string structureId = 2;
+    string appId = 2;
 }
 
 message GetGroupItemsResponse {
@@ -64,7 +64,7 @@ message DetailBindRole {
 }
 
 message SimpleGroup {
-    string structureId = 1;
+    string appId = 1;
     string name = 2;
     string id = 3;
     string bindGroupId = 4;

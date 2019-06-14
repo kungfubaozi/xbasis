@@ -3,11 +3,11 @@ package permissionhandlers
 const (
 	dbName = "gs_permission"
 
-	structureCollection = "structures"
-
 	roleCollection = "user_roles"
 
-	groupCollection = "groups"
+	groupCollection = "user_groups"
+
+	groupUsersCollection = "group_users"
 
 	functionCollection = "functions"
 
@@ -24,11 +24,6 @@ type directrelation struct {
 	User       bool   `bson:"user" json:"user"`
 	Function   bool   `bson:"function" json:"function"`
 	Enabled    bool   `bson:"enabled" json:"enabled"`
-}
-
-type cacheStructure struct {
-	UserStructureId     string
-	FunctionStructureId string
 }
 
 type durationAccessCredential struct {
@@ -63,47 +58,28 @@ type durationAccess struct {
 	Auth          bool
 }
 
-type structure struct {
-	Id           string `bson:"_id" json:"id"`
-	SID          string `bson:"sid" json:"sid"`
-	CreateAt     int64  `bson:"create_at" json:"create_at"`
-	CreateUserId string `bson:"create_user_id" json:"create_user_id"`
-	AppId        string `bson:"app_id" json:"app_id"`
-	Name         string `bson:"name" json:"name"`
-	Type         int64  `bson:"type" json:"type"` //user or function structure
-}
-
 type userRolesRelation struct {
-	CreateAt    int64    `bson:"create_at" json:"create_at"`
-	UserId      string   `bson:"user_id" json:"user_id"`
-	Roles       []string `bson:"roles" json:"roles"`
-	StructureId string   `bson:"structure_id" json:"structure_id"`
+	CreateAt int64    `bson:"create_at" json:"create_at"`
+	UserId   string   `bson:"user_id" json:"user_id"`
+	Roles    []string `bson:"roles" json:"roles"`
+	AppId    string   `bson:"app_id" json:"app_id"`
 }
 
 type userGroupsRelation struct {
 	CreateAt    int64    `bson:"create_at" json:"create_at"`
 	UserId      string   `bson:"user_id" json:"user_id"`
-	StructureId string   `bson:"structure_id" json:"structure_id"`
+	AppId       string   `bson:"app_id" json:"app_id"`
 	BindGroupId []string `bson:"bind_group_id" json:"bind_group_id"` //用户在同一结构下可能会在多个组内
 }
 
 type userGroup struct {
-	Id                  string                `bson:"_id" json:"id"`
-	CreateUserId        string                `bson:"create_user_id" json:"create_user_id"`
-	CreateAt            int64                 `bson:"create_at" json:"create_at"`
-	Name                string                `bson:"name" json:"name"`
-	Type                int64                 `bson:"type" json:"type"`
-	LinkStructureGroups []*linkStructureGroup `bson:"link_structure_groups" json:"link_structure_groups"`
-}
-
-type linkStructureRole struct {
-	StructureId string   `bson:"structure_id" json:"structure_id"`
-	Roles       []string `bson:"roles" json:"roles"`
-}
-
-type linkStructureGroup struct {
-	StructureId string `bson:"structure_id" json:"structure_id"`
-	BindGroupId string `bson:"bind_group_id" json:"bind_group_id"`
+	Id           string `bson:"_id" json:"id"`
+	CreateUserId string `bson:"create_user_id" json:"create_user_id"`
+	CreateAt     int64  `bson:"create_at" json:"create_at"`
+	Name         string `bson:"name" json:"name"`
+	Type         int64  `bson:"type" json:"type"`
+	AppId        string `bson:"app_id" json:"app_id"`
+	BindGroupId  string `bson:"bind_group_id" json:"bind_group_id"`
 }
 
 type role struct {
@@ -111,7 +87,7 @@ type role struct {
 	CreateUserId string `bson:"create_user_id" json:"create_user_id"`
 	CreateAt     int64  `bson:"create_at" json:"create_at"`
 	Name         string `bson:"name" json:"name"`
-	StructureId  string `bson:"structure_id" json:"structure_id"`
+	AppId        string `bson:"app_id" json:"app_id"`
 }
 
 type functionGroup struct {
@@ -122,7 +98,7 @@ type functionGroup struct {
 	CreateAt     int64  `bson:"create_at" json:"create_at"`
 	BindGroupId  string `bson:"bind_group_id" json:"bind_group_id"`
 	Type         int64  `bson:"type" json:"type"`
-	StructureId  string `bson:"structure_id" json:"structure_id"`
+	AppId        string `bson:"app_id" json:"app_id"`
 }
 
 type function struct {
@@ -135,7 +111,7 @@ type function struct {
 	CreateUserId string  `bson:"create_user_id" json:"create_user_id"`
 	CreateAt     int64   `bson:"create_at" json:"create_at"`
 	BindGroupId  string  `bson:"bind_group_id" json:"bind_group_id"`
-	StructureId  string  `bson:"structure_id" json:"structure_id"`
+	AppId        string  `bson:"app_id" json:"app_id"`
 	AuthTypes    []int64 `bson:"auth_types" json:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
 	ValTokenTimes  int64    `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
@@ -152,13 +128,5 @@ type simplifiedFunction struct {
 	GrantPlatforms []int64  `json:"grant_platforms"`
 	Roles          []string `json:"roles" bson:"roles"`
 	Share          bool     `bson:"share" json:"share"`
-}
-
-//结构联系
-type structureRelation struct {
-	Id                string `bson:"_id" json:"id"`
-	RelationType      int64  `bson:"relation_type" json:"relation_type"`
-	CreateAt          int64  `bson:"create_at" json:"create_at"`
-	CreateUserId      string `bson:"create_user_id" json:"create_user_id"`
-	TargetStructureId string `bson:"target_structure_id" json:"target_structure_id"`
+	AppId          string   `bson:"app_id" json:"app_id"`
 }

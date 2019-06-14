@@ -28,7 +28,6 @@ func (repo *userRepo) AddUser(user *userModel) error {
 	}
 
 	if len(id) > 0 {
-		user.SID = id
 		return repo.userCollection(user.Id).Insert(user)
 	}
 

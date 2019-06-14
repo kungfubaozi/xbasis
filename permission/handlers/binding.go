@@ -33,7 +33,7 @@ func (svc *bindingService) GetRoleRepo() *roleRepo {
 
 func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.StructureId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
+		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
 			//check roles
 			repo := svc.GetRepo()
 			defer repo.Close()
@@ -42,11 +42,6 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 				TraceId:     auth.TraceId,
 				ServiceName: gs_commons_constants.PermissionService,
 				ModuleName:  "Binding",
-			}
-
-			//check structure exists
-			if isStructureExists(repo.session, in.StructureId) == 0 {
-				return errstate.ErrInvalidStructure
 			}
 
 			roleRepo := svc.GetRoleRepo()
@@ -62,7 +57,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 				return errstate.ErrRequest
 			}
 
-			f, err := repo.FindUserById(in.Id, in.StructureId)
+			f, err := repo.FindUserById(in.Id, in.AppId)
 			if err != nil {
 				return errstate.ErrRequest
 			}
@@ -74,7 +69,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 			}
 
 			//update database
-			err = repo.UpdateUserRole(in.Id, in.StructureId, in.RoleId)
+			err = repo.UpdateUserRole(in.Id, in.AppId, in.RoleId)
 			if err != nil {
 				return errstate.ErrRequest
 			}
@@ -84,9 +79,9 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 				Headers: headers,
 				Action:  "BindUserRole",
 				Fields: &analysisclient.LogFields{
-					"roleId":      in.RoleId,
-					"userId":      in.Id,
-					"structureId": in.StructureId,
+					"roleId": in.RoleId,
+					"userId": in.Id,
+					"appId":  in.AppId,
 				},
 			})
 		}
@@ -97,15 +92,10 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 
 func (svc *bindingService) FunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.StructureId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
+		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
 
 			repo := svc.GetRepo()
 			defer repo.Close()
-
-			//check structure exists
-			if isStructureExists(repo.session, in.StructureId) == 0 {
-				return errstate.ErrInvalidStructure
-			}
 
 			roleRepo := svc.GetRoleRepo()
 			defer roleRepo.Close()
@@ -121,7 +111,7 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *external.Bindin
 			}
 
 			//不在同一个结构体内
-			if role.StructureId != in.StructureId {
+			if role.AppId != in.AppId {
 				return errstate.ErrRequest
 			}
 
@@ -131,7 +121,7 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *external.Bindin
 				return errstate.ErrRequest
 			}
 
-			if in.StructureId != f.StructureId {
+			if in.AppId != f.AppId {
 				return errstate.ErrRequest
 			}
 
@@ -174,15 +164,10 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *external.Bindin
 func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(in.StructureId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
+		if len(in.AppId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
 
 			repo := svc.GetRepo()
 			defer repo.Close()
-
-			//check structure exists
-			if isStructureExists(repo.session, in.StructureId) == 0 {
-				return errstate.ErrInvalidStructure
-			}
 
 			roleRepo := svc.GetRoleRepo()
 			defer roleRepo.Close()
@@ -222,15 +207,10 @@ func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.Bind
 func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(in.StructureId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
+		if len(in.AppId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
 
 			repo := svc.GetRepo()
 			defer repo.Close()
-
-			//check structure exists
-			if isStructureExists(repo.session, in.StructureId) == 0 {
-				return errstate.ErrInvalidStructure
-			}
 
 			roleRepo := svc.GetRoleRepo()
 			defer roleRepo.Close()

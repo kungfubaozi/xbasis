@@ -9,7 +9,6 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/r
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/function.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/binding.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/dat.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/structure.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/verify.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/inner/verification.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. permission/pb/inner/accessible.proto

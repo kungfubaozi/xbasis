@@ -26,7 +26,7 @@ service Function {
 
 message GetFunctionItemsRequest {
     string id = 1;
-    string structureId = 2;
+    string appId = 2;
 }
 
 message GetFunctionItemsResponse {
@@ -42,7 +42,7 @@ message FindItemResponse {
 
 message GetFunctionItemRequest {
     string id = 1;
-    string structureId = 2;
+    string appId = 2;
 
 }
 
@@ -85,7 +85,7 @@ message FunctionGrantPlatforms {
 }
 
 message FunctionRequest {
-    string structureId = 1;
+    string appId = 1;
     string name = 2;
     string api = 3;
     int64 type = 4;
@@ -94,7 +94,7 @@ message FunctionRequest {
 }
 
 message FunctionGroupRequest {
-    string structureId = 1;
+    string appId = 1;
     string name = 2;
     string bindGroupId = 3;
     int64 type = 4;

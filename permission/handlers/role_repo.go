@@ -18,13 +18,13 @@ type roleRepo struct {
 	*indexutils.Client
 }
 
-func (repo *roleRepo) FindByName(structureId, name string) (*role, error) {
+func (repo *roleRepo) FindByName(appId, name string) (*role, error) {
 	var r role
-	err := repo.collection().Find(bson.M{"name": name, "structure_id": structureId}).One(&r)
+	err := repo.collection().Find(bson.M{"name": name, "app_id": appId}).One(&r)
 	return &r, err
 }
 
-func (repo *roleRepo) Remove(structureId, roleId string) error {
+func (repo *roleRepo) Remove(appId, roleId string) error {
 	names, err := repo.session.DB(dbName).CollectionNames()
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (repo *roleRepo) Remove(structureId, roleId string) error {
 	}
 	var wg sync.WaitGroup
 	wg.Add(len(relations) + 2)
-	b := bson.M{"structure_id": structureId}
+	b := bson.M{"app_id": appId}
 	u := bson.M{"$pull": bson.M{"roles": roleId}}
 	resp := func(e error) {
 		if err == nil {
@@ -68,19 +68,19 @@ func (repo *roleRepo) Remove(structureId, roleId string) error {
 
 }
 
-func (repo *roleRepo) Save(name, structureId, userId string) error {
+func (repo *roleRepo) Save(name, appId, userId string) error {
 	r := &role{
 		Id:           repo.id.Get(),
 		CreateAt:     time.Now().UnixNano(),
 		Name:         name,
-		StructureId:  structureId,
+		AppId:        appId,
 		CreateUserId: userId,
 	}
 	err := repo.collection().Insert(r)
 	if err != nil {
 		return err
 	}
-	_, err = repo.conn.Do("hmset", permissionutils.GetStructureRoleKey(structureId), r.Id, r.Name)
+	_, err = repo.conn.Do("hmset", permissionutils.GetAppRoleKey(appId), r.Id, r.Name)
 	return err
 }
 
@@ -90,9 +90,9 @@ func (repo *roleRepo) FindRoleById(roleId string) (*role, error) {
 	return role, err
 }
 
-func (repo *roleRepo) FindRolesByStructure(structureId string, page, size int64) ([]*role, error) {
+func (repo *roleRepo) FindRolesByAppId(appId string, page, size int64) ([]*role, error) {
 	var roles []*role
-	err := repo.collection().Find(bson.M{"structure_id": structureId}).Limit(int(size)).Skip(int(page * size)).All(&roles)
+	err := repo.collection().Find(bson.M{"app_id": appId}).Limit(int(size)).Skip(int(page * size)).All(&roles)
 	return roles, err
 }
 

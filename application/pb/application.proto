@@ -70,8 +70,6 @@ message AppInfo {
     gs.commons.dto.AppSettings settings = 7;
     string createUserId = 8;
     string type = 9;
-    string funcS = 10;
-    string userS = 11;
 }
 
 message AppClientInfo {

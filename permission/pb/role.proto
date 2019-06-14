@@ -15,7 +15,7 @@ service Role {
 
     rpc GetRole (GetRoleRequest) returns (GetRoleResponse);
 
-    rpc GetStructureRoles (GetStructureRolesRequest) returns (GetRoleResponse);
+    rpc GetAppRoles (GetAppRolesRequest) returns (GetRoleResponse);
 
     rpc EffectUserSize (EffectUserSizeRequest) returns (EffectUserSizeResponse);
 }
@@ -29,8 +29,8 @@ message EffectUserSizeResponse {
     int64 size = 2;
 }
 
-message GetStructureRolesRequest {
-    string structureId = 1;
+message GetAppRolesRequest {
+    string appId = 1;
     int64 page = 2;
     int64 size = 3;
 }
@@ -48,11 +48,11 @@ message SimpleRoleInfo {
     string id = 1;
     string name = 2;
     int64 createAt = 3;
-    string structureId = 4;
+    string appId = 4;
 }
 
 message RoleRequest {
     int64 id = 1;
     string name = 2;
-    string structureId = 3;
+    string appId = 3;
 }

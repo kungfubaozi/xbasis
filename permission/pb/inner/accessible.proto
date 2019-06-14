@@ -13,6 +13,6 @@ service Accessible {
 message CheckRequest {
     repeated string functionRoles = 1;
     string userId = 2;
-    string structureId = 3;
+    string appId = 3;
     string functionId = 4;
 }

@@ -16,7 +16,7 @@ service Binding {
 }
 
 message BindingRoleRequest {
-    string structureId = 1;
+    string appId = 1;
     string id = 2;
     string roleId = 3;
 }

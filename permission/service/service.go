@@ -72,8 +72,6 @@ func StartService() {
 		gosionsvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool,
 			permissioncli.NewBindingClient(m.Client())))
 
-		gosionsvc_external_permission.RegisterStructureHandler(m.Server(), permissionhandlers.NewStructureService(session, client, applicationclient.NewClient(m.Client())))
-
 		errc <- m.Run()
 
 	}()

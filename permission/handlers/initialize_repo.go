@@ -11,7 +11,6 @@ import (
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/hashcode"
-	"konekko.me/gosion/permission/utils"
 	"time"
 )
 
@@ -38,48 +37,39 @@ type functionData struct {
 }
 
 type initializeRepo struct {
-	session   *mgo.Session
-	config    *gs_commons_config.GosionInitializeConfig
-	structure *structureRepo
-	id        gs_commons_generator.IDGenerator
-	bulk      *elastic.BulkService
+	session *mgo.Session
+	config  *gs_commons_config.GosionInitializeConfig
+	id      gs_commons_generator.IDGenerator
+	bulk    *elastic.BulkService
 	// data
-	userRolesRelation  []interface{}
-	userGroupsRelation []interface{}
-	userRoles          []interface{}
-	functions          []interface{}
-	functionGroups     []interface{}
-	structures         []interface{}
+	userRolesRelation []interface{}
+	userRoles         []interface{}
+	functions         []interface{}
+	functionGroups    []interface{}
+	structures        []interface{}
+	groupUsers        []interface{}
 
 	//callback
 }
 
 func (repo *initializeRepo) AddManageApp() {
 	config := repo.readFile("admin.json")
-	repo.buildStructure(repo.config.ManageUSId, repo.config.ManageAppId, permissionutils.TypeUserStructure)
-	mfs := repo.buildStructure(repo.config.ManageFSId, repo.config.ManageAppId, permissionutils.TypeFunctionStructure)
-	repo.generate(mfs.Id, config)
+	repo.generate(repo.config.AdminAppId, config)
 }
 
 func (repo *initializeRepo) AddRouteApp() {
 	config := repo.readFile("route.json")
-	repo.buildStructure(repo.config.RouteAppUSId, repo.config.RouteAppId, permissionutils.TypeUserStructure)
-	rfs := repo.buildStructure(repo.config.RouteAppFSId, repo.config.RouteAppId, permissionutils.TypeFunctionStructure)
-	repo.generate(rfs.Id, config)
+	repo.generate(repo.config.RouteAppId, config)
 }
 
 func (repo *initializeRepo) AddSafeApp() {
 	config := repo.readFile("safe.json")
-	repo.buildStructure(repo.config.SafeAppUSId, repo.config.SafeAppId, permissionutils.TypeUserStructure)
-	sfs := repo.buildStructure(repo.config.SafeAppFSId, repo.config.SafeAppId, permissionutils.TypeFunctionStructure)
-	repo.generate(sfs.Id, config)
+	repo.generate(repo.config.SafeAppId, config)
 }
 
 func (repo *initializeRepo) AddUserApp() {
 	config := repo.readFile("user.json")
-	repo.buildStructure(repo.config.UserAppUSId, repo.config.UserAppId, permissionutils.TypeUserStructure)
-	ufs := repo.buildStructure(repo.config.UserAppFSId, repo.config.UserAppId, permissionutils.TypeFunctionStructure)
-	repo.generate(ufs.Id, config)
+	repo.generate(repo.config.UserAppId, config)
 }
 
 func (repo *initializeRepo) SaveAndClose() {
@@ -90,24 +80,20 @@ func (repo *initializeRepo) SaveAndClose() {
 			check(db.C(fmt.Sprintf("user_roles_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userRolesRelation...))
 		}
 
-		if repo.userGroupsRelation != nil && len(repo.userGroupsRelation) > 0 {
-			check(db.C(fmt.Sprintf("user_groups_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userGroupsRelation...))
-		}
-
 		if len(repo.userRoles) > 0 {
-			check(db.C("user_roles").Insert(repo.userRoles...))
+			check(db.C(roleCollection).Insert(repo.userRoles...))
 		}
 
 		if len(repo.functions) > 0 {
-			check(db.C("functions").Insert(repo.functions...))
-		}
-
-		if len(repo.structures) > 0 {
-			check(db.C("structures").Insert(repo.structures...))
+			check(db.C(functionCollection).Insert(repo.functions...))
 		}
 
 		if len(repo.functionGroups) > 0 {
-			check(db.C("function_groups").Insert(repo.functionGroups...))
+			check(db.C(functionGroupCollection).Insert(repo.functionGroups...))
+		}
+
+		if len(repo.groupUsers) > 0 {
+			check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Get("")%5)).Insert(repo.groupUsers...))
 		}
 
 		ok, err := repo.bulk.Do(context.Background())
@@ -118,7 +104,7 @@ func (repo *initializeRepo) SaveAndClose() {
 	}
 }
 
-func (repo *initializeRepo) generate(functionStructureId string, config *functionsConfig) {
+func (repo *initializeRepo) generate(appId string, config *functionsConfig) {
 	roleMap := make(map[string]string)
 
 	var adminRoles []string
@@ -128,7 +114,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 			Name:         v,
 			Id:           repo.id.UUID(),
 			CreateAt:     time.Now().UnixNano(),
-			StructureId:  functionStructureId,
+			AppId:        appId,
 			CreateUserId: repo.config.UserId,
 		}
 
@@ -146,10 +132,10 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 	if len(adminRoles) > 0 {
 
 		u := &userRolesRelation{
-			UserId:      repo.config.UserId,
-			StructureId: functionStructureId,
-			Roles:       adminRoles,
-			CreateAt:    time.Now().UnixNano(),
+			UserId:   repo.config.UserId,
+			AppId:    appId,
+			Roles:    adminRoles,
+			CreateAt: time.Now().UnixNano(),
 		}
 
 		repo.userRolesRelation = append(repo.userRolesRelation, u)
@@ -164,7 +150,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 			Id:           repo.id.UUID(),
 			Name:         v.GroupName,
 			CreateAt:     time.Now().UnixNano(),
-			StructureId:  functionStructureId,
+			AppId:        appId,
 			CreateUserId: repo.config.UserId,
 		}
 
@@ -179,7 +165,7 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 				Name:         v.Name,
 				Api:          prefix + v.Api,
 				AuthTypes:    v.AuthType,
-				StructureId:  functionStructureId,
+				AppId:        appId,
 				BindGroupId:  g.Id,
 				CreateAt:     time.Now().UnixNano(),
 				CreateUserId: repo.config.UserId,
@@ -224,26 +210,6 @@ func (repo *initializeRepo) generate(functionStructureId string, config *functio
 			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-functions").Type("_doc").Doc(sf))
 		}
 	}
-}
-
-func (repo *initializeRepo) buildStructure(id, appId string, st int64) *structure {
-	var name string
-	if st == permissionutils.TypeUserStructure {
-		name = "Users"
-	} else {
-		name = "Functions"
-	}
-	s := &structure{
-		Id:           id,
-		Type:         st,
-		Name:         name,
-		AppId:        appId,
-		CreateUserId: repo.config.UserId,
-		CreateAt:     time.Now().UnixNano(),
-	}
-	repo.structures = append(repo.structures, s)
-	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-structures").Type("_doc").Doc(s))
-	return s
 }
 
 func (repo *initializeRepo) readFile(file string) *functionsConfig {

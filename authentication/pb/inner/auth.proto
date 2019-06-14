@@ -15,10 +15,10 @@ message VerifyRequest {
     string token = 1;
     string clientId = 2;
     repeated string functionRoles = 3;
-    string funcs = 4;
-    int64 access = 5;
-    bool share = 6;
-    string functionId = 7;
+    int64 access = 4;
+    bool share = 5;
+    string functionId = 6;
+    string appId = 7;
 }
 
 message VerifyResponse {

@@ -176,14 +176,6 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *external.Fin
 			},
 		}
 
-		if info.FunctionS != nil {
-			out.Info.FuncS = info.FunctionS.Id
-		}
-
-		if info.UserS != nil {
-			out.Info.UserS = info.UserS.Id
-		}
-
 		var ar []*external.AppClientInfo
 		for _, k := range info.Clients {
 			c := &external.AppClientInfo{

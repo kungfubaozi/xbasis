@@ -18,6 +18,13 @@ type groupService struct {
 
 func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGroupItemsRequest, out *external.GetGroupItemsResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(in.AppId) < 6 {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
 		return nil
 	})
 }
@@ -38,14 +45,10 @@ func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		if isStructureExists(repo.session, in.StructureId) == 0 {
-			return errstate.ErrInvalidStructure
-		}
-
-		_, err := repo.FindByName(in.StructureId, in.Name)
+		_, err := repo.FindByName(in.AppId, in.Name)
 		if err != nil && err == mgo.ErrNotFound {
 
-			err = repo.Save(in.StructureId, auth.User, in.Name)
+			err = repo.Save(in.AppId, auth.User, in.Name, in.BindGroupId)
 
 			if err != nil {
 				return errstate.ErrRequest

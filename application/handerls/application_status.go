@@ -50,13 +50,6 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 				out.AppId = a.Id
 				out.AppQuarantine = a.Settings.Quarantine
 				out.SecretKey = a.SecretKey
-				if a.UserS == nil || a.FunctionS == nil {
-
-					return errstate.ErrSystem
-				}
-
-				out.UserStructure = a.UserS.Id
-				out.FunctionStructure = a.FunctionS.Id
 				out.Mustsync = a.Settings.MustSync
 				out.Type = a.Type
 

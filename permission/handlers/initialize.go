@@ -11,14 +11,13 @@ import (
 func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
 		db := session.DB(dbName)
-		c, err := db.C(structureCollection).Count()
+		c, err := db.C(functionGroupCollection).Count()
 		if err != nil {
 			return
 		}
 
 		if c == 0 {
-			structureRepo := &structureRepo{session: session, Client: client}
-			repo := &initializeRepo{session: session, bulk: client.GetElasticClient().Bulk(), structure: structureRepo, config: config, id: gs_commons_generator.NewIDG()}
+			repo := &initializeRepo{session: session, bulk: client.GetElasticClient().Bulk(), config: config, id: gs_commons_generator.NewIDG()}
 			repo.AddManageApp()
 			repo.AddRouteApp()
 			repo.AddSafeApp()

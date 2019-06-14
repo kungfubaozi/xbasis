@@ -22,29 +22,25 @@ type initializeRepo struct {
 
 func (repo *initializeRepo) AddUserApp() {
 	app := repo.getApp(repo.config.UserAppId, "Gsuser", gs_commons_constants.AppTypeUser)
-	repo.setStructure(repo.config.UserAppFSId, repo.config.UserAppUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) AddManageApp() {
-	app := repo.getApp(repo.config.ManageAppId, "Gsadmin", gs_commons_constants.AppTypeManage)
+	app := repo.getApp(repo.config.AdminAppId, "Gsadmin", gs_commons_constants.AppTypeManage)
 	app.Settings.RedirectURL = "http://localhost:9527"
-	repo.setStructure(repo.config.ManageFSId, repo.config.ManageUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) AddRouteApp() {
 	app := repo.getApp(repo.config.RouteAppId, "Gsrouter", gs_commons_constants.AppTypeRoute)
-	repo.setStructure(repo.config.RouteAppFSId, repo.config.RouteAppUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) AddSafeApp() {
 	app := repo.getApp(repo.config.SafeAppId, "Gssafety", gs_commons_constants.AppTypeSafe)
-	repo.setStructure(repo.config.SafeAppFSId, repo.config.SafeAppUSId, app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
@@ -58,19 +54,6 @@ func (repo *initializeRepo) SaveAndClose() {
 		if ok.Errors {
 			panic("application init failed.")
 		}
-	}
-}
-
-func (repo *initializeRepo) setStructure(funcS, userS string, info *appInfo) {
-	info.FunctionS = &appStructure{
-		Id:           funcS,
-		LastUpdateBy: repo.config.UserId,
-		LastUpdateAt: time.Now().UnixNano(),
-	}
-	info.UserS = &appStructure{
-		Id:           userS,
-		LastUpdateAt: time.Now().UnixNano(),
-		LastUpdateBy: repo.config.UserId,
 	}
 }
 
