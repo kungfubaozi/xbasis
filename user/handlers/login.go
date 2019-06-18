@@ -2,7 +2,6 @@ package userhandlers
 
 import (
 	"context"
-	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
@@ -141,8 +140,6 @@ func (svc *loginService) WithAccount(ctx context.Context, in *external.EntryRequ
 					AppId:     auth.AppId,
 					Platform:  auth.Platform,
 				}
-
-				spew.Dump(s2)
 
 				//generate token
 				s1, err := svc.innerTokenService.Generate(ctx, &gosionsvc_internal_authentication.GenerateRequest{

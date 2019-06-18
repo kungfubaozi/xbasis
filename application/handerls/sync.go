@@ -4,6 +4,7 @@ import (
 	"context"
 	"gopkg.in/mgo.v2"
 	inner "konekko.me/gosion/application/pb/inner"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/indexutils"
@@ -24,7 +25,26 @@ func (svc *syncService) GetRepo() *syncRepo {
 //2.同步用户信息至app（SyncUserURL）
 func (svc *syncService) Transport(ctx context.Context, in *inner.UserInfo, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+		ignu := true
+		switch in.AppType {
+		case gs_commons_constants.AppTypeManage:
+		case gs_commons_constants.AppTypeUser:
+		case gs_commons_constants.AppTypeSafe:
+			ignu = false
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		if ignu {
+
+		}
+
+		err := repo.Sync(in.GId, in.AppId)
+		if err != nil {
+			return errstate.ErrRequest
+		}
+		return errstate.Success
 	})
 }
 

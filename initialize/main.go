@@ -58,6 +58,10 @@ func main() {
 		fmt.Println("admin username length must >= 2")
 		return
 	}
+	if len(account) < 2 {
+		fmt.Println("admin account length must >= 2")
+		return
+	}
 	if len(name) < 2 {
 		fmt.Println("admin name length must >= 2")
 		return

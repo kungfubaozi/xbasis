@@ -2,6 +2,7 @@ package usersvc
 
 import (
 	"konekko.me/gosion/analysis/client"
+	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
@@ -74,7 +75,8 @@ func StartService() {
 
 		gosionsvc_external_user.RegisterOAuthHandler(s.Server(), userhandlers.NewOAuthService(session, client, logger))
 
-		gosionsvc_external_user.RegisterAuthorizationHandler(s.Server(), userhandlers.NewAuthorizationService())
+		gosionsvc_external_user.RegisterAuthorizationHandler(s.Server(), userhandlers.NewAuthorizationService(
+			session, applicationclient.NewSyncClient(s.Client()), applicationclient.NewStatusClient(s.Client()), client))
 
 		errc <- s.Run()
 	}()

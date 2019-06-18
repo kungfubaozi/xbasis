@@ -71,7 +71,7 @@ func (repo *userRepo) infoCollection(userId string) *mgo.Collection {
 
 func (repo *userRepo) FindUserInfo(userId string) (*userInfo, error) {
 	u := &userInfo{}
-	err := repo.infoCollection(userId).Find(bson.M{"_id": userId}).One(u)
+	err := repo.infoCollection(userId).Find(bson.M{"user_id": userId}).One(u)
 	return u, err
 }
 

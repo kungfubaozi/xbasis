@@ -26,4 +26,5 @@ message UserInfo {
     string realName = 5;
     string appId = 6;
     string url = 7;
+    int64 appType = 8;
 }
