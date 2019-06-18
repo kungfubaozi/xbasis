@@ -19,5 +19,5 @@ message GetInfoResponse {
 }
 
 message GetInfoByIdRequest {
-    //string userId = 1;
+    string userId = 1;
 }

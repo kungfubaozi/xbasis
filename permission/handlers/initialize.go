@@ -2,13 +2,14 @@ package permissionhandlers
 
 import (
 	"fmt"
+	"github.com/samuel/go-zookeeper/zk"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/indexutils"
 )
 
-func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
+func Initialize(session *mgo.Session, client *indexutils.Client, zk *zk.Conn) gs_commons_config.OnConfigNodeChanged {
 	return func(config *gs_commons_config.GosionInitializeConfig) {
 		db := session.DB(dbName)
 		c, err := db.C(functionGroupCollection).Count()
@@ -17,7 +18,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 		}
 
 		if c == 0 {
-			repo := &initializeRepo{session: session, bulk: client.GetElasticClient().Bulk(), config: config, id: gs_commons_generator.NewIDG()}
+			repo := &initializeRepo{session: session, conn: zk, bulk: client.GetElasticClient().Bulk(), config: config, id: gs_commons_generator.NewIDG()}
 			repo.AddManageApp()
 			repo.AddRouteApp()
 			repo.AddSafeApp()

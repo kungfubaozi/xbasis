@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/olivere/elastic"
+	"github.com/samuel/go-zookeeper/zk"
+	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"io/ioutil"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/hashcode"
@@ -41,6 +44,7 @@ type initializeRepo struct {
 	config  *gs_commons_config.GosionInitializeConfig
 	id      gs_commons_generator.IDGenerator
 	bulk    *elastic.BulkService
+	conn    *zk.Conn
 	// data
 	userRolesRelation []interface{}
 	userRoles         []interface{}
@@ -54,22 +58,22 @@ type initializeRepo struct {
 
 func (repo *initializeRepo) AddManageApp() {
 	config := repo.readFile("admin.json")
-	repo.generate(repo.config.AdminAppId, config)
+	repo.generate(repo.config.AdminAppId, config, false)
 }
 
 func (repo *initializeRepo) AddRouteApp() {
 	config := repo.readFile("route.json")
-	repo.generate(repo.config.RouteAppId, config)
+	repo.generate(repo.config.RouteAppId, config, true)
 }
 
 func (repo *initializeRepo) AddSafeApp() {
 	config := repo.readFile("safe.json")
-	repo.generate(repo.config.SafeAppId, config)
+	repo.generate(repo.config.SafeAppId, config, false)
 }
 
 func (repo *initializeRepo) AddUserApp() {
 	config := repo.readFile("user.json")
-	repo.generate(repo.config.UserAppId, config)
+	repo.generate(repo.config.UserAppId, config, false)
 }
 
 func (repo *initializeRepo) SaveAndClose() {
@@ -102,9 +106,22 @@ func (repo *initializeRepo) SaveAndClose() {
 			panic("init failed.")
 		}
 	}
+	if c != nil {
+		b, err := msgpack.Marshal(c)
+		if err != nil {
+			panic(err)
+		}
+		acl := zk.WorldACL(zk.PermAll)
+		_, err = repo.conn.Create(gs_commons_constants.ZKAutonomyRegister, b, 0, acl)
+		if err != nil {
+			//panic(err)
+		}
+	}
 }
 
-func (repo *initializeRepo) generate(appId string, config *functionsConfig) {
+var c *gs_commons_config.AutonomyRouteConfig
+
+func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync bool) {
 	roleMap := make(map[string]string)
 
 	var adminRoles []string
@@ -120,6 +137,15 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig) {
 
 		if v == "Administrator" || v == "User" {
 			adminRoles = append(adminRoles, role.Id)
+		}
+
+		if v == "User" && sync {
+			if c == nil {
+				c = &gs_commons_config.AutonomyRouteConfig{
+					AppId:  appId,
+					RoleId: v,
+				}
+			}
 		}
 
 		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-roles").Type("_doc").Doc(role))
@@ -207,6 +233,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig) {
 				AppId:         appId,
 				ValTokenTimes: f.ValTokenTimes,
 				Roles:         f.Roles,
+				Name:          f.Name,
 				Path:          encrypt.SHA1(f.Api),
 			}
 

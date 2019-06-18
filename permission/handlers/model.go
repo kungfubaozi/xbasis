@@ -130,4 +130,5 @@ type simplifiedFunction struct {
 	Share          bool     `bson:"share" json:"share"`
 	AppId          string   `bson:"app_id" json:"app_id"`
 	Path           string   `bson:"path" json:"path"`
+	Name           string   `bson:"name" json:"name"`
 }

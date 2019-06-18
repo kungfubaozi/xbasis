@@ -9,10 +9,8 @@ It is generated from these files:
 
 It has these top-level messages:
 	HasInvitedRequest
-	FindInviteRequest
-	FindInviteResponse
-	ListRequest
-	ListResponse
+	InviteSearchRequest
+	InviteSearchResponse
 	InviteRequest
 	InviteItem
 */
@@ -54,8 +52,7 @@ type InviteService interface {
 	// 需要被邀请
 	// 1.如果没有注册，需要注册再进行
 	User(ctx context.Context, in *InviteRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	List(ctx context.Context, in *ListRequest, opts ...client.CallOption) (*ListResponse, error)
-	Find(ctx context.Context, in *FindInviteRequest, opts ...client.CallOption) (*FindInviteResponse, error)
+	Search(ctx context.Context, in *InviteSearchRequest, opts ...client.CallOption) (*InviteSearchResponse, error)
 	// 是否被邀请
 	HasInvited(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
@@ -88,19 +85,9 @@ func (c *inviteService) User(ctx context.Context, in *InviteRequest, opts ...cli
 	return out, nil
 }
 
-func (c *inviteService) List(ctx context.Context, in *ListRequest, opts ...client.CallOption) (*ListResponse, error) {
-	req := c.c.NewRequest(c.name, "Invite.List", in)
-	out := new(ListResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *inviteService) Find(ctx context.Context, in *FindInviteRequest, opts ...client.CallOption) (*FindInviteResponse, error) {
-	req := c.c.NewRequest(c.name, "Invite.Find", in)
-	out := new(FindInviteResponse)
+func (c *inviteService) Search(ctx context.Context, in *InviteSearchRequest, opts ...client.CallOption) (*InviteSearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Invite.Search", in)
+	out := new(InviteSearchResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -126,8 +113,7 @@ type InviteHandler interface {
 	// 需要被邀请
 	// 1.如果没有注册，需要注册再进行
 	User(context.Context, *InviteRequest, *gs_commons_dto.Status) error
-	List(context.Context, *ListRequest, *ListResponse) error
-	Find(context.Context, *FindInviteRequest, *FindInviteResponse) error
+	Search(context.Context, *InviteSearchRequest, *InviteSearchResponse) error
 	// 是否被邀请
 	HasInvited(context.Context, *HasInvitedRequest, *gs_commons_dto.Status) error
 }
@@ -135,8 +121,7 @@ type InviteHandler interface {
 func RegisterInviteHandler(s server.Server, hdlr InviteHandler, opts ...server.HandlerOption) error {
 	type invite interface {
 		User(ctx context.Context, in *InviteRequest, out *gs_commons_dto.Status) error
-		List(ctx context.Context, in *ListRequest, out *ListResponse) error
-		Find(ctx context.Context, in *FindInviteRequest, out *FindInviteResponse) error
+		Search(ctx context.Context, in *InviteSearchRequest, out *InviteSearchResponse) error
 		HasInvited(ctx context.Context, in *HasInvitedRequest, out *gs_commons_dto.Status) error
 	}
 	type Invite struct {
@@ -154,12 +139,8 @@ func (h *inviteHandler) User(ctx context.Context, in *InviteRequest, out *gs_com
 	return h.InviteHandler.User(ctx, in, out)
 }
 
-func (h *inviteHandler) List(ctx context.Context, in *ListRequest, out *ListResponse) error {
-	return h.InviteHandler.List(ctx, in, out)
-}
-
-func (h *inviteHandler) Find(ctx context.Context, in *FindInviteRequest, out *FindInviteResponse) error {
-	return h.InviteHandler.Find(ctx, in, out)
+func (h *inviteHandler) Search(ctx context.Context, in *InviteSearchRequest, out *InviteSearchResponse) error {
+	return h.InviteHandler.Search(ctx, in, out)
 }
 
 func (h *inviteHandler) HasInvited(ctx context.Context, in *HasInvitedRequest, out *gs_commons_dto.Status) error {

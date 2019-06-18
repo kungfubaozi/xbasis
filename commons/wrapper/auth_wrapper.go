@@ -32,6 +32,8 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			return set(rsp, errstate.ErrRequest)
 		}
 
+		// spew.Dump(status)
+
 		if !status.State.Ok {
 			return set(rsp, status.State)
 		}
@@ -56,6 +58,8 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 			cm["transport-duration-access-auth"] = fmt.Sprintf("%d", status.DatAuth)
 
 			if status.Token != nil {
+				//fmt.Println("set token data")
+
 				cm["transport-token-user-id"] = status.Token.UserId
 				cm["transport-token-app-id"] = status.Token.AppId
 				cm["transport-token-client-platform"] = fmt.Sprintf("%d", status.Token.Platform)
@@ -66,6 +70,8 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 
 			//compressed volume
 			ctx = metadata.NewContext(ctx, cm)
+
+			//spew.Dump(cm)
 		}
 
 		return fn(ctx, req, rsp)

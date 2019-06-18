@@ -16,6 +16,7 @@ type GosionInitializeConfig struct {
 	Desc       string
 	Username   string
 	Email      string
+	Account    string
 	SecretKey  string
 	UserAppId  string
 	RouteAppId string

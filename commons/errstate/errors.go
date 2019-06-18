@@ -54,4 +54,8 @@ var (
 	ErrUserAlreadyBindRole         = &gs_commons_dto.State{Ok: false, Code: 20048, Message: "err user already bind role"}
 	ErrFunctionAlreadyBindRole     = &gs_commons_dto.State{Ok: false, Code: 20049, Message: "err function already bind role"}
 	ErrOAuthTypeNotFound           = &gs_commons_dto.State{Ok: false, Code: 20050, Message: "err oauth type not found"}
+	ErrUserAlreadyRegister         = &gs_commons_dto.State{Ok: false, Code: 20051, Message: "err user already register"}
+	ErrValidationCode              = &gs_commons_dto.State{Ok: false, Code: 20052, Message: "err validation code"}
+	ErrPasswordLength              = &gs_commons_dto.State{Ok: false, Code: 20053, Message: "err password length"}
+	ErrUserNotSync                 = &gs_commons_dto.State{Ok: false, Code: 20054, Message: "err user not sync"}
 )

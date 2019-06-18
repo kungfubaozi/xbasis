@@ -74,4 +74,6 @@ message SimpleGroup {
 
 message SimpleUserNode {
     string userId = 1;
+    string appId = 2;
+    string groupId = 3;
 }

@@ -19,22 +19,18 @@ type inviteService struct {
 	log         analysisclient.LogClient
 }
 
-func (svc *inviteService) List(ctx context.Context, in *external.ListRequest, out *external.ListResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
-	})
-}
-
-func (svc *inviteService) Find(ctx context.Context, in *external.FindInviteRequest, out *external.FindInviteResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
-	})
+func (svc *inviteService) Search(context.Context, *external.InviteSearchRequest, *external.InviteSearchResponse) error {
+	panic("implement me")
 }
 
 func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		return nil
 	})
+}
+
+func (svc *inviteService) GetRepo() *inviteRepo {
+	return &inviteRepo{session: svc.session.Clone()}
 }
 
 /**
@@ -45,6 +41,7 @@ func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvite
 func (svc *inviteService) User(ctx context.Context, in *external.InviteRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
+
 		if len(in.Phone) > 0 && gs_commons_regx.Phone(in.Phone) {
 			return errstate.ErrFormatPhone
 		}
@@ -60,6 +57,11 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteRequest, 
 				return errstate.ErrRequest
 			}
 		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		//repo.IsExists()
 
 		return nil
 	})

@@ -16,6 +16,10 @@ type blacklistService struct {
 	*indexutils.Client
 }
 
+func (svc *blacklistService) Search(context.Context, *external.BlacklistSearchRequest, *external.BlacklistSearchResponse) error {
+	panic("implement me")
+}
+
 func (svc *blacklistService) GetRepo() blacklistRepo {
 	return blacklistRepo{session: svc.session.Clone(), Client: svc.Client}
 }

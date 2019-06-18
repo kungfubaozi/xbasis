@@ -11,7 +11,7 @@ func (repo *inviteRepo) Add(model *inviteModel) error {
 }
 
 func (repo *inviteRepo) IsExists(key, value string) (bool, error) {
-
+	return false, nil
 }
 
 func (repo *inviteRepo) Cancel(id string) {

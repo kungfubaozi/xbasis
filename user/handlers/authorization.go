@@ -4,6 +4,7 @@ import (
 	"context"
 	"konekko.me/gosion/application/pb/inner"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/user/pb"
 )
@@ -20,10 +21,11 @@ func (svc *authorizationService) Sync(ctx context.Context, in *external.SyncRequ
 				UserId: auth.Token.UserId,
 				AppId:  in.ClientId,
 			})
-			if err == nil {
-				if !c.State.Ok && c.State.Ok {
+			if err != nil {
+				return errstate.ErrSystem
+			}
+			if c.State.Code == errstate.ErrUserNotSync.Code {
 
-				}
 			}
 		}
 

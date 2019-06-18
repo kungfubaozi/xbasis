@@ -18,6 +18,20 @@ service Role {
     rpc GetAppRoles (GetAppRolesRequest) returns (GetRoleResponse);
 
     rpc EffectUserSize (EffectUserSizeRequest) returns (EffectUserSizeResponse);
+
+    rpc Search (SearchRequest) returns (SearchResponse);
+}
+
+message SearchRequest {
+    string key = 1;
+    string value = 2;
+    int64 page = 3;
+    int64 size = 4;
+}
+
+message SearchResponse {
+    SimpleRoleInfo data = 1;
+    gs.commons.dto.State state = 2;
 }
 
 message EffectUserSizeRequest {

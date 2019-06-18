@@ -12,7 +12,7 @@ service Register {
 
 message NewRequest {
     string username = 1;
-    string phone = 2;
+    string contract = 2;
     string clientId = 3;
     string password = 4;
 }

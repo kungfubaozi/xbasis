@@ -33,8 +33,6 @@ func (svc *routeService) Logout(ctx context.Context, in *external.LogoutRequest,
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		fmt.Println("logout")
-
 		configuration := serviceconfiguration.Get()
 
 		claims, err := decodeToken(in.RefreshToken, configuration.TokenSecretKey)
@@ -140,6 +138,7 @@ func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshReques
 //just support root application web client
 //It passes on to the caller new accessToken and refreshToken!
 func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out *external.PushResponse) error {
+
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.RouteTo) == 0 {
 			return nil

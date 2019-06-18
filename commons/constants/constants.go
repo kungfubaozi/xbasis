@@ -102,6 +102,7 @@ const (
 	ZKWatchInitializeConfigPath        = "/gosion-initialize-configuration"
 	ZKWatchInitializeVersionListenPath = "/gosion-initialize-version"
 	GosionConfiguration                = "/gosion-configuration"
+	ZKAutonomyRegister                 = "/gosion-autonomy-register"
 )
 
 const (

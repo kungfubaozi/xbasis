@@ -1,7 +1,5 @@
 package userhandlers
 
-import "konekko.me/gosion/commons/encrypt"
-
 const (
 	dbName = "gs_users"
 
@@ -49,6 +47,7 @@ type userOAuth struct {
 }
 
 type userInfo struct {
+	UserId   string `bson:"user_id" json:"user_id"`
 	Icon     string `bson:"icon" json:"icon"`
 	FromCity string `bson:"from_city" json:"from_city"`
 	Birthday int64  `bson:"birthday" json:"birthday"`
@@ -86,17 +85,10 @@ type userModelIndex struct {
 
 func (um *userModel) Index() *userModelIndex {
 	index := &userModelIndex{UserId: um.Id}
-	if len(um.Email) > 6 {
-		index.Email = encrypt.SHA1(um.Email)
-	}
-	if len(um.Phone) > 6 {
-		index.Phone = encrypt.SHA1(um.Phone)
-	}
-	if len(um.Account) > 4 {
-		index.Account = encrypt.SHA1(um.Account)
-	}
-	if len(um.RegisterAt) > 10 {
-		index.RegisterAt = um.RegisterAt
-	}
+	index.Email = um.Email
+	index.Phone = um.Phone
+	index.Account = um.Account
+	index.RegisterAt = um.RegisterAt
+
 	return index
 }

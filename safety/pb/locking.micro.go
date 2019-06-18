@@ -8,6 +8,9 @@ It is generated from these files:
 	safety/pb/locking.proto
 
 It has these top-level messages:
+	SearchRequest
+	SearchResponse
+	LockingItem
 	LockRequest
 	UnlockRequest
 */
@@ -46,6 +49,7 @@ var _ server.Option
 type LockingService interface {
 	Lock(ctx context.Context, in *LockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Unlock(ctx context.Context, in *UnlockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type lockingService struct {
@@ -86,17 +90,29 @@ func (c *lockingService) Unlock(ctx context.Context, in *UnlockRequest, opts ...
 	return out, nil
 }
 
+func (c *lockingService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Locking.Search", in)
+	out := new(SearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Locking service
 
 type LockingHandler interface {
 	Lock(context.Context, *LockRequest, *gs_commons_dto.Status) error
 	Unlock(context.Context, *UnlockRequest, *gs_commons_dto.Status) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterLockingHandler(s server.Server, hdlr LockingHandler, opts ...server.HandlerOption) error {
 	type locking interface {
 		Lock(ctx context.Context, in *LockRequest, out *gs_commons_dto.Status) error
 		Unlock(ctx context.Context, in *UnlockRequest, out *gs_commons_dto.Status) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Locking struct {
 		locking
@@ -115,4 +131,8 @@ func (h *lockingHandler) Lock(ctx context.Context, in *LockRequest, out *gs_comm
 
 func (h *lockingHandler) Unlock(ctx context.Context, in *UnlockRequest, out *gs_commons_dto.Status) error {
 	return h.LockingHandler.Unlock(ctx, in, out)
+}
+
+func (h *lockingHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.LockingHandler.Search(ctx, in, out)
 }

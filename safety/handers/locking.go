@@ -21,6 +21,10 @@ type lockingService struct {
 	userService gosionsvc_internal_user.UserService
 }
 
+func (svc *lockingService) Search(context.Context, *external.SearchRequest, *external.SearchResponse) error {
+	panic("implement me")
+}
+
 func (svc *lockingService) GetRepo() *lockingRepo {
 	return &lockingRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }

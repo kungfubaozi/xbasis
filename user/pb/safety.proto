@@ -12,4 +12,5 @@ service Safety {
 
 message ForgetPasswordRequest {
     string password = 1;
+    string content = 2;
 }

@@ -2,12 +2,14 @@
 // source: pb/instance.proto
 
 /*
-Package gs_service_workflow is a generated protocol buffer package.
+Package gosionsvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/instance.proto
 
 It has these top-level messages:
+	SearchRequest
+	SearchResponse
 	SubmitRequest
 	SubmitResponse
 	ContinueRequest
@@ -21,7 +23,7 @@ It has these top-level messages:
 	GetMyLaunchInstancesRequest
 	GetMyLaunchInstancesResponse
 */
-package gs_service_workflow
+package gosionsvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -65,6 +67,7 @@ type InstanceService interface {
 	// 继续执行
 	Continue(ctx context.Context, in *ContinueRequest, opts ...client.CallOption) (*ContinueResponse, error)
 	Submit(ctx context.Context, in *SubmitRequest, opts ...client.CallOption) (*SubmitResponse, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type instanceService struct {
@@ -77,7 +80,7 @@ func NewInstanceService(name string, c client.Client) InstanceService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.workflow"
+		name = "gosionsvc.external.workflow"
 	}
 	return &instanceService{
 		c:    c,
@@ -145,6 +148,16 @@ func (c *instanceService) Submit(ctx context.Context, in *SubmitRequest, opts ..
 	return out, nil
 }
 
+func (c *instanceService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Instance.Search", in)
+	out := new(SearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Instance service
 
 type InstanceHandler interface {
@@ -159,6 +172,7 @@ type InstanceHandler interface {
 	// 继续执行
 	Continue(context.Context, *ContinueRequest, *ContinueResponse) error
 	Submit(context.Context, *SubmitRequest, *SubmitResponse) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...server.HandlerOption) error {
@@ -169,6 +183,7 @@ func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...serv
 		Restart(ctx context.Context, in *RestartRequest, out *RestartResponse) error
 		Continue(ctx context.Context, in *ContinueRequest, out *ContinueResponse) error
 		Submit(ctx context.Context, in *SubmitRequest, out *SubmitResponse) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Instance struct {
 		instance
@@ -203,4 +218,8 @@ func (h *instanceHandler) Continue(ctx context.Context, in *ContinueRequest, out
 
 func (h *instanceHandler) Submit(ctx context.Context, in *SubmitRequest, out *SubmitResponse) error {
 	return h.InstanceHandler.Submit(ctx, in, out)
+}
+
+func (h *instanceHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.InstanceHandler.Search(ctx, in, out)
 }

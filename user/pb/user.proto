@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package gosionsvc.external.user;
+
+import "konekko.me/gosion/commons/dto/commons.proto";
+
+service User {
+
+    rpc Search (SearchRequest) returns (SearchResponse);
+
+}
+
+message SearchRequest {
+    string value = 1;
+    string key = 2;
+    int64 page = 3;
+    int64 size = 4;
+}
+
+message SearchResponse {
+    gs.commons.dto.State state = 1;
+    repeated SimpleUserData data = 2;
+}
+
+message SimpleUserData {
+    string username = 1;
+    string phone = 2;
+    string email = 3;
+    string realName = 4;
+    string userId = 5;
+}

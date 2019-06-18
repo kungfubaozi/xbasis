@@ -8,6 +8,9 @@ It is generated from these files:
 	safety/pb/blacklist.proto
 
 It has these top-level messages:
+	BlacklistSearchRequest
+	BlacklistSearchResponse
+	BlacklistItem
 	CheckRequest
 	RemoveRequest
 	AddRequest
@@ -48,6 +51,7 @@ type BlacklistService interface {
 	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Search(ctx context.Context, in *BlacklistSearchRequest, opts ...client.CallOption) (*BlacklistSearchResponse, error)
 }
 
 type blacklistService struct {
@@ -98,12 +102,23 @@ func (c *blacklistService) Check(ctx context.Context, in *CheckRequest, opts ...
 	return out, nil
 }
 
+func (c *blacklistService) Search(ctx context.Context, in *BlacklistSearchRequest, opts ...client.CallOption) (*BlacklistSearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Blacklist.Search", in)
+	out := new(BlacklistSearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Blacklist service
 
 type BlacklistHandler interface {
 	Add(context.Context, *AddRequest, *gs_commons_dto.Status) error
 	Remove(context.Context, *RemoveRequest, *gs_commons_dto.Status) error
 	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
+	Search(context.Context, *BlacklistSearchRequest, *BlacklistSearchResponse) error
 }
 
 func RegisterBlacklistHandler(s server.Server, hdlr BlacklistHandler, opts ...server.HandlerOption) error {
@@ -111,6 +126,7 @@ func RegisterBlacklistHandler(s server.Server, hdlr BlacklistHandler, opts ...se
 		Add(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error
 		Remove(ctx context.Context, in *RemoveRequest, out *gs_commons_dto.Status) error
 		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
+		Search(ctx context.Context, in *BlacklistSearchRequest, out *BlacklistSearchResponse) error
 	}
 	type Blacklist struct {
 		blacklist
@@ -133,4 +149,8 @@ func (h *blacklistHandler) Remove(ctx context.Context, in *RemoveRequest, out *g
 
 func (h *blacklistHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
 	return h.BlacklistHandler.Check(ctx, in, out)
+}
+
+func (h *blacklistHandler) Search(ctx context.Context, in *BlacklistSearchRequest, out *BlacklistSearchResponse) error {
+	return h.BlacklistHandler.Search(ctx, in, out)
 }

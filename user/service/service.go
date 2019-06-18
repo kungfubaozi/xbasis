@@ -37,6 +37,9 @@ func StartService() {
 		panic(err)
 	}
 
+	zk := gs_commons_config.NewConnect("192.168.2.57:2181")
+	defer zk.Close()
+
 	logger := analysisclient.NewLoggerClient()
 
 	go func() {
@@ -57,7 +60,7 @@ func StartService() {
 
 		gosionsvc_external_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client, logger))
 
-		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session))
+		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session, zk))
 
 		gosionsvc_external_user.RegisterSafetyHandler(s.Server(), userhandlers.NewSafetyService(session))
 
@@ -66,6 +69,12 @@ func StartService() {
 		gosionsvc_external_user.RegisterInviteHandler(s.Server(), userhandlers.NewInviteService(session, logger))
 
 		gosionsvc_external_user.RegisterUserInfoHandler(s.Server(), userhandlers.NewUserInfoService(session, logger))
+
+		gosionsvc_external_user.RegisterUserHandler(s.Server(), userhandlers.NewUserService(session, client))
+
+		gosionsvc_external_user.RegisterOAuthHandler(s.Server(), userhandlers.NewOAuthService(session, client, logger))
+
+		gosionsvc_external_user.RegisterAuthorizationHandler(s.Server(), userhandlers.NewAuthorizationService())
 
 		errc <- s.Run()
 	}()

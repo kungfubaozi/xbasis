@@ -2,7 +2,7 @@
 // source: pb/debugger.proto
 
 /*
-Package gs_service_workflow is a generated protocol buffer package.
+Package gosionsvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/debugger.proto
@@ -13,7 +13,7 @@ It has these top-level messages:
 	RunRequest
 	RunResponse
 */
-package gs_service_workflow
+package gosionsvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -58,7 +58,7 @@ func NewDebuggerService(name string, c client.Client) DebuggerService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.workflow"
+		name = "gosionsvc.external.workflow"
 	}
 	return &debuggerService{
 		c:    c,

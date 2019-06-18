@@ -72,7 +72,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 		if ok {
 
 			traceId := md["transport-trace-id"]
-			if len(traceId) > 0 {
+			if len(traceId) > 10 {
+
 				_, err := encrypt.AESDecrypt(traceId, []byte(svc.configuration.CurrencySecretKey))
 				if err != nil {
 					return nil
@@ -86,6 +87,24 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				out.UserAgent = auth.UserAgent
 				out.User = auth.User
 				out.AppId = auth.AppId
+				out.AppType = auth.AppType
+				out.Platform = auth.Platform
+				if auth.Access != nil {
+					out.DatTo = auth.Access.To
+					if auth.Access.Auth {
+						out.DatAuth = 2
+					}
+				}
+				if auth.Token != nil {
+					out.Token = &inner.TokenInfo{
+						UserId:   auth.Token.UserId,
+						ClientId: auth.Token.ClientId,
+						Platform: auth.Token.ClientPlatform,
+						AppType:  auth.Token.AppType,
+						AppId:    auth.Token.AppId,
+						Relation: auth.Token.Relation,
+					}
+				}
 
 				return errstate.SuccessTraceCheck
 			}
@@ -387,9 +406,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 									AppType:  status.AppType,
 								}
 
-								if !f.Share {
-									out.Token.AppType = appResp.Type
-								}
+								fmt.Println("appType-s", status.AppType)
 
 								userId = status.UserId
 
@@ -500,7 +517,9 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				out.Ip = rh.ip
 				out.FunctionId = f.Id
 				out.TraceId = traceId
+				out.AppType = appResp.Type
 				out.Platform = appResp.ClientPlatform
+
 				if len(userId) == 0 {
 					userId = rh.ip
 				}

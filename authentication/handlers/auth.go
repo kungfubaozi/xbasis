@@ -232,7 +232,9 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 			out.ClientId = uai.ClientId
 			out.AppId = claims.Token.AppId
 			out.Relation = claims.Token.Relation
+
 			if tokenApp != nil {
+				fmt.Println("token app token", tokenApp.Type)
 				out.AppType = tokenApp.Type
 			}
 			return nil

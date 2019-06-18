@@ -92,7 +92,7 @@ func (repo *roleRepo) FindRoleById(roleId string) (*role, error) {
 
 func (repo *roleRepo) FindRolesByAppId(appId string, page, size int64) ([]*role, error) {
 	var roles []*role
-	err := repo.collection().Find(bson.M{"app_id": appId}).Limit(int(size)).Skip(int(page * size)).All(&roles)
+	err := repo.collection().Find(bson.M{"app_id": appId}).All(&roles)
 	return roles, err
 }
 

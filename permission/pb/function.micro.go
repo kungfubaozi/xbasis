@@ -8,6 +8,8 @@ It is generated from these files:
 	permission/pb/function.proto
 
 It has these top-level messages:
+	FunctionSearchRequest
+	FunctionSearchResponse
 	GetFunctionItemsRequest
 	GetFunctionItemsResponse
 	FindItemResponse
@@ -61,6 +63,7 @@ type FunctionService interface {
 	RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, opts ...client.CallOption) (*GetFunctionItemsResponse, error)
 	GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, opts ...client.CallOption) (*GetFunctionItemResponse, error)
+	Search(ctx context.Context, in *FunctionSearchRequest, opts ...client.CallOption) (*FunctionSearchResponse, error)
 }
 
 type functionService struct {
@@ -161,6 +164,16 @@ func (c *functionService) GetFunctionItemDetail(ctx context.Context, in *GetFunc
 	return out, nil
 }
 
+func (c *functionService) Search(ctx context.Context, in *FunctionSearchRequest, opts ...client.CallOption) (*FunctionSearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Function.Search", in)
+	out := new(FunctionSearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Function service
 
 type FunctionHandler interface {
@@ -172,6 +185,7 @@ type FunctionHandler interface {
 	RenameGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
 	GetFunctionItems(context.Context, *GetFunctionItemsRequest, *GetFunctionItemsResponse) error
 	GetFunctionItemDetail(context.Context, *GetFunctionItemRequest, *GetFunctionItemResponse) error
+	Search(context.Context, *FunctionSearchRequest, *FunctionSearchResponse) error
 }
 
 func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...server.HandlerOption) error {
@@ -184,6 +198,7 @@ func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...serv
 		RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
 		GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, out *GetFunctionItemsResponse) error
 		GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, out *GetFunctionItemResponse) error
+		Search(ctx context.Context, in *FunctionSearchRequest, out *FunctionSearchResponse) error
 	}
 	type Function struct {
 		function
@@ -226,4 +241,8 @@ func (h *functionHandler) GetFunctionItems(ctx context.Context, in *GetFunctionI
 
 func (h *functionHandler) GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, out *GetFunctionItemResponse) error {
 	return h.FunctionHandler.GetFunctionItemDetail(ctx, in, out)
+}
+
+func (h *functionHandler) Search(ctx context.Context, in *FunctionSearchRequest, out *FunctionSearchResponse) error {
+	return h.FunctionHandler.Search(ctx, in, out)
 }

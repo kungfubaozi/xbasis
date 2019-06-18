@@ -3,13 +3,17 @@ package userhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/dto"
+	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/user/pb"
 )
 
 type oauthService struct {
 	session *mgo.Session
+	client  *indexutils.Client
+	log     analysisclient.LogClient
 }
 
 func (svc *oauthService) UnbindOAuth(ctx context.Context, in *gosionsvc_external_user.UnbindOAuthRequest, out *gs_commons_dto.Status) error {
@@ -30,6 +34,7 @@ func (svc *oauthService) BindOAuth(ctx context.Context, in *gosionsvc_external_u
 	})
 }
 
-func NewOAuthService() gosionsvc_external_user.OAuthHandler {
-	return &oauthService{}
+func NewOAuthService(session *mgo.Session,
+	client *indexutils.Client, log analysisclient.LogClient) gosionsvc_external_user.OAuthHandler {
+	return &oauthService{session: session, client: client, log: log}
 }

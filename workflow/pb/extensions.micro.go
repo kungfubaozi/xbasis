@@ -2,14 +2,14 @@
 // source: pb/extensions.proto
 
 /*
-Package gs_service_workflow is a generated protocol buffer package.
+Package gosionsvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/extensions.proto
 
 It has these top-level messages:
 */
-package gs_service_workflow
+package gosionsvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -52,7 +52,7 @@ func NewExtensionsService(name string, c client.Client) ExtensionsService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.workflow"
+		name = "gosionsvc.external.workflow"
 	}
 	return &extensionsService{
 		c:    c,

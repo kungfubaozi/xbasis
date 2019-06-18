@@ -120,17 +120,28 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 	}
 
 	if ok {
+
 		auth := GetData(md)
+		//
+		//fmt.Println("md")
+		//
+		//spew.Dump(md)
+		//
+		//fmt.Println("auth")
+		//
+		//spew.Dump(auth)
 
 		if auth.Token != nil && len(auth.Token.UserId) > 0 {
-			if auth.Token.AppType == -1 || auth.Platform == -1 || auth.AppType == -1 {
+			if len(auth.Token.AppId) == 0 || auth.Platform == -1 || auth.AppType == -1 {
 				null()
 				return nil
 			}
 		}
 
 		v := event(auth)
+
 		if v != nil {
+
 			v.Timestamp = time.Now().Unix()
 			s.Set(reflect.ValueOf(v))
 			return nil

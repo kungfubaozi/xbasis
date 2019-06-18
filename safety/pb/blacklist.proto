@@ -10,7 +10,28 @@ service Blacklist {
 
     rpc Remove (RemoveRequest) returns (gs.commons.dto.Status);
 
-    rpc Check(CheckRequest) returns (gs.commons.dto.Status);
+    rpc Check (CheckRequest) returns (gs.commons.dto.Status);
+
+    rpc Search (BlacklistSearchRequest) returns (BlacklistSearchResponse);
+
+}
+
+message BlacklistSearchRequest {
+    string value = 1;
+    string key = 2;
+    int64 size = 3;
+    int64 page = 4;
+}
+
+message BlacklistSearchResponse {
+    gs.commons.dto.State state = 1;
+    repeated BlacklistItem item = 2;
+}
+
+message BlacklistItem {
+    string name = 1;
+    string createUser = 2;
+    int64 createAt = 3;
 }
 
 message CheckRequest {

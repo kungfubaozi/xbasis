@@ -2,12 +2,14 @@
 // source: pb/process.proto
 
 /*
-Package gs_service_workflow is a generated protocol buffer package.
+Package gosionsvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/process.proto
 
 It has these top-level messages:
+	SearchRequest
+	SearchResponse
 	DetailRequest
 	DetailResponse
 	GetImageRequest
@@ -25,7 +27,7 @@ It has these top-level messages:
 	LaunchRequest
 	LaunchResponse
 */
-package gs_service_workflow
+package gosionsvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -73,6 +75,7 @@ type ProcessService interface {
 	Detail(ctx context.Context, in *DetailRequest, opts ...client.CallOption) (*DetailResponse, error)
 	// 获取流程图
 	GetImage(ctx context.Context, in *GetImageRequest, opts ...client.CallOption) (*GetImageResponse, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type processService struct {
@@ -85,7 +88,7 @@ func NewProcessService(name string, c client.Client) ProcessService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.workflow"
+		name = "gosionsvc.external.workflow"
 	}
 	return &processService{
 		c:    c,
@@ -173,6 +176,16 @@ func (c *processService) GetImage(ctx context.Context, in *GetImageRequest, opts
 	return out, nil
 }
 
+func (c *processService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Process.Search", in)
+	out := new(SearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Process service
 
 type ProcessHandler interface {
@@ -192,6 +205,7 @@ type ProcessHandler interface {
 	Detail(context.Context, *DetailRequest, *DetailResponse) error
 	// 获取流程图
 	GetImage(context.Context, *GetImageRequest, *GetImageResponse) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterProcessHandler(s server.Server, hdlr ProcessHandler, opts ...server.HandlerOption) error {
@@ -204,6 +218,7 @@ func RegisterProcessHandler(s server.Server, hdlr ProcessHandler, opts ...server
 		Open(ctx context.Context, in *OpenRequest, out *OpenResponse) error
 		Detail(ctx context.Context, in *DetailRequest, out *DetailResponse) error
 		GetImage(ctx context.Context, in *GetImageRequest, out *GetImageResponse) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Process struct {
 		process
@@ -246,4 +261,8 @@ func (h *processHandler) Detail(ctx context.Context, in *DetailRequest, out *Det
 
 func (h *processHandler) GetImage(ctx context.Context, in *GetImageRequest, out *GetImageResponse) error {
 	return h.ProcessHandler.GetImage(ctx, in, out)
+}
+
+func (h *processHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.ProcessHandler.Search(ctx, in, out)
 }

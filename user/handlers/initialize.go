@@ -31,13 +31,38 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 			u := &userModel{
 				Id:         config.UserId,
 				CreateAt:   time.Now().UnixNano(),
-				Account:    config.Username,
+				Account:    config.Account,
 				Password:   string(b),
 				RegisterAt: "",
 				Phone:      config.Phone,
 				Email:      config.Email,
 			}
+
+			info := &userInfo{
+				UserId:   u.Id,
+				Username: config.Username,
+				CreateAt: time.Now().UnixNano(),
+			}
+
+			index := &userModelIndex{
+				Username: info.Username,
+				Phone:    u.Phone,
+				Email:    u.Email,
+				UserId:   u.Id,
+				Account:  u.Account,
+			}
+
+			err = userRepo.AddUserIndex(index)
+			if err != nil {
+				panic(err)
+			}
+
 			err = userRepo.AddUser(u)
+			if err != nil {
+				panic(err)
+			}
+
+			err = userRepo.AddUserInfo(info)
 			if err != nil {
 				panic(err)
 			}

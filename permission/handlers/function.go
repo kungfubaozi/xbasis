@@ -26,6 +26,10 @@ type functionService struct {
 	log     analysisclient.LogClient
 }
 
+func (svc *functionService) Search(context.Context, *external.FunctionSearchRequest, *external.FunctionSearchResponse) error {
+	panic("implement me")
+}
+
 func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.GetFunctionItemsRequest, out *external.GetFunctionItemsResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.AppId) == 0 {

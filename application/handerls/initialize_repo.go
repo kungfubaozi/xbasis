@@ -65,7 +65,8 @@ func (repo *initializeRepo) getApp(id, name string, appType int64) *appInfo {
 		CreateUserId: repo.config.UserId,
 		Type:         appType,
 		Settings: &appSetting{
-			Enabled: gs_commons_constants.Enabled,
+			Enabled:  gs_commons_constants.Enabled,
+			MustSync: true,
 		},
 		Clients: []*appClient{
 			{

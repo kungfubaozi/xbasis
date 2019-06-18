@@ -1,6 +1,7 @@
 package userhandlers
 
 import (
+	"errors"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -21,17 +22,22 @@ func (repo *userRepo) FindById(id string) (*userModel, error) {
 }
 
 func (repo *userRepo) AddUser(user *userModel) error {
+	return repo.userCollection(user.Id).Insert(user)
+}
 
-	id, err := repo.AddData(typeUserIndex, user.Index())
+func (repo *userRepo) AddUserIndex(index *userModelIndex) error {
+	id, err := repo.AddData(typeUserIndex, index)
 	if err != nil {
 		return nil
 	}
-
 	if len(id) > 0 {
-		return repo.userCollection(user.Id).Insert(user)
+		return nil
 	}
+	return errors.New("")
+}
 
-	return indexutils.ErrNotFound
+func (repo *userRepo) AddUserInfo(info *userInfo) error {
+	return repo.infoCollection(info.UserId).Insert(info)
 }
 
 func (repo *userRepo) userCollection(userId string) *mgo.Collection {
@@ -43,7 +49,6 @@ func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
 }
 
 func (repo *userRepo) FindIndexTable(key string, content string) (string, error) {
-	content = repo.index(content)
 	userIndex := &userModelIndex{}
 
 	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content}, &userIndex)

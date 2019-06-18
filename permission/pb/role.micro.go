@@ -8,6 +8,8 @@ It is generated from these files:
 	permission/pb/role.proto
 
 It has these top-level messages:
+	SearchRequest
+	SearchResponse
 	EffectUserSizeRequest
 	EffectUserSizeResponse
 	GetAppRolesRequest
@@ -55,6 +57,7 @@ type RoleService interface {
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	GetAppRoles(ctx context.Context, in *GetAppRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, opts ...client.CallOption) (*EffectUserSizeResponse, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type roleService struct {
@@ -135,6 +138,16 @@ func (c *roleService) EffectUserSize(ctx context.Context, in *EffectUserSizeRequ
 	return out, nil
 }
 
+func (c *roleService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.Search", in)
+	out := new(SearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Role service
 
 type RoleHandler interface {
@@ -144,6 +157,7 @@ type RoleHandler interface {
 	GetRole(context.Context, *GetRoleRequest, *GetRoleResponse) error
 	GetAppRoles(context.Context, *GetAppRolesRequest, *GetRoleResponse) error
 	EffectUserSize(context.Context, *EffectUserSizeRequest, *EffectUserSizeResponse) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.HandlerOption) error {
@@ -154,6 +168,7 @@ func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.Handl
 		GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error
 		GetAppRoles(ctx context.Context, in *GetAppRolesRequest, out *GetRoleResponse) error
 		EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Role struct {
 		role
@@ -188,4 +203,8 @@ func (h *roleHandler) GetAppRoles(ctx context.Context, in *GetAppRolesRequest, o
 
 func (h *roleHandler) EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error {
 	return h.RoleHandler.EffectUserSize(ctx, in, out)
+}
+
+func (h *roleHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.RoleHandler.Search(ctx, in, out)
 }

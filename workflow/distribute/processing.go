@@ -172,7 +172,10 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 					}
 					max := vtp.Max.(float64)
 					min := vtp.Min.(float64)
-					tv := value.(float64)
+					tv, ok := value.(float64)
+					if !ok {
+						return flowerr.ErrSubmitFormFieldValue
+					}
 					if tv >= min || tv <= max {
 						f.sd[v.Name] = tv
 						break
@@ -247,10 +250,6 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 		}
 	}
 	return callback()
-}
-
-func (f *processing) finishThatNode() {
-
 }
 
 func (f *processing) typeCheck(v interface{}, kind reflect.Kind) bool {

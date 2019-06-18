@@ -20,6 +20,39 @@
           "auth_type": [
             5632
           ]
+        },
+        {
+          "api": "/invite/search",
+          "name": "InviteSearch",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/invite/hasInvited",
+          "name": "HasInvited",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/user/search",
+          "name": "UserSearch",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
         }
       ]
     },
@@ -151,6 +184,18 @@
         {
           "api": "/function/getFunctionItemDetail",
           "name": "GetFunctionItemDetail",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/function/search",
+          "name": "FunctionSearch",
+          "desc": "查找功能",
           "roles": [
             "Administrator",
             "AppManage"
@@ -304,8 +349,8 @@
           ]
         },
         {
-          "api": "/role/effectUserSize",
-          "name": "GetEffectUserSize",
+          "api": "/role/rename",
+          "name": "RenameRole",
           "roles": [
             "Administrator",
             "AppManage"
@@ -315,8 +360,9 @@
           ]
         },
         {
-          "api": "/role/rename",
-          "name": "RenameRole",
+          "api": "/role/search",
+          "name": "RoleSearch",
+          "desc": "查找角色",
           "roles": [
             "Administrator",
             "AppManage"
@@ -354,6 +400,17 @@
           ]
         },
         {
+          "api": "/blacklist/search",
+          "name": "BlacklistSearch",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
           "api": "/locking/lock",
           "name": "LockUser",
           "roles": [
@@ -375,6 +432,33 @@
           "auth_type": [
             5632,
             352
+          ]
+        },
+        {
+          "api": "/locking/search",
+          "name": "LockSearch",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "Workflow",
+      "prefix": "/workflow",
+      "functions": [
+        {
+          "api": "/instance/search",
+          "name": "InstanceSearch",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
           ]
         }
       ]

@@ -40,6 +40,9 @@ func StartService() {
 
 	logger := analysisclient.NewLoggerClient()
 
+	zk := gs_commons_config.NewConnect("192.168.2.57:2181")
+	defer zk.Close()
+
 	go func() {
 		m := microservice.NewService(gs_commons_constants.InternalPermission, false)
 
@@ -81,7 +84,7 @@ func StartService() {
 	}()
 
 	go func() {
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session.Clone(), client))
+		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session.Clone(), client, zk))
 	}()
 
 	if err := <-errc; err != nil {

@@ -10,6 +10,26 @@ service Locking {
 
     rpc Unlock (UnlockRequest) returns (gs.commons.dto.Status);
 
+    rpc Search (SearchRequest) returns (SearchResponse);
+}
+
+message SearchRequest {
+    string key = 1;
+    string value = 2;
+    int64 page = 3;
+    int64 size = 4;
+}
+
+message SearchResponse {
+    gs.commons.dto.State state = 1;
+}
+
+message LockingItem {
+    string name = 1;
+    int64 createAt = 2;
+    string createUser = 3;
+    string username = 4;
+    string userId = 5;
 }
 
 message LockRequest {

@@ -20,6 +20,10 @@ type roleService struct {
 	bindingService external.BindingService
 }
 
+func (svc *roleService) Search(context.Context, *external.SearchRequest, *external.SearchResponse) error {
+	panic("implement me")
+}
+
 //获取和角色关联的用户数量
 func (svc *roleService) EffectUserSize(ctx context.Context, in *external.EffectUserSizeRequest, out *external.EffectUserSizeResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
@@ -27,6 +31,7 @@ func (svc *roleService) EffectUserSize(ctx context.Context, in *external.EffectU
 	})
 }
 
+//修改为不分页
 func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRolesRequest, out *external.GetRoleResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		if len(in.AppId) == 0 {

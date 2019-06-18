@@ -2,12 +2,14 @@
 // source: pb/form.proto
 
 /*
-Package gs_service_workflow is a generated protocol buffer package.
+Package gosionsvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/form.proto
 
 It has these top-level messages:
+	SearchRequest
+	SearchResponse
 	CheckFiledValueRequest
 	CheckFieldValueResponse
 	GetAllTypeFieldsRequest
@@ -25,7 +27,7 @@ It has these top-level messages:
 	UpdateFieldPropsRequest
 	UpdateFieldPropsResponse
 */
-package gs_service_workflow
+package gosionsvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -66,6 +68,7 @@ type FormService interface {
 	GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, opts ...client.CallOption) (*GetAllTypeFieldsResponse, error)
 	// 检查form的filed value是否符合
 	CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, opts ...client.CallOption) (*CheckFieldValueResponse, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type formService struct {
@@ -78,7 +81,7 @@ func NewFormService(name string, c client.Client) FormService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gs.service.workflow"
+		name = "gosionsvc.external.workflow"
 	}
 	return &formService{
 		c:    c,
@@ -166,6 +169,16 @@ func (c *formService) CheckFiledValue(ctx context.Context, in *CheckFiledValueRe
 	return out, nil
 }
 
+func (c *formService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Form.Search", in)
+	out := new(SearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Form service
 
 type FormHandler interface {
@@ -178,6 +191,7 @@ type FormHandler interface {
 	GetAllTypeFields(context.Context, *GetAllTypeFieldsRequest, *GetAllTypeFieldsResponse) error
 	// 检查form的filed value是否符合
 	CheckFiledValue(context.Context, *CheckFiledValueRequest, *CheckFieldValueResponse) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.HandlerOption) error {
@@ -190,6 +204,7 @@ func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.Handl
 		UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, out *UpdateFieldPropsResponse) error
 		GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, out *GetAllTypeFieldsResponse) error
 		CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, out *CheckFieldValueResponse) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Form struct {
 		form
@@ -232,4 +247,8 @@ func (h *formHandler) GetAllTypeFields(ctx context.Context, in *GetAllTypeFields
 
 func (h *formHandler) CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, out *CheckFieldValueResponse) error {
 	return h.FormHandler.CheckFiledValue(ctx, in, out)
+}
+
+func (h *formHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.FormHandler.Search(ctx, in, out)
 }
