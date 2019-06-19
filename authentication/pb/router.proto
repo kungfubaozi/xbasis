@@ -6,11 +6,17 @@ import "konekko.me/gosion/commons/dto/commons.proto";
 
 service Router {
 
-    rpc push (PushRequest) returns (PushResponse);
+    rpc Push (PushRequest) returns (PushResponse);
 
-    rpc refresh (RefreshRequest) returns (RefreshResponse);
+    rpc Refresh (RefreshRequest) returns (RefreshResponse);
 
-    rpc logout (LogoutRequest) returns (gs.commons.dto.Status);
+    rpc Logout (LogoutRequest) returns (gs.commons.dto.Status);
+
+    rpc Authorize (AuthorizeRequest) returns (gs.commons.dto.Status);
+}
+
+message AuthorizeRequest {
+    string clientId = 1;
 }
 
 message LogoutRequest {

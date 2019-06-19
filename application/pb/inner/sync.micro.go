@@ -41,34 +41,33 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for Usersync service
+// Client API for UserSync service
 
-type UsersyncService interface {
-	Transport(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+type UserSyncService interface {
 	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
-type usersyncService struct {
+type userSyncService struct {
 	c    client.Client
 	name string
 }
 
-func NewUsersyncService(name string, c client.Client) UsersyncService {
+func NewUserSyncService(name string, c client.Client) UserSyncService {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
 		name = "gosionsvc.internal.application"
 	}
-	return &usersyncService{
+	return &userSyncService{
 		c:    c,
 		name: name,
 	}
 }
 
-func (c *usersyncService) Transport(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Usersync.Transport", in)
+func (c *userSyncService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserSync.Check", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -77,8 +76,8 @@ func (c *usersyncService) Transport(ctx context.Context, in *UserInfo, opts ...c
 	return out, nil
 }
 
-func (c *usersyncService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Usersync.Check", in)
+func (c *userSyncService) Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserSync.Update", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -87,49 +86,33 @@ func (c *usersyncService) Check(ctx context.Context, in *CheckRequest, opts ...c
 	return out, nil
 }
 
-func (c *usersyncService) Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Usersync.Update", in)
-	out := new(gs_commons_dto.Status)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
+// Server API for UserSync service
 
-// Server API for Usersync service
-
-type UsersyncHandler interface {
-	Transport(context.Context, *UserInfo, *gs_commons_dto.Status) error
+type UserSyncHandler interface {
 	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
 	Update(context.Context, *UserInfo, *gs_commons_dto.Status) error
 }
 
-func RegisterUsersyncHandler(s server.Server, hdlr UsersyncHandler, opts ...server.HandlerOption) error {
-	type usersync interface {
-		Transport(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error
+func RegisterUserSyncHandler(s server.Server, hdlr UserSyncHandler, opts ...server.HandlerOption) error {
+	type userSync interface {
 		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
 		Update(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error
 	}
-	type Usersync struct {
-		usersync
+	type UserSync struct {
+		userSync
 	}
-	h := &usersyncHandler{hdlr}
-	return s.Handle(s.NewHandler(&Usersync{h}, opts...))
+	h := &userSyncHandler{hdlr}
+	return s.Handle(s.NewHandler(&UserSync{h}, opts...))
 }
 
-type usersyncHandler struct {
-	UsersyncHandler
+type userSyncHandler struct {
+	UserSyncHandler
 }
 
-func (h *usersyncHandler) Transport(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error {
-	return h.UsersyncHandler.Transport(ctx, in, out)
+func (h *userSyncHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
+	return h.UserSyncHandler.Check(ctx, in, out)
 }
 
-func (h *usersyncHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
-	return h.UsersyncHandler.Check(ctx, in, out)
-}
-
-func (h *usersyncHandler) Update(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error {
-	return h.UsersyncHandler.Update(ctx, in, out)
+func (h *userSyncHandler) Update(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error {
+	return h.UserSyncHandler.Update(ctx, in, out)
 }

@@ -25,6 +25,11 @@ const (
 )
 
 const (
+	InviteStateOfRegister  int64 = 2 << 2
+	InviteStateOfAuthorize int64 = 2 << 3
+)
+
+const (
 	//send email or phone validate code, next request user usage _stat
 	AuthTypeOfValcode = 11 << 5
 

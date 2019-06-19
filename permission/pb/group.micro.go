@@ -17,6 +17,7 @@ It has these top-level messages:
 	DetailBindRole
 	SimpleGroup
 	SimpleUserNode
+	AddUserRequest
 */
 package gosionsvc_external_permission
 
@@ -56,7 +57,7 @@ type UserGroupService interface {
 	Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	AddUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error)
 	GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, opts ...client.CallOption) (*GetGroupItemDetailResponse, error)
@@ -130,7 +131,7 @@ func (c *userGroupService) Rename(ctx context.Context, in *SimpleGroup, opts ...
 	return out, nil
 }
 
-func (c *userGroupService) AddUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.AddUser", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
@@ -178,7 +179,7 @@ type UserGroupHandler interface {
 	Add(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	Remove(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
 	Rename(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	AddUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
+	AddUser(context.Context, *AddUserRequest, *gs_commons_dto.Status) error
 	MoveUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
 	GetGroupItems(context.Context, *GetGroupItemsRequest, *GetGroupItemsResponse) error
 	GetGroupItemDetail(context.Context, *GetGroupItemDetailRequest, *GetGroupItemDetailResponse) error
@@ -191,7 +192,7 @@ func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...se
 		Add(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		Remove(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
 		Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		AddUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
+		AddUser(ctx context.Context, in *AddUserRequest, out *gs_commons_dto.Status) error
 		MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
 		GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error
 		GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error
@@ -227,7 +228,7 @@ func (h *userGroupHandler) Rename(ctx context.Context, in *SimpleGroup, out *gs_
 	return h.UserGroupHandler.Rename(ctx, in, out)
 }
 
-func (h *userGroupHandler) AddUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) AddUser(ctx context.Context, in *AddUserRequest, out *gs_commons_dto.Status) error {
 	return h.UserGroupHandler.AddUser(ctx, in, out)
 }
 

@@ -18,3 +18,7 @@ func NewAccessibleClient(client client.Client) gosionsvc_internal_permission.Acc
 func NewBindingClient(client client.Client) gosionsvc_external_permission.BindingService {
 	return gosionsvc_external_permission.NewBindingService(gs_commons_constants.PermissionService, client)
 }
+
+func NewGroupClient(client client.Client) gosionsvc_external_permission.UserGroupService {
+	return gosionsvc_external_permission.NewUserGroupService(gs_commons_constants.PermissionService, client)
+}

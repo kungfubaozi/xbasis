@@ -16,6 +16,31 @@ type accessibleService struct {
 	log analysisclient.LogClient
 }
 
+func (svc *accessibleService) GetRepo() *bindingRepo {
+	return &bindingRepo{}
+}
+
+func (svc *accessibleService) HasGrant(ctx context.Context, in *inner.HasGrantRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		r, err := repo.FindUserById(in.UserId, in.AppId)
+		if err != nil {
+			return nil
+		}
+
+		for _, v := range r.Roles {
+			if v == in.Role {
+				return errstate.ErrUserAlreadyBindRole
+			}
+		}
+
+		return errstate.Success
+	})
+}
+
 func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		//get user require roles

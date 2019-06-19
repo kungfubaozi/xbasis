@@ -52,7 +52,7 @@ type initializeRepo struct {
 	functionGroups    []interface{}
 	structures        []interface{}
 	groupUsers        []interface{}
-
+	groups            []interface{}
 	//callback
 }
 

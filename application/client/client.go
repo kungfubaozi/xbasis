@@ -16,6 +16,6 @@ func NewStatusClient(client client.Client) gosionsvc_internal_application.Applic
 	return gosionsvc_internal_application.NewApplicationStatusService(gs_commons_constants.InternalApplicationService, client)
 }
 
-func NewSyncClient(client client.Client) gosionsvc_internal_application.UsersyncService {
-	return gosionsvc_internal_application.NewUsersyncService(gs_commons_constants.InternalApplicationService, client)
+func NewSyncClient(client client.Client) gosionsvc_internal_application.UserSyncService {
+	return gosionsvc_internal_application.NewUserSyncService(gs_commons_constants.InternalApplicationService, client)
 }

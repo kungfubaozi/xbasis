@@ -11,6 +11,8 @@ import (
 	"konekko.me/gosion/commons/dao"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
+	"konekko.me/gosion/permission/client"
+	"konekko.me/gosion/user/client"
 )
 
 func StartService() {
@@ -51,7 +53,9 @@ func StartService() {
 
 		gosionsvc_internal_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, logger))
 
-		gosionsvc_internal_application.RegisterUsersyncHandler(s.Server(), applicationhanderls.NewSyncService(c, session))
+		gosionsvc_internal_application.RegisterUserSyncHandler(s.Server(),
+			applicationhanderls.NewSyncService(c, session, userclient.NewInviteClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), permissioncli.NewBindingClient(s.Client()),
+				permissioncli.NewGroupClient(s.Client())))
 
 		errc <- s.Run()
 	}()

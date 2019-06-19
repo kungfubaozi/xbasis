@@ -66,6 +66,12 @@ func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
 	return repo.findAppInfo("clients.id", clientId)
 }
 
+func (repo *applicationRepo) GetApplication(appId string) (*appInfo, error) {
+	var appInfo *appInfo
+	err := repo.collection().Find(bson.M{"_id": appId}).One(appInfo)
+	return appInfo, err
+}
+
 func (repo *applicationRepo) collection() *mgo.Collection {
 	return repo.session.DB(dbName).C(applicationCollection)
 }

@@ -8,6 +8,14 @@ service Accessible {
 
     rpc Check (CheckRequest) returns (gs.commons.dto.Status);
 
+    rpc HasGrant (HasGrantRequest) returns (gs.commons.dto.Status);
+}
+
+message HasGrantRequest {
+    string userId = 1;
+    string appId = 2;
+    string bingGroupId = 3;
+    string role = 4;
 }
 
 message CheckRequest {

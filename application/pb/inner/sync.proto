@@ -4,9 +4,7 @@ package gosionsvc.internal.application;
 
 import "konekko.me/gosion/commons/dto/commons.proto";
 
-service Usersync {
-
-    rpc Transport (UserInfo) returns (gs.commons.dto.Status);
+service UserSync {
 
     rpc Check (CheckRequest) returns (gs.commons.dto.Status);
 

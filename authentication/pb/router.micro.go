@@ -8,6 +8,7 @@ It is generated from these files:
 	authentication/pb/router.proto
 
 It has these top-level messages:
+	AuthorizeRequest
 	LogoutRequest
 	RefreshRequest
 	RefreshResponse
@@ -50,6 +51,7 @@ type RouterService interface {
 	Push(ctx context.Context, in *PushRequest, opts ...client.CallOption) (*PushResponse, error)
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...client.CallOption) (*RefreshResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type routerService struct {
@@ -71,7 +73,7 @@ func NewRouterService(name string, c client.Client) RouterService {
 }
 
 func (c *routerService) Push(ctx context.Context, in *PushRequest, opts ...client.CallOption) (*PushResponse, error) {
-	req := c.c.NewRequest(c.name, "Router.push", in)
+	req := c.c.NewRequest(c.name, "Router.Push", in)
 	out := new(PushResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -81,7 +83,7 @@ func (c *routerService) Push(ctx context.Context, in *PushRequest, opts ...clien
 }
 
 func (c *routerService) Refresh(ctx context.Context, in *RefreshRequest, opts ...client.CallOption) (*RefreshResponse, error) {
-	req := c.c.NewRequest(c.name, "Router.refresh", in)
+	req := c.c.NewRequest(c.name, "Router.Refresh", in)
 	out := new(RefreshResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -91,7 +93,17 @@ func (c *routerService) Refresh(ctx context.Context, in *RefreshRequest, opts ..
 }
 
 func (c *routerService) Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "Router.logout", in)
+	req := c.c.NewRequest(c.name, "Router.Logout", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routerService) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Router.Authorize", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -106,6 +118,7 @@ type RouterHandler interface {
 	Push(context.Context, *PushRequest, *PushResponse) error
 	Refresh(context.Context, *RefreshRequest, *RefreshResponse) error
 	Logout(context.Context, *LogoutRequest, *gs_commons_dto.Status) error
+	Authorize(context.Context, *AuthorizeRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterRouterHandler(s server.Server, hdlr RouterHandler, opts ...server.HandlerOption) error {
@@ -113,6 +126,7 @@ func RegisterRouterHandler(s server.Server, hdlr RouterHandler, opts ...server.H
 		Push(ctx context.Context, in *PushRequest, out *PushResponse) error
 		Refresh(ctx context.Context, in *RefreshRequest, out *RefreshResponse) error
 		Logout(ctx context.Context, in *LogoutRequest, out *gs_commons_dto.Status) error
+		Authorize(ctx context.Context, in *AuthorizeRequest, out *gs_commons_dto.Status) error
 	}
 	type Router struct {
 		router
@@ -135,4 +149,8 @@ func (h *routerHandler) Refresh(ctx context.Context, in *RefreshRequest, out *Re
 
 func (h *routerHandler) Logout(ctx context.Context, in *LogoutRequest, out *gs_commons_dto.Status) error {
 	return h.RouterHandler.Logout(ctx, in, out)
+}
+
+func (h *routerHandler) Authorize(ctx context.Context, in *AuthorizeRequest, out *gs_commons_dto.Status) error {
+	return h.RouterHandler.Authorize(ctx, in, out)
 }

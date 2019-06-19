@@ -13,6 +13,7 @@ import (
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/user/pb/inner"
+	"sync"
 )
 
 type bindingService struct {
@@ -31,9 +32,9 @@ func (svc *bindingService) GetRoleRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone()}
 }
 
-func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
+func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRolesRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
+		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.Roles) > 0 {
 			//check roles
 			repo := svc.GetRepo()
 			defer repo.Close()
@@ -47,29 +48,59 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 			roleRepo := svc.GetRoleRepo()
 			defer roleRepo.Close()
 
-			role, err := roleRepo.FindRoleById(in.RoleId)
+			s := errstate.Success
+			resp := func(s1 *gs_commons_dto.State) {
+				if s.Ok {
+					s = s1
+				}
+			}
 
+			var wg sync.WaitGroup
+			wg.Add(len(in.Roles))
+
+			for _, v := range in.Roles {
+
+				go func() {
+					defer wg.Done()
+					role, err := roleRepo.FindRoleById(v)
+
+					if err != nil {
+						resp(errstate.ErrSystem)
+					}
+
+					if len(role.Id) == 0 {
+						resp(errstate.ErrRequest)
+					}
+				}()
+
+			}
+
+			wg.Wait()
+			if !s.Ok {
+				return s
+			}
+
+			//去重
+			role, err := repo.FindUserById(in.Id, in.AppId)
 			if err != nil {
-				return errstate.ErrSystem
+				return nil
 			}
-
-			if len(role.Id) == 0 {
-				return errstate.ErrRequest
-			}
-
-			f, err := repo.FindUserById(in.Id, in.AppId)
-			if err != nil {
-				return errstate.ErrRequest
-			}
-
-			for _, v := range f.Roles {
-				if v == in.RoleId {
-					return errstate.ErrUserAlreadyBindRole
+			var roles []string
+			for _, v := range in.Roles {
+				ok := true
+				for _, v1 := range role.Roles {
+					if v == v1 {
+						ok = false
+						break
+					}
+				}
+				if ok {
+					roles = append(roles, v)
 				}
 			}
 
 			//update database
-			err = repo.UpdateUserRole(in.Id, in.AppId, in.RoleId)
+			err = repo.UpdateUserRole(in.Id, in.AppId, roles)
 			if err != nil {
 				return errstate.ErrRequest
 			}
@@ -79,11 +110,12 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 				Headers: headers,
 				Action:  "BindUserRole",
 				Fields: &analysisclient.LogFields{
-					"roleId": in.RoleId,
+					"roles":  in.Roles,
 					"userId": in.Id,
 					"appId":  in.AppId,
 				},
 			})
+
 		}
 
 		return nil

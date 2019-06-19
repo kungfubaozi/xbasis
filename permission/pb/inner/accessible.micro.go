@@ -8,6 +8,7 @@ It is generated from these files:
 	permission/pb/inner/accessible.proto
 
 It has these top-level messages:
+	HasGrantRequest
 	CheckRequest
 */
 package gosionsvc_internal_permission
@@ -44,6 +45,7 @@ var _ server.Option
 
 type AccessibleService interface {
 	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type accessibleService struct {
@@ -74,15 +76,27 @@ func (c *accessibleService) Check(ctx context.Context, in *CheckRequest, opts ..
 	return out, nil
 }
 
+func (c *accessibleService) HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Accessible.HasGrant", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Accessible service
 
 type AccessibleHandler interface {
 	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
+	HasGrant(context.Context, *HasGrantRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterAccessibleHandler(s server.Server, hdlr AccessibleHandler, opts ...server.HandlerOption) error {
 	type accessible interface {
 		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
+		HasGrant(ctx context.Context, in *HasGrantRequest, out *gs_commons_dto.Status) error
 	}
 	type Accessible struct {
 		accessible
@@ -97,4 +111,8 @@ type accessibleHandler struct {
 
 func (h *accessibleHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
 	return h.AccessibleHandler.Check(ctx, in, out)
+}
+
+func (h *accessibleHandler) HasGrant(ctx context.Context, in *HasGrantRequest, out *gs_commons_dto.Status) error {
+	return h.AccessibleHandler.HasGrant(ctx, in, out)
 }

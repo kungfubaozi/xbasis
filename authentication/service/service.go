@@ -16,6 +16,7 @@ import (
 	"konekko.me/gosion/connection/cmd/connectioncli"
 	"konekko.me/gosion/permission/client"
 	"konekko.me/gosion/safety/client"
+	"konekko.me/gosion/user/client"
 )
 
 func StartService() {
@@ -65,7 +66,7 @@ func StartService() {
 		s.Init()
 
 		gosionsvc_external_authentication.RegisterRouterHandler(s.Server(), authenticationhandlers.NewRouteService(client, pool, applicationclient.NewStatusClient(s.Client()),
-			applicationclient.NewSyncClient(s.Client()), authenticationcli.NewTokenClient(s.Client()), conn))
+			applicationclient.NewSyncClient(s.Client()), authenticationcli.NewTokenClient(s.Client()), conn, userclient.NewExtUserClient(s.Client())))
 
 		errc <- s.Run()
 	}()

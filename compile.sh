@@ -24,7 +24,6 @@ protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/oauth.p
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/message.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/user.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/userinfo.proto
-protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/authorization.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/inner/message.proto
 protoc -I ${GOPATH}/src --proto_path=. --micro_out=. --go_out=:. user/pb/inner/user.proto
 

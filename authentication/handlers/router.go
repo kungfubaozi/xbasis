@@ -16,16 +16,64 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/connection/cmd/connectioncli"
+	"konekko.me/gosion/user/pb/inner"
 	"time"
 )
 
 type routeService struct {
 	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService
-	innerUsersyncService          gosionsvc_internal_application.UsersyncService
+	innerUserSyncService          gosionsvc_internal_application.UserSyncService
 	innerTokenService             gosionsvc_internal_authentication.TokenService
+	innerUserService              gosionsvc_internal_user.UserService
 	connectioncli                 connectioncli.ConnectionClient
 	*indexutils.Client
 	pool *redis.Pool
+}
+
+func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		if len(auth.Token.Relation) < 16 || len(in.ClientId) < 8 {
+			return nil
+		}
+		s, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+			ClientId: in.ClientId,
+		})
+		if err != nil {
+			return nil
+		}
+		if !s.State.Ok {
+			return s.State
+		}
+		if s.AppQuarantine {
+			return nil
+		}
+		if !s.AppAuthorize {
+			return nil
+		}
+		info, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
+			UserId: auth.Token.UserId,
+		})
+		if err != nil {
+			return nil
+		}
+		if !info.State.Ok {
+			return info.State
+		}
+		s1, err := svc.innerUserSyncService.Update(ctx, &gosionsvc_internal_application.UserInfo{
+			Username: info.Username,
+			GId:      info.UserId,
+			RealName: info.RealName,
+			Icon:     info.Icon,
+			AppId:    s.AppId,
+		})
+		if err != nil {
+			return nil
+		}
+		if s1.State.Ok {
+			return errstate.Success
+		}
+		return nil
+	})
 }
 
 func (svc *routeService) Logout(ctx context.Context, in *external.LogoutRequest, out *gs_commons_dto.Status) error {
@@ -169,11 +217,13 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 				return errstate.ErrClientClosed
 			}
 
-			if app.Mustsync {
+			if app.AppQuarantine {
+				return nil
+			}
 
-				//check sync log
-
-				s, err := svc.innerUsersyncService.Check(ctx, &gosionsvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
+			//需要用户授权
+			if app.AppAuthorize {
+				s, err := svc.innerUserSyncService.Check(ctx, &gosionsvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
 				if err != nil {
 					return nil
 				}
@@ -181,7 +231,6 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 				if !s.State.Ok {
 					return s.State
 				}
-
 			}
 
 			//push op
@@ -260,10 +309,10 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 }
 
 func NewRouteService(client *indexutils.Client, pool *redis.Pool, innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService,
-	innerUsersyncService gosionsvc_internal_application.UsersyncService,
+	innerUserSyncService gosionsvc_internal_application.UserSyncService,
 	innerTokenService gosionsvc_internal_authentication.TokenService,
-	connectioncli connectioncli.ConnectionClient) external.RouterHandler {
+	connectioncli connectioncli.ConnectionClient, innerUserService gosionsvc_internal_user.UserService) external.RouterHandler {
 	return &routeService{Client: client, pool: pool, innerTokenService: innerTokenService,
-		innerUsersyncService:          innerUsersyncService,
+		innerUserSyncService: innerUserSyncService, innerUserService: innerUserService,
 		innerApplicationStatusService: innerApplicationStatusService, connectioncli: connectioncli}
 }

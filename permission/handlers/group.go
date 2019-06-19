@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
@@ -11,12 +12,14 @@ import (
 	external "konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/user/pb/inner"
 	"sync"
+	"time"
 )
 
 type groupService struct {
 	pool             *redis.Pool
 	session          *mgo.Session
 	innerUserService gosionsvc_internal_user.UserService
+	log              analysisclient.LogClient
 }
 
 func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGroupItemsRequest, out *external.GetGroupItemsResponse) error {
@@ -208,9 +211,68 @@ func (svc *groupService) Rename(ctx context.Context, in *external.SimpleGroup, o
 }
 
 //User cannot be in the same group under the same application
-func (svc *groupService) AddUser(ctx context.Context, in *external.SimpleUserNode, out *gs_commons_dto.Status) error {
+func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+		if len(in.AppId) < 5 && len(in.UserId) < 16 && len(in.GroupIds) == 0 {
+			return nil
+		}
+
+		header := &analysisclient.LogHeaders{}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		ur, err := repo.FindUserById(in.UserId, in.AppId)
+		if err != nil && err == mgo.ErrNotFound {
+			ur = &userGroupsRelation{
+				UserId:   in.UserId,
+				AppId:    in.AppId,
+				CreateAt: time.Now().UnixNano(),
+			}
+		}
+
+		if err != nil {
+			return nil
+		}
+
+		var groups []string
+		for _, v := range in.GroupIds {
+			ok := true
+			for _, v1 := range ur.BindGroupId {
+				if v1 == v {
+					ok = false
+					break
+				}
+			}
+			if ok {
+				groups = append(groups, v)
+			}
+		}
+
+		if len(groups) > 0 {
+
+			ur.BindGroupId = append(ur.BindGroupId, groups...)
+
+			err = repo.SetGroupRelation(ur)
+			if err != nil {
+				return nil
+			}
+
+			for _, v := range groups {
+				if v == "register" {
+					svc.log.Info(&analysisclient.LogContent{
+						Headers: header,
+						Action:  "NewUser",
+						Fields: &analysisclient.LogFields{
+							"appId":  in.AppId,
+							"userId": in.UserId,
+						},
+					})
+				}
+			}
+		}
+
+		return errstate.Success
 	})
 }
 
@@ -227,6 +289,6 @@ func (svc *groupService) Remove(ctx context.Context, in *external.SimpleGroup, o
 	})
 }
 
-func NewGroupService(pool *redis.Pool, session *mgo.Session) external.UserGroupHandler {
-	return &groupService{pool: pool, session: session}
+func NewGroupService(pool *redis.Pool, session *mgo.Session, innerUserService gosionsvc_internal_user.UserService) external.UserGroupHandler {
+	return &groupService{pool: pool, session: session, innerUserService: innerUserService}
 }

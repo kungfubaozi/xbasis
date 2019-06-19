@@ -35,6 +35,16 @@
           "auth_type": [
             5632
           ]
+        },
+        {
+          "api": "/router/authorize",
+          "name": "Authorize",
+          "roles": [
+            "User"
+          ],
+          "auth_type": [
+            5632
+          ]
         }
       ]
     },
@@ -70,20 +80,6 @@
           "auth_type": [
             5632,
             352
-          ]
-        },
-        {
-          "api": "/grant/yes",
-          "name": "AuthorizationConfirmation",
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/authorization/sync",
-          "name": "Authorization",
-          "auth_type": [
-            5632
           ]
         }
       ]

@@ -3,10 +3,9 @@ package userhandlers
 import (
 	"context"
 	"github.com/samuel/go-zookeeper/zk"
-	"github.com/vmihailenco/msgpack"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/application/pb/inner"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
@@ -21,13 +20,14 @@ import (
 )
 
 type registerService struct {
-	session        *mgo.Session
-	inviteService  external.InviteService
-	client         *indexutils.Client
-	conn           *zk.Conn
-	bindingService gosionsvc_external_permission.BindingService
-	groupService   gosionsvc_external_permission.UserGroupService
-	id             gs_commons_generator.IDGenerator
+	session                  *mgo.Session
+	inviteService            external.InviteService
+	client                   *indexutils.Client
+	conn                     *zk.Conn
+	bindingService           gosionsvc_external_permission.BindingService
+	groupService             gosionsvc_external_permission.UserGroupService
+	id                       gs_commons_generator.IDGenerator
+	applicationStatusService gosionsvc_internal_application.ApplicationStatusService
 }
 
 func (svc *registerService) GetRepo() *userRepo {
@@ -39,6 +39,23 @@ func (svc *registerService) GetRepo() *userRepo {
 func (svc *registerService) New(ctx context.Context, in *external.NewRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
+
+		status, err := svc.applicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+			ClientId: in.ClientId,
+		})
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		if !status.State.Ok {
+			return status.State
+		}
+
+		//只允许注册到route项目中
+		if status.Type != gs_commons_constants.AppTypeRoute {
+			return errstate.ErrRequest
+		}
+
 		key := ""
 		value := in.Contract
 		user := &userModel{
@@ -104,10 +121,6 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 
 		invited := len(s.Content) != 0
 
-		if invited {
-
-		}
-
 		if len(in.Password) < 6 {
 			return errstate.ErrPasswordLength
 		}
@@ -116,8 +129,10 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		if err != nil {
 			return errstate.ErrSystem
 		}
-
 		userId := svc.id.Get()
+		if invited {
+			userId = s.Content
+		}
 		user.Id = userId
 		user.Password = string(p)
 
@@ -126,40 +141,41 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			return errstate.ErrSystem
 		}
 
-		//注册时并不会直接设置账户的角色等，只会赋予RouteApp中的基本角色，其他的应用会在进入时同步该用户
-		//只有用户同步时才会设置对应项目的基本角色
-		b, _, err := svc.conn.Get(gs_commons_constants.ZKAutonomyRegister)
-		app := &gs_commons_config.AutonomyRouteConfig{}
-		err = msgpack.Unmarshal(b, app)
+		info := &userInfo{
+			UserId:   userId,
+			Username: in.Username,
+		}
+
+		err = repo.AddUserInfo(info)
 		if err != nil {
 			return errstate.ErrRequest
 		}
-		s, err = svc.bindingService.UserRole(ctx, &gosionsvc_external_permission.BindingRoleRequest{
-			Id:     userId,
-			RoleId: app.RoleId,
-			AppId:  app.AppId,
-		})
+
+		index := &userModelIndex{
+			Username: in.Username,
+			Phone:    user.Phone,
+			Email:    user.Email,
+		}
+
+		err = repo.AddUserIndex(index)
 		if err != nil {
 			return errstate.ErrRequest
 		}
-		if !s.State.Ok {
-			return s.State
-		}
-		if len(app.BindGroupId) > 0 {
-			s, err = svc.groupService.AddUser(ctx, &gosionsvc_external_permission.SimpleUserNode{
-				GroupId: app.BindGroupId,
-				UserId:  userId,
-				AppId:   app.AppId,
+
+		if invited {
+			s, err := svc.inviteService.SetState(ctx, &external.SetStateRequest{
+				UserId: userId,
+				State:  gs_commons_constants.InviteStateOfRegister,
 			})
 			if err != nil {
-				return errstate.ErrRequest
+				return nil
 			}
 			if !s.State.Ok {
 				return s.State
 			}
 		}
 
-		return nil
+		return errstate.Success
 	})
 }
 

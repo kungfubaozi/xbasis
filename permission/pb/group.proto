@@ -17,7 +17,7 @@ service UserGroup {
 
     rpc Rename (SimpleGroup) returns (gs.commons.dto.Status);
 
-    rpc AddUser (SimpleUserNode) returns (gs.commons.dto.Status);
+    rpc AddUser (AddUserRequest) returns (gs.commons.dto.Status);
 
     rpc MoveUser (SimpleUserNode) returns (gs.commons.dto.Status);
 
@@ -76,4 +76,10 @@ message SimpleUserNode {
     string userId = 1;
     string appId = 2;
     string groupId = 3;
+}
+
+message AddUserRequest {
+    string userId = 1;
+    string appId = 2;
+    repeated string groupIds = 3;
 }

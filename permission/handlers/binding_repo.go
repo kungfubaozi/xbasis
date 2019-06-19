@@ -43,7 +43,7 @@ func (repo *bindingRepo) UpdateFunctionRole(id, role string) error {
 	return repo.functionCollection().Update(bson.M{"_id": id}, bson.M{"$push": bson.M{"roles": role}})
 }
 
-func (repo *bindingRepo) UpdateUserRole(id, appId, role string) error {
+func (repo *bindingRepo) UpdateUserRole(id, appId string, role []string) error {
 	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "app_id": appId}, bson.M{"$push": bson.M{"roles": role}})
 }
 

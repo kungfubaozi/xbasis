@@ -7,6 +7,7 @@ import (
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
+	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/user/pb"
@@ -17,10 +18,25 @@ type inviteService struct {
 	session     *mgo.Session
 	userService gosionsvc_internal_user.UserService
 	log         analysisclient.LogClient
+	id          gs_commons_generator.IDGenerator
 }
 
-func (svc *inviteService) Search(context.Context, *external.InviteSearchRequest, *external.InviteSearchResponse) error {
-	panic("implement me")
+func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
+}
+
+func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvitedRequest, out *external.GetDetailResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
+}
+
+func (svc *inviteService) Search(ctx context.Context, in *external.InviteSearchRequest, out *external.InviteSearchResponse) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+		return nil
+	})
 }
 
 func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *gs_commons_dto.Status) error {
@@ -38,7 +54,7 @@ func (svc *inviteService) GetRepo() *inviteRepo {
 当用户注册时会检测(按照registerType查找对应的数据匹配)是否有对应邀请用户，如果有则会合并数据，没有则进入正常流程
 如果被邀请用户已经注册会不通过
 */
-func (svc *inviteService) User(ctx context.Context, in *external.InviteRequest, out *gs_commons_dto.Status) error {
+func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
 
@@ -60,6 +76,8 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteRequest, 
 
 		repo := svc.GetRepo()
 		defer repo.Close()
+
+		userId := svc.id.Get()
 
 		//repo.IsExists()
 

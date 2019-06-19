@@ -18,10 +18,10 @@ message GetAppClientStatusRequest {
 message GetAppClientStatusResponse {
     gs.commons.dto.State state = 1;
     string appId = 2;
-    int64 appQuarantine = 3;
+    bool appQuarantine = 3;
     int64 clientPlatform = 4;
     int64 clientEnabled = 5;
-    bool mustsync = 6;
+    bool appAuthorize = 6;
     int64 type = 7;
     bool canRedirect = 8;
     string secretKey = 9;

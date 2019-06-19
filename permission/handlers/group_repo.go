@@ -36,8 +36,8 @@ func (repo *groupRepo) collection() *mgo.Collection {
 	return repo.session.DB(dbName).C(groupCollection)
 }
 
-func (repo *groupRepo) groupUsersCollection(groupId string) *mgo.Collection {
-	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Get(groupId)%5))
+func (repo *groupRepo) groupUsersCollection(appId string) *mgo.Collection {
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Get(appId)%5))
 }
 
 func (repo *groupRepo) Close() {
@@ -52,6 +52,17 @@ func (repo *groupRepo) FindGroupItems(appId, id string) ([]*userGroup, error) {
 
 func (repo *groupRepo) FindGroupUsers(appId, groupId string) ([]*userGroupsRelation, error) {
 	var groups []*userGroupsRelation
-	err := repo.groupUsersCollection(groupId).Find(bson.M{"app_id": appId, "$elemMatch": bson.M{"bind_group_id": groupId}}).All(groups)
+	err := repo.groupUsersCollection(appId).Find(bson.M{"$elemMatch": bson.M{"bind_group_id": groupId}}).All(groups)
 	return groups, err
+}
+
+func (repo *groupRepo) FindUserById(userId, appId string) (*userGroupsRelation, error) {
+	var groups *userGroupsRelation
+	err := repo.groupUsersCollection(appId).Find(bson.M{"user_id": userId}).One(groups)
+	return groups, err
+}
+
+func (repo *groupRepo) SetGroupRelation(u *userGroupsRelation) error {
+	_, err := repo.groupUsersCollection(u.AppId).Upsert(bson.M{"user_id": u.UserId}, u)
+	return err
 }
