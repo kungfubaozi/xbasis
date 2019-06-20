@@ -50,7 +50,6 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 				out.AppId = a.Id
 				out.AppQuarantine = a.Settings.Quarantine
 				out.SecretKey = a.SecretKey
-				out.Mustsync = a.Settings.MustSync
 				out.Type = a.Type
 
 				return nil

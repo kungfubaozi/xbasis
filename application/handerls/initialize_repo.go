@@ -23,7 +23,11 @@ type initializeRepo struct {
 //user应用是用户基本操作应用，用户可以在此项目进行更改用户信息
 func (repo *initializeRepo) AddUserApp() {
 	app := repo.getApp(repo.config.UserAppId, "Gsuser", gs_commons_constants.AppTypeUser)
-	app.Settings.Authorize = true
+	app.Settings.AllowNewUsers = &allowNewUsersToEnter{
+		DefaultRole:  []string{repo.config.UserAppRoleId},
+		DefaultGroup: "register",
+		Enabled:      true,
+	}
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
@@ -32,7 +36,6 @@ func (repo *initializeRepo) AddUserApp() {
 func (repo *initializeRepo) AddManageApp() {
 	app := repo.getApp(repo.config.AdminAppId, "Gsadmin", gs_commons_constants.AppTypeManage)
 	app.Settings.Quarantine = true
-	app.Settings.Authorize = true
 	app.Settings.RedirectURL = "http://localhost:9527"
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)

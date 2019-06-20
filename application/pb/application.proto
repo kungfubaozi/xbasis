@@ -47,8 +47,7 @@ message CreateRequest {
     string desc = 2;
     bool open = 3;
     string url = 4;
-    bool mustSync = 5;
-    string syncUrl = 6;
+    string syncUrl = 5;
 }
 
 message RemoveRequest {

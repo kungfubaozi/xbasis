@@ -2,7 +2,6 @@ package userhandlers
 
 import (
 	"context"
-	"github.com/samuel/go-zookeeper/zk"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/application/pb/inner"
@@ -23,7 +22,6 @@ type registerService struct {
 	session                  *mgo.Session
 	inviteService            external.InviteService
 	client                   *indexutils.Client
-	conn                     *zk.Conn
 	bindingService           gosionsvc_external_permission.BindingService
 	groupService             gosionsvc_external_permission.UserGroupService
 	id                       gs_commons_generator.IDGenerator
@@ -119,7 +117,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			return s.State
 		}
 
-		invited := len(s.Content) != 0
+		invited := len(s.UserId) != 0
 
 		if len(in.Password) < 6 {
 			return errstate.ErrPasswordLength
@@ -131,7 +129,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		}
 		userId := svc.id.Get()
 		if invited {
-			userId = s.Content
+			userId = s.UserId
 		}
 		user.Id = userId
 		user.Password = string(p)
@@ -179,6 +177,11 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 	})
 }
 
-func NewRegisterService(session *mgo.Session, conn *zk.Conn) external.RegisterHandler {
-	return &registerService{session: session}
+func NewRegisterService(session *mgo.Session, inviteService external.InviteService,
+	client *indexutils.Client,
+	bindingService gosionsvc_external_permission.BindingService,
+	groupService gosionsvc_external_permission.UserGroupService,
+	applicationStatusService gosionsvc_internal_application.ApplicationStatusService) external.RegisterHandler {
+	return &registerService{session: session, inviteService: inviteService, client: client, bindingService: bindingService,
+		groupService: groupService, id: gs_commons_generator.NewIDG(), applicationStatusService: applicationStatusService}
 }

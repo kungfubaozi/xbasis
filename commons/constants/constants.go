@@ -27,6 +27,7 @@ const (
 const (
 	InviteStateOfRegister  int64 = 2 << 2
 	InviteStateOfAuthorize int64 = 2 << 3
+	InviteStateOfWaiting   int64 = 2 << 3
 )
 
 const (

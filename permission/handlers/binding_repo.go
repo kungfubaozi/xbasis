@@ -44,7 +44,7 @@ func (repo *bindingRepo) UpdateFunctionRole(id, role string) error {
 }
 
 func (repo *bindingRepo) UpdateUserRole(id, appId string, role []string) error {
-	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "app_id": appId}, bson.M{"$push": bson.M{"roles": role}})
+	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "app_id": appId}, bson.M{"$pushAll": bson.M{"roles": role}})
 }
 
 func (repo *bindingRepo) RemoveRoleFromFunctions(id, role string) error {

@@ -148,6 +148,10 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			}
 		}
 
+		if v == "User" && appId == repo.config.UserAppId {
+			role.Id = repo.config.UserAppRoleId
+		}
+
 		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-roles").Type("_doc").Doc(role))
 
 		repo.userRoles = append(repo.userRoles, role)

@@ -20,12 +20,10 @@ type appInfo struct {
 }
 
 type appSetting struct {
-	Enabled     int64  `bson:"enabled" json:"enabled"`
-	SyncUserURL string `bson:"sync_user_url" json:"sync_user_url"` //sync new user to your application database
-	RedirectURL string `bson:"redirect_url" json:"redirect_url"`
-	Quarantine  bool   `bson:"quarantine" json:"quarantine"` //不开放注册
-	//如果需要授权，会把用户信息同步至SyncUserURL（不为nil的情况下）
-	Authorize     bool                  `bson:"authorize" json:"authorize"`             //进入时是否需要授权
+	Enabled       int64                 `bson:"enabled" json:"enabled"`
+	SyncUserURL   string                `bson:"sync_user_url" json:"sync_user_url"` //sync new user to your application database
+	RedirectURL   string                `bson:"redirect_url" json:"redirect_url"`
+	Quarantine    bool                  `bson:"quarantine" json:"quarantine"`           //不开放注册
 	AllowNewUsers *allowNewUsersToEnter `bson:"allow_new_users" json:"allow_new_users"` //允许新用户登录，如果允许那么会把默认的structure下的group/role设置给新进入的用户
 }
 

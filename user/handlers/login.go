@@ -21,7 +21,7 @@ type loginService struct {
 	session              *mgo.Session
 	innerSecurityService gosionsvc_internal_safety.SecurityService
 	innerTokenService    gosionsvc_internal_authentication.TokenService
-	innerSyncCheck       gosionsvc_internal_application.UsersyncService
+	innerSyncCheck       gosionsvc_internal_application.UserSyncService
 	*indexutils.Client
 	log analysisclient.LogClient
 }

@@ -53,6 +53,17 @@
           "auth_type": [
             5632
           ]
+        },
+        {
+          "api": "/invite/append",
+          "name": "InviteAppend",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
         }
       ]
     },

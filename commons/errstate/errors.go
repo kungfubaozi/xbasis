@@ -59,4 +59,5 @@ var (
 	ErrValidationCode              = &gs_commons_dto.State{Ok: false, Code: 20052, Message: "err validation code"}
 	ErrPasswordLength              = &gs_commons_dto.State{Ok: false, Code: 20053, Message: "err password length"}
 	ErrUserNotAuthorize            = &gs_commons_dto.State{Ok: false, Code: 20055, Message: "err user not authorize"}
+	ErrHasInvited                  = &gs_commons_dto.State{Ok: false, Code: 20056, Message: "err has invited"}
 )

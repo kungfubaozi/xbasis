@@ -82,17 +82,18 @@ func main() {
 	secretKey := encrypt.Md5(time.Now().String())
 
 	initConfig := &gs_commons_config.GosionInitializeConfig{
-		AppName:    enterprise,
-		UserId:     id.Get(),
-		Desc:       desc,
-		Username:   username,
-		Phone:      phone,
-		Email:      email,
-		SecretKey:  secretKey,
-		UserAppId:  id.Short(),
-		RouteAppId: id.Short(),
-		SafeAppId:  id.Short(),
-		AdminAppId: id.Short(),
+		AppName:       enterprise,
+		UserId:        id.Get(),
+		Desc:          desc,
+		Username:      username,
+		Phone:         phone,
+		Email:         email,
+		SecretKey:     secretKey,
+		UserAppId:     id.Short(),
+		UserAppRoleId: id.UUID(),
+		RouteAppId:    id.Short(),
+		SafeAppId:     id.Short(),
+		AdminAppId:    id.Short(),
 	}
 
 	configuration := &gs_commons_config.GosionConfiguration{

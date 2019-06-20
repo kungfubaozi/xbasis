@@ -95,7 +95,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 					return i.State
 				}
 
-				invited := len(i.Content) > 16
+				invited := len(i.UserId) > 16
 
 				var roles []string
 				var bindGroupIds []string

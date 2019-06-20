@@ -31,9 +31,11 @@ func (svc *accessibleService) HasGrant(ctx context.Context, in *inner.HasGrantRe
 			return nil
 		}
 
-		for _, v := range r.Roles {
-			if v == in.Role {
-				return errstate.ErrUserAlreadyBindRole
+		if len(in.Role) > 10 {
+			for _, v := range r.Roles {
+				if v == in.Role {
+					return errstate.ErrUserAlreadyBindRole
+				}
 			}
 		}
 

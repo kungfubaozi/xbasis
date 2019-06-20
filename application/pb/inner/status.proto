@@ -21,8 +21,7 @@ message GetAppClientStatusResponse {
     bool appQuarantine = 3;
     int64 clientPlatform = 4;
     int64 clientEnabled = 5;
-    bool appAuthorize = 6;
-    int64 type = 7;
-    bool canRedirect = 8;
-    string secretKey = 9;
+    int64 type = 6;
+    bool canRedirect = 7;
+    string secretKey = 8;
 }

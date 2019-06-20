@@ -2,6 +2,7 @@ package usersvc
 
 import (
 	"konekko.me/gosion/analysis/client"
+	"konekko.me/gosion/application/client"
 	"konekko.me/gosion/authentication/client"
 	"konekko.me/gosion/commons/config"
 	"konekko.me/gosion/commons/config/call"
@@ -10,7 +11,9 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/microservice"
 	"konekko.me/gosion/message/cmd/messagecli"
+	"konekko.me/gosion/permission/client"
 	"konekko.me/gosion/safety/client"
+	"konekko.me/gosion/user/client"
 	"konekko.me/gosion/user/handlers"
 	"konekko.me/gosion/user/pb"
 	"konekko.me/gosion/user/pb/inner"
@@ -60,7 +63,8 @@ func StartService() {
 
 		gosionsvc_external_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client, logger))
 
-		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session, zk))
+		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session, userclient.NewInviteClient(s.Client()),
+			client, permissioncli.NewBindingClient(s.Client()), permissioncli.NewGroupClient(s.Client()), applicationclient.NewStatusClient(s.Client())))
 
 		gosionsvc_external_user.RegisterSafetyHandler(s.Server(), userhandlers.NewSafetyService(session))
 

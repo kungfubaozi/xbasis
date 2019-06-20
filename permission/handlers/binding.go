@@ -116,6 +116,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 				},
 			})
 
+			return errstate.Success
 		}
 
 		return nil

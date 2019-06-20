@@ -16,6 +16,7 @@ import (
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/connection/cmd/connectioncli"
+	"konekko.me/gosion/permission/pb/inner"
 	"konekko.me/gosion/user/pb/inner"
 	"time"
 )
@@ -25,6 +26,7 @@ type routeService struct {
 	innerUserSyncService          gosionsvc_internal_application.UserSyncService
 	innerTokenService             gosionsvc_internal_authentication.TokenService
 	innerUserService              gosionsvc_internal_user.UserService
+	innerAccessible               gosionsvc_internal_permission.AccessibleService
 	connectioncli                 connectioncli.ConnectionClient
 	*indexutils.Client
 	pool *redis.Pool
@@ -44,11 +46,18 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 		if !s.State.Ok {
 			return s.State
 		}
+		//如果用户有权限访问可进入
 		if s.AppQuarantine {
-			return nil
-		}
-		if !s.AppAuthorize {
-			return nil
+			s, err := svc.innerAccessible.HasGrant(ctx, &gosionsvc_internal_permission.HasGrantRequest{
+				UserId: auth.Token.UserId,
+				AppId:  s.AppId,
+			})
+			if err != nil {
+				return nil
+			}
+			if !s.State.Ok {
+				return nil
+			}
 		}
 		info, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
 			UserId: auth.Token.UserId,
@@ -217,20 +226,27 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 				return errstate.ErrClientClosed
 			}
 
+			//如果用户有权限访问可进入
 			if app.AppQuarantine {
-				return nil
-			}
-
-			//需要用户授权
-			if app.AppAuthorize {
-				s, err := svc.innerUserSyncService.Check(ctx, &gosionsvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
+				s, err := svc.innerAccessible.HasGrant(ctx, &gosionsvc_internal_permission.HasGrantRequest{
+					UserId: auth.Token.UserId,
+					AppId:  app.AppId,
+				})
 				if err != nil {
 					return nil
 				}
-
 				if !s.State.Ok {
-					return s.State
+					return nil
 				}
+			}
+
+			s, err := svc.innerUserSyncService.Check(ctx, &gosionsvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
+			if err != nil {
+				return nil
+			}
+
+			if !s.State.Ok {
+				return s.State
 			}
 
 			//push op

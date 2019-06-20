@@ -15,7 +15,7 @@ service Invite {
     rpc Search (InviteSearchRequest) returns (InviteSearchResponse);
 
     //是否被邀请
-    rpc HasInvited (HasInvitedRequest) returns (gs.commons.dto.Status);
+    rpc HasInvited (HasInvitedRequest) returns (HasInvitedResponse);
 
     //获取详情
     rpc GetDetail (HasInvitedRequest) returns (GetDetailResponse);
@@ -23,6 +23,12 @@ service Invite {
     //完成
     rpc SetState (SetStateRequest) returns (gs.commons.dto.Status);
 
+    rpc Append (AppendRequest) returns (gs.commons.dto.Status);
+}
+
+message AppendRequest {
+    string userId = 1;
+    InviteItem item = 2;
 }
 
 message SetStateRequest {
@@ -36,6 +42,12 @@ message HasInvitedRequest {
     string email = 2;
     string userId = 3;
     string appId = 4;
+}
+
+message HasInvitedResponse {
+    gs.commons.dto.State state = 1;
+    string userId = 2;
+    int64 status = 3;
 }
 
 message InviteSearchRequest {

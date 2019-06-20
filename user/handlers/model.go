@@ -31,6 +31,7 @@ type inviteModel struct {
 	Items        []*inviteItem `bson:"items"`
 	Type         int64         `bson:"type"` //邀请类型
 	UserId       string        `bson:"user_id"`
+	State        int64         `bson:"state"`
 }
 
 type inviteItem struct {

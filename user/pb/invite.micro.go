@@ -8,8 +8,10 @@ It is generated from these files:
 	user/pb/invite.proto
 
 It has these top-level messages:
+	AppendRequest
 	SetStateRequest
 	HasInvitedRequest
+	HasInvitedResponse
 	InviteSearchRequest
 	InviteSearchResponse
 	GetDetailResponse
@@ -56,11 +58,12 @@ type InviteService interface {
 	User(ctx context.Context, in *InviteDetail, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Search(ctx context.Context, in *InviteSearchRequest, opts ...client.CallOption) (*InviteSearchResponse, error)
 	// 是否被邀请
-	HasInvited(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	HasInvited(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*HasInvitedResponse, error)
 	// 获取详情
 	GetDetail(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*GetDetailResponse, error)
 	// 完成
 	SetState(ctx context.Context, in *SetStateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Append(ctx context.Context, in *AppendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 }
 
 type inviteService struct {
@@ -101,9 +104,9 @@ func (c *inviteService) Search(ctx context.Context, in *InviteSearchRequest, opt
 	return out, nil
 }
 
-func (c *inviteService) HasInvited(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *inviteService) HasInvited(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*HasInvitedResponse, error) {
 	req := c.c.NewRequest(c.name, "Invite.HasInvited", in)
-	out := new(gs_commons_dto.Status)
+	out := new(HasInvitedResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -131,6 +134,16 @@ func (c *inviteService) SetState(ctx context.Context, in *SetStateRequest, opts 
 	return out, nil
 }
 
+func (c *inviteService) Append(ctx context.Context, in *AppendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Invite.Append", in)
+	out := new(gs_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Invite service
 
 type InviteHandler interface {
@@ -141,20 +154,22 @@ type InviteHandler interface {
 	User(context.Context, *InviteDetail, *gs_commons_dto.Status) error
 	Search(context.Context, *InviteSearchRequest, *InviteSearchResponse) error
 	// 是否被邀请
-	HasInvited(context.Context, *HasInvitedRequest, *gs_commons_dto.Status) error
+	HasInvited(context.Context, *HasInvitedRequest, *HasInvitedResponse) error
 	// 获取详情
 	GetDetail(context.Context, *HasInvitedRequest, *GetDetailResponse) error
 	// 完成
 	SetState(context.Context, *SetStateRequest, *gs_commons_dto.Status) error
+	Append(context.Context, *AppendRequest, *gs_commons_dto.Status) error
 }
 
 func RegisterInviteHandler(s server.Server, hdlr InviteHandler, opts ...server.HandlerOption) error {
 	type invite interface {
 		User(ctx context.Context, in *InviteDetail, out *gs_commons_dto.Status) error
 		Search(ctx context.Context, in *InviteSearchRequest, out *InviteSearchResponse) error
-		HasInvited(ctx context.Context, in *HasInvitedRequest, out *gs_commons_dto.Status) error
+		HasInvited(ctx context.Context, in *HasInvitedRequest, out *HasInvitedResponse) error
 		GetDetail(ctx context.Context, in *HasInvitedRequest, out *GetDetailResponse) error
 		SetState(ctx context.Context, in *SetStateRequest, out *gs_commons_dto.Status) error
+		Append(ctx context.Context, in *AppendRequest, out *gs_commons_dto.Status) error
 	}
 	type Invite struct {
 		invite
@@ -175,7 +190,7 @@ func (h *inviteHandler) Search(ctx context.Context, in *InviteSearchRequest, out
 	return h.InviteHandler.Search(ctx, in, out)
 }
 
-func (h *inviteHandler) HasInvited(ctx context.Context, in *HasInvitedRequest, out *gs_commons_dto.Status) error {
+func (h *inviteHandler) HasInvited(ctx context.Context, in *HasInvitedRequest, out *HasInvitedResponse) error {
 	return h.InviteHandler.HasInvited(ctx, in, out)
 }
 
@@ -185,4 +200,8 @@ func (h *inviteHandler) GetDetail(ctx context.Context, in *HasInvitedRequest, ou
 
 func (h *inviteHandler) SetState(ctx context.Context, in *SetStateRequest, out *gs_commons_dto.Status) error {
 	return h.InviteHandler.SetState(ctx, in, out)
+}
+
+func (h *inviteHandler) Append(ctx context.Context, in *AppendRequest, out *gs_commons_dto.Status) error {
+	return h.InviteHandler.Append(ctx, in, out)
 }

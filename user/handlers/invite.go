@@ -5,31 +5,72 @@ import (
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/config/call"
+	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
 	"konekko.me/gosion/commons/generator"
 	"konekko.me/gosion/commons/regx"
 	"konekko.me/gosion/commons/wrapper"
 	external "konekko.me/gosion/user/pb"
-	"konekko.me/gosion/user/pb/inner"
+	"time"
 )
 
 type inviteService struct {
-	session     *mgo.Session
-	userService gosionsvc_internal_user.UserService
-	log         analysisclient.LogClient
-	id          gs_commons_generator.IDGenerator
+	session *mgo.Session
+	log     analysisclient.LogClient
+	id      gs_commons_generator.IDGenerator
 }
 
 func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
+		if len(in.UserId) > 10 && len(in.AppId) > 8 && in.State > 0 {
+			repo := svc.GetRepo()
+			defer repo.Close()
+
+			err := repo.SetState(in.UserId, in.AppId, in.State)
+			if err == nil {
+				return errstate.Success
+			}
+		}
+
 		return nil
 	})
 }
 
 func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvitedRequest, out *external.GetDetailResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+
+		if len(in.UserId) < 10 {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		m, err := repo.FindByKey("user_id", in.UserId)
+		if err != nil {
+			return nil
+		}
+
+		var items []*external.InviteItem
+		for _, v := range m.Items {
+			if len(in.AppId) > 8 && v.AppId != in.AppId {
+				continue
+			}
+			items = append(items, &external.InviteItem{
+				AppId:       v.AppId,
+				BindGroupId: v.BingGroupId,
+				Roles:       v.Roles,
+			})
+			if len(in.AppId) > 8 {
+				break
+			}
+		}
+
+		out.Items = items
+
+		return errstate.Success
 	})
 }
 
@@ -39,9 +80,38 @@ func (svc *inviteService) Search(ctx context.Context, in *external.InviteSearchR
 	})
 }
 
-func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *gs_commons_dto.Status) error {
+func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *external.HasInvitedResponse) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		return nil
+
+		key := ""
+		var value interface{}
+		if len(in.UserId) > 10 {
+			key = "user_id"
+			value = in.UserId
+		} else if len(in.Email) > 10 {
+			key = "email"
+			value = in.Email
+		} else if len(in.Phone) > 10 {
+			key = "phone"
+			value = in.Phone
+		}
+
+		if len(key) == 0 || value == nil {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		m, err := repo.FindByKey(key, value)
+		if err != nil {
+			return nil
+		}
+
+		out.UserId = m.UserId
+		out.Status = m.State
+
+		return errstate.Success
 	})
 }
 
@@ -58,6 +128,8 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, o
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
 
+		key := ""
+		value := ""
 		if len(in.Phone) > 0 && gs_commons_regx.Phone(in.Phone) {
 			return errstate.ErrFormatPhone
 		}
@@ -68,23 +140,71 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, o
 			if len(in.Phone) <= 8 {
 				return errstate.ErrRequest
 			}
+			key = "phone"
+			value = in.Phone
 		} else if configuration.RegisterType == 1002 { //email
 			if len(in.Email) <= 8 {
 				return errstate.ErrRequest
 			}
+			key = "email"
+			value = in.Email
+		}
+
+		if len(key) == 0 || len(value) < 6 {
+			return nil
 		}
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		userId := svc.id.Get()
+		_, err := repo.FindByKey(key, value)
+		if err != nil && err == mgo.ErrNotFound {
+			m := &inviteModel{
+				Phone:        in.Phone,
+				Email:        in.Email,
+				CreateAt:     time.Now().UnixNano(),
+				CreateUserId: auth.Token.UserId,
+				UserId:       svc.id.Get(),
+				Username:     in.Username,
+				RealName:     in.RealName,
+				State:        gs_commons_constants.InviteStateOfWaiting,
+			}
 
-		//repo.IsExists()
+			var items []*inviteItem
+
+			for _, v := range in.Items {
+				items = append(items, &inviteItem{
+					AppId:       v.AppId,
+					Roles:       v.Roles,
+					BingGroupId: v.BindGroupId,
+				})
+			}
+
+			m.Items = items
+
+			err = repo.Add(m)
+			if err != nil {
+				return errstate.ErrRequest
+			}
+
+			return errstate.Success
+		}
+
+		if err != nil {
+			return nil
+		}
+
+		return errstate.ErrHasInvited
+	})
+}
+
+func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest, out *gs_commons_dto.Status) error {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
 		return nil
 	})
 }
 
 func NewInviteService(session *mgo.Session, log analysisclient.LogClient) external.InviteHandler {
-	return &inviteService{session: session, log: log}
+	return &inviteService{session: session, log: log, id: gs_commons_generator.NewIDG()}
 }
