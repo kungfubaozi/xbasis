@@ -1,4 +1,4 @@
-package handlers
+package workflowhandlers
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func (svc *formService) CheckFiledValue(context.Context, *gosionsvc_external_wor
 	panic("implement me")
 }
 
-func (svc *formService) Search(context.Context, *gosionsvc_external_workflow.SearchRequest, *gosionsvc_external_workflow.SearchResponse) error {
+func (svc *formService) Search(context.Context, *gosionsvc_external_workflow.SearchFormRequest, *gosionsvc_external_workflow.SearchFormResponse) error {
 	panic("implement me")
 }
 

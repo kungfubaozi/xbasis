@@ -44,9 +44,8 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 
 		for _, v := range groups {
 			groupItems = append(groupItems, &external.GroupItem{
-				Id:    v.Id,
-				Group: true,
-				Name:  v.Name,
+				Id:   v.Id,
+				Name: v.Name,
 			})
 		}
 
@@ -91,9 +90,9 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 						n, s := getUserInfo(v.UserId)
 						if s {
 							groupItems = append(groupItems, &external.GroupItem{
-								Id:    v.UserId,
-								Group: false,
-								Name:  n,
+								Id:   v.UserId,
+								User: true,
+								Name: n,
 							})
 						}
 					}
@@ -106,9 +105,9 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 						n, s := getUserInfo(v.UserId)
 						if s {
 							groupItems = append(groupItems, &external.GroupItem{
-								Id:    v.UserId,
-								Group: false,
-								Name:  n,
+								Id:   v.UserId,
+								User: true,
+								Name: n,
 							})
 						}
 					}
@@ -118,9 +117,9 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 					n, s := getUserInfo(v.UserId)
 					if s {
 						groupItems = append(groupItems, &external.GroupItem{
-							Id:    v.UserId,
-							Group: false,
-							Name:  n,
+							Id:   v.UserId,
+							User: true,
+							Name: n,
 						})
 					}
 				}

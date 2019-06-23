@@ -66,7 +66,7 @@ func StartService() {
 		s.Init()
 
 		gosionsvc_external_authentication.RegisterRouterHandler(s.Server(), authenticationhandlers.NewRouteService(client, pool, applicationclient.NewStatusClient(s.Client()),
-			applicationclient.NewSyncClient(s.Client()), authenticationcli.NewTokenClient(s.Client()), conn, userclient.NewExtUserClient(s.Client())))
+			applicationclient.NewSyncClient(s.Client()), authenticationcli.NewTokenClient(s.Client()), conn, userclient.NewExtUserClient(s.Client()), permissioncli.NewAccessibleClient(s.Client())))
 
 		errc <- s.Run()
 	}()

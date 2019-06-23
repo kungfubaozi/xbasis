@@ -17,6 +17,10 @@ type Workflow struct {
 	modules *workflow
 }
 
+var (
+	dbName = "gs_workflow"
+)
+
 type workflow struct {
 	shutdown chan error
 	session  *mgo.Session

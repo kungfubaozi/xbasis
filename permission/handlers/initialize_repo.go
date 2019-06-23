@@ -51,7 +51,7 @@ type initializeRepo struct {
 	functions         []interface{}
 	functionGroups    []interface{}
 	structures        []interface{}
-	groupUsers        []interface{}
+	groupUsers        []*userGroupsRelation
 	groups            []interface{}
 	//callback
 }
@@ -59,21 +59,36 @@ type initializeRepo struct {
 func (repo *initializeRepo) AddManageApp() {
 	config := repo.readFile("admin.json")
 	repo.generate(repo.config.AdminAppId, config, false)
+	repo.AddUGRelation(repo.config.AdminAppId)
 }
 
 func (repo *initializeRepo) AddRouteApp() {
 	config := repo.readFile("route.json")
 	repo.generate(repo.config.RouteAppId, config, true)
+	repo.AddUGRelation(repo.config.RouteAppId)
 }
 
 func (repo *initializeRepo) AddSafeApp() {
 	config := repo.readFile("safe.json")
 	repo.generate(repo.config.SafeAppId, config, false)
+	repo.AddUGRelation(repo.config.SafeAppId)
 }
 
 func (repo *initializeRepo) AddUserApp() {
 	config := repo.readFile("user.json")
 	repo.generate(repo.config.UserAppId, config, false)
+	repo.AddUGRelation(repo.config.UserAppId)
+}
+
+//-是root
+func (repo *initializeRepo) AddUGRelation(appId string) {
+	u := &userGroupsRelation{
+		AppId:       appId,
+		BindGroupId: []string{"-"},
+		CreateAt:    time.Now().UnixNano(),
+		UserId:      repo.config.UserId,
+	}
+	repo.groupUsers = append(repo.groupUsers, u)
 }
 
 func (repo *initializeRepo) SaveAndClose() {
@@ -81,7 +96,7 @@ func (repo *initializeRepo) SaveAndClose() {
 	if repo.bulk != nil && repo.bulk.NumberOfActions() > 0 {
 		db := repo.session.DB("gs_permission")
 		if repo.userRolesRelation != nil && len(repo.userRolesRelation) > 0 {
-			check(db.C(fmt.Sprintf("user_roles_relation_%d", hashcode.Get(repo.config.UserId))).Insert(repo.userRolesRelation...))
+			check(db.C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Get(repo.config.UserId)%5)).Insert(repo.userRolesRelation...))
 		}
 
 		if len(repo.userRoles) > 0 {
@@ -97,7 +112,9 @@ func (repo *initializeRepo) SaveAndClose() {
 		}
 
 		if len(repo.groupUsers) > 0 {
-			check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Get("")%5)).Insert(repo.groupUsers...))
+			for _, v := range repo.groupUsers {
+				check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Get(v.AppId)%5)).Insert(v))
+			}
 		}
 
 		ok, err := repo.bulk.Do(context.Background())

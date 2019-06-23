@@ -35,7 +35,7 @@ func init() {
 	flag.StringVar(&enterprise, "enterprise", "", "your enterprise name.")
 	flag.StringVar(&desc, "desc", "", "your enterprise desc.")
 	flag.StringVar(&config, "config", "", "zookeeper config address.")
-	flag.StringVar(&config, "account", "admin", "zookeeper config address.")
+	flag.StringVar(&account, "account", "admin", "def admin account.")
 
 	flag.Usage = usage
 }

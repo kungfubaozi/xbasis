@@ -51,7 +51,7 @@ func StartService() {
 			safetyclient.NewBlacklistClient(m.Client()),
 			authenticationcli.NewAuthClient(m.Client()), client, logger))
 
-		gosionsvc_internal_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, logger))
+		gosionsvc_internal_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, session, logger))
 
 		errc <- m.Run()
 	}()

@@ -54,7 +54,7 @@ func StartService() {
 		gosionsvc_internal_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, logger))
 
 		gosionsvc_internal_application.RegisterUserSyncHandler(s.Server(),
-			applicationhanderls.NewSyncService(c, session, userclient.NewInviteClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), permissioncli.NewBindingClient(s.Client()),
+			applicationhanderls.NewSyncService(session, userclient.NewInviteClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), permissioncli.NewBindingClient(s.Client()),
 				permissioncli.NewGroupClient(s.Client())))
 
 		errc <- s.Run()

@@ -8,8 +8,8 @@ It is generated from these files:
 	pb/instance.proto
 
 It has these top-level messages:
-	SearchRequest
-	SearchResponse
+	SearchInstanceRequest
+	SearchInstanceResponse
 	SubmitRequest
 	SubmitResponse
 	ContinueRequest
@@ -67,7 +67,7 @@ type InstanceService interface {
 	// 继续执行
 	Continue(ctx context.Context, in *ContinueRequest, opts ...client.CallOption) (*ContinueResponse, error)
 	Submit(ctx context.Context, in *SubmitRequest, opts ...client.CallOption) (*SubmitResponse, error)
-	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
+	Search(ctx context.Context, in *SearchInstanceRequest, opts ...client.CallOption) (*SearchInstanceResponse, error)
 }
 
 type instanceService struct {
@@ -148,9 +148,9 @@ func (c *instanceService) Submit(ctx context.Context, in *SubmitRequest, opts ..
 	return out, nil
 }
 
-func (c *instanceService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+func (c *instanceService) Search(ctx context.Context, in *SearchInstanceRequest, opts ...client.CallOption) (*SearchInstanceResponse, error) {
 	req := c.c.NewRequest(c.name, "Instance.Search", in)
-	out := new(SearchResponse)
+	out := new(SearchInstanceResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ type InstanceHandler interface {
 	// 继续执行
 	Continue(context.Context, *ContinueRequest, *ContinueResponse) error
 	Submit(context.Context, *SubmitRequest, *SubmitResponse) error
-	Search(context.Context, *SearchRequest, *SearchResponse) error
+	Search(context.Context, *SearchInstanceRequest, *SearchInstanceResponse) error
 }
 
 func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...server.HandlerOption) error {
@@ -183,7 +183,7 @@ func RegisterInstanceHandler(s server.Server, hdlr InstanceHandler, opts ...serv
 		Restart(ctx context.Context, in *RestartRequest, out *RestartResponse) error
 		Continue(ctx context.Context, in *ContinueRequest, out *ContinueResponse) error
 		Submit(ctx context.Context, in *SubmitRequest, out *SubmitResponse) error
-		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
+		Search(ctx context.Context, in *SearchInstanceRequest, out *SearchInstanceResponse) error
 	}
 	type Instance struct {
 		instance
@@ -220,6 +220,6 @@ func (h *instanceHandler) Submit(ctx context.Context, in *SubmitRequest, out *Su
 	return h.InstanceHandler.Submit(ctx, in, out)
 }
 
-func (h *instanceHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+func (h *instanceHandler) Search(ctx context.Context, in *SearchInstanceRequest, out *SearchInstanceResponse) error {
 	return h.InstanceHandler.Search(ctx, in, out)
 }

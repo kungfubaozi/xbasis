@@ -74,7 +74,7 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	wut := &WrapperUserToken{
 		ClientId: md["transport-token-client-id"],
 		AppId:    md["transport-token-app-id"],
-		Relation: md["transport-token-relation"],
+		Relation: md["transport-token-user-relation"],
 		UserId:   md["transport-token-user-id"],
 	}
 	wut.ClientPlatform = -1

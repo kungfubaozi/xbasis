@@ -1,4 +1,4 @@
-package handlers
+package workflowhandlers
 
 import (
 	"context"
@@ -34,7 +34,7 @@ func (svc *instanceService) Submit(context.Context, *gosionsvc_external_workflow
 	panic("implement me")
 }
 
-func (svc *instanceService) Search(context.Context, *gosionsvc_external_workflow.SearchRequest, *gosionsvc_external_workflow.SearchResponse) error {
+func (svc *instanceService) Search(context.Context, *gosionsvc_external_workflow.SearchInstanceRequest, *gosionsvc_external_workflow.SearchInstanceResponse) error {
 	panic("implement me")
 }
 

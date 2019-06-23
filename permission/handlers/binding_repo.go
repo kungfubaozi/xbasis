@@ -33,9 +33,9 @@ func (repo *bindingRepo) FindFunctionById(id string) (*function, error) {
 	return f, err
 }
 
-func (repo *bindingRepo) FindUserById(id, appId string) (*userRolesRelation, error) {
+func (repo *bindingRepo) FindRelationUserById(userId, appId string) (*userRolesRelation, error) {
 	f := &userRolesRelation{}
-	err := repo.functionCollection().Find(bson.M{"user_id": id, "app_id": appId}).One(f)
+	err := repo.userRelationCollection(userId).Find(bson.M{"user_id": userId, "app_id": appId}).One(f)
 	return f, err
 }
 

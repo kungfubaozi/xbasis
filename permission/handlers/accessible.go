@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"fmt"
+	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
@@ -13,11 +14,12 @@ import (
 
 type accessibleService struct {
 	*indexutils.Client
-	log analysisclient.LogClient
+	log     analysisclient.LogClient
+	session *mgo.Session
 }
 
 func (svc *accessibleService) GetRepo() *bindingRepo {
-	return &bindingRepo{}
+	return &bindingRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
 func (svc *accessibleService) HasGrant(ctx context.Context, in *inner.HasGrantRequest, out *gs_commons_dto.Status) error {
@@ -26,7 +28,7 @@ func (svc *accessibleService) HasGrant(ctx context.Context, in *inner.HasGrantRe
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		r, err := repo.FindUserById(in.UserId, in.AppId)
+		r, err := repo.FindRelationUserById(in.UserId, in.AppId)
 		if err != nil {
 			return nil
 		}
@@ -127,6 +129,6 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 	})
 }
 
-func NewAccessibleService(c *indexutils.Client, log analysisclient.LogClient) inner.AccessibleHandler {
-	return &accessibleService{Client: c, log: log}
+func NewAccessibleService(c *indexutils.Client, session *mgo.Session, log analysisclient.LogClient) inner.AccessibleHandler {
+	return &accessibleService{Client: c, log: log, session: session}
 }

@@ -8,8 +8,9 @@ It is generated from these files:
 	pb/process.proto
 
 It has these top-level messages:
-	SearchRequest
-	SearchResponse
+	SearchProcessRequest
+	SearchProcessResponse
+	SearchProcessItem
 	DetailRequest
 	DetailResponse
 	GetImageRequest
@@ -61,8 +62,6 @@ var _ server.Option
 type ProcessService interface {
 	// 启动一个流程
 	Launch(ctx context.Context, in *LaunchRequest, opts ...client.CallOption) (*LaunchResponse, error)
-	// 创建
-	Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error)
 	// 构建
 	Build(ctx context.Context, in *BuildRequest, opts ...client.CallOption) (*BuildResponse, error)
 	// 删除
@@ -75,7 +74,7 @@ type ProcessService interface {
 	Detail(ctx context.Context, in *DetailRequest, opts ...client.CallOption) (*DetailResponse, error)
 	// 获取流程图
 	GetImage(ctx context.Context, in *GetImageRequest, opts ...client.CallOption) (*GetImageResponse, error)
-	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
+	Search(ctx context.Context, in *SearchProcessRequest, opts ...client.CallOption) (*SearchProcessResponse, error)
 }
 
 type processService struct {
@@ -99,16 +98,6 @@ func NewProcessService(name string, c client.Client) ProcessService {
 func (c *processService) Launch(ctx context.Context, in *LaunchRequest, opts ...client.CallOption) (*LaunchResponse, error) {
 	req := c.c.NewRequest(c.name, "Process.Launch", in)
 	out := new(LaunchResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *processService) Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error) {
-	req := c.c.NewRequest(c.name, "Process.Create", in)
-	out := new(CreateResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -176,9 +165,9 @@ func (c *processService) GetImage(ctx context.Context, in *GetImageRequest, opts
 	return out, nil
 }
 
-func (c *processService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+func (c *processService) Search(ctx context.Context, in *SearchProcessRequest, opts ...client.CallOption) (*SearchProcessResponse, error) {
 	req := c.c.NewRequest(c.name, "Process.Search", in)
-	out := new(SearchResponse)
+	out := new(SearchProcessResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -191,8 +180,6 @@ func (c *processService) Search(ctx context.Context, in *SearchRequest, opts ...
 type ProcessHandler interface {
 	// 启动一个流程
 	Launch(context.Context, *LaunchRequest, *LaunchResponse) error
-	// 创建
-	Create(context.Context, *CreateRequest, *CreateResponse) error
 	// 构建
 	Build(context.Context, *BuildRequest, *BuildResponse) error
 	// 删除
@@ -205,20 +192,19 @@ type ProcessHandler interface {
 	Detail(context.Context, *DetailRequest, *DetailResponse) error
 	// 获取流程图
 	GetImage(context.Context, *GetImageRequest, *GetImageResponse) error
-	Search(context.Context, *SearchRequest, *SearchResponse) error
+	Search(context.Context, *SearchProcessRequest, *SearchProcessResponse) error
 }
 
 func RegisterProcessHandler(s server.Server, hdlr ProcessHandler, opts ...server.HandlerOption) error {
 	type process interface {
 		Launch(ctx context.Context, in *LaunchRequest, out *LaunchResponse) error
-		Create(ctx context.Context, in *CreateRequest, out *CreateResponse) error
 		Build(ctx context.Context, in *BuildRequest, out *BuildResponse) error
 		Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error
 		Update(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
 		Open(ctx context.Context, in *OpenRequest, out *OpenResponse) error
 		Detail(ctx context.Context, in *DetailRequest, out *DetailResponse) error
 		GetImage(ctx context.Context, in *GetImageRequest, out *GetImageResponse) error
-		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
+		Search(ctx context.Context, in *SearchProcessRequest, out *SearchProcessResponse) error
 	}
 	type Process struct {
 		process
@@ -233,10 +219,6 @@ type processHandler struct {
 
 func (h *processHandler) Launch(ctx context.Context, in *LaunchRequest, out *LaunchResponse) error {
 	return h.ProcessHandler.Launch(ctx, in, out)
-}
-
-func (h *processHandler) Create(ctx context.Context, in *CreateRequest, out *CreateResponse) error {
-	return h.ProcessHandler.Create(ctx, in, out)
 }
 
 func (h *processHandler) Build(ctx context.Context, in *BuildRequest, out *BuildResponse) error {
@@ -263,6 +245,6 @@ func (h *processHandler) GetImage(ctx context.Context, in *GetImageRequest, out 
 	return h.ProcessHandler.GetImage(ctx, in, out)
 }
 
-func (h *processHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+func (h *processHandler) Search(ctx context.Context, in *SearchProcessRequest, out *SearchProcessResponse) error {
 	return h.ProcessHandler.Search(ctx, in, out)
 }

@@ -27,10 +27,23 @@ type LogHeaders struct {
 
 type LogFields map[string]interface{}
 
+var (
+	OperatorCover int64 = 1
+	OperatorAdd   int64 = 2
+)
+
+type LogIndex struct {
+	Name     string     `json:"name"`
+	Id       string     `json:"id"`
+	Operator int64      `json:"operator"`
+	Fields   *LogFields `json:"fields"`
+}
+
 type LogContent struct {
 	Id        string      `json:"id"`
 	Headers   *LogHeaders `json:"headers"`
 	Fields    *LogFields  `json:"fields"`
+	Index     *LogIndex   `json:"index"`
 	Action    string      `json:"action"`
 	SubAction string      `json:"sub_action"`
 	Message   string      `json:"message"`
@@ -103,7 +116,7 @@ func (log *logClient) buildMessage(content *LogContent) {
 	}
 	message := &sarama.ProducerMessage{
 		Partition: 1,
-		Topic:     "gs-kafka-analysis-logger-topic-4",
+		Topic:     "gs-kafka-analysis-logger-topic-6",
 		Value:     sarama.StringEncoder(string(b)),
 	}
 	log.producer.SendMessage(message)

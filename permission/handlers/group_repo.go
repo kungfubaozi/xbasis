@@ -52,13 +52,13 @@ func (repo *groupRepo) FindGroupItems(appId, id string) ([]*userGroup, error) {
 
 func (repo *groupRepo) FindGroupUsers(appId, groupId string) ([]*userGroupsRelation, error) {
 	var groups []*userGroupsRelation
-	err := repo.groupUsersCollection(appId).Find(bson.M{"$elemMatch": bson.M{"bind_group_id": groupId}}).All(groups)
+	err := repo.groupUsersCollection(appId).Find(bson.M{"app_id": appId, "bind_group_id": groupId}).All(&groups)
 	return groups, err
 }
 
 func (repo *groupRepo) FindUserById(userId, appId string) (*userGroupsRelation, error) {
 	var groups *userGroupsRelation
-	err := repo.groupUsersCollection(appId).Find(bson.M{"user_id": userId}).One(groups)
+	err := repo.groupUsersCollection(appId).Find(bson.M{"user_id": userId}).One(&groups)
 	return groups, err
 }
 

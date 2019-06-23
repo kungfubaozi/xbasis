@@ -29,6 +29,7 @@ func (svc *innerUserService) GetUserInfoById(ctx context.Context, in *inner.GetU
 			return errstate.ErrRequest
 		}
 
+		out.UserId = s.UserId
 		out.RealName = s.RealName
 		out.Username = s.Username
 		out.Icon = s.Icon

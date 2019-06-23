@@ -8,8 +8,8 @@ It is generated from these files:
 	pb/form.proto
 
 It has these top-level messages:
-	SearchRequest
-	SearchResponse
+	SearchFormRequest
+	SearchFormResponse
 	CheckFiledValueRequest
 	CheckFieldValueResponse
 	GetAllTypeFieldsRequest
@@ -68,7 +68,7 @@ type FormService interface {
 	GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, opts ...client.CallOption) (*GetAllTypeFieldsResponse, error)
 	// 检查form的filed value是否符合
 	CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, opts ...client.CallOption) (*CheckFieldValueResponse, error)
-	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
+	Search(ctx context.Context, in *SearchFormRequest, opts ...client.CallOption) (*SearchFormResponse, error)
 }
 
 type formService struct {
@@ -169,9 +169,9 @@ func (c *formService) CheckFiledValue(ctx context.Context, in *CheckFiledValueRe
 	return out, nil
 }
 
-func (c *formService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+func (c *formService) Search(ctx context.Context, in *SearchFormRequest, opts ...client.CallOption) (*SearchFormResponse, error) {
 	req := c.c.NewRequest(c.name, "Form.Search", in)
-	out := new(SearchResponse)
+	out := new(SearchFormResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ type FormHandler interface {
 	GetAllTypeFields(context.Context, *GetAllTypeFieldsRequest, *GetAllTypeFieldsResponse) error
 	// 检查form的filed value是否符合
 	CheckFiledValue(context.Context, *CheckFiledValueRequest, *CheckFieldValueResponse) error
-	Search(context.Context, *SearchRequest, *SearchResponse) error
+	Search(context.Context, *SearchFormRequest, *SearchFormResponse) error
 }
 
 func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.HandlerOption) error {
@@ -204,7 +204,7 @@ func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.Handl
 		UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, out *UpdateFieldPropsResponse) error
 		GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, out *GetAllTypeFieldsResponse) error
 		CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, out *CheckFieldValueResponse) error
-		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
+		Search(ctx context.Context, in *SearchFormRequest, out *SearchFormResponse) error
 	}
 	type Form struct {
 		form
@@ -249,6 +249,6 @@ func (h *formHandler) CheckFiledValue(ctx context.Context, in *CheckFiledValueRe
 	return h.FormHandler.CheckFiledValue(ctx, in, out)
 }
 
-func (h *formHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+func (h *formHandler) Search(ctx context.Context, in *SearchFormRequest, out *SearchFormResponse) error {
 	return h.FormHandler.Search(ctx, in, out)
 }

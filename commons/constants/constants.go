@@ -6,6 +6,7 @@ const (
 	MessageService        = "gosionsvc.external.message"
 	ConnectionService     = "gosionsvc.external.connection"
 	UserService           = "gosionsvc.external.user"
+	WorkflowService       = "gosionsvc.external.workflow"
 	ApplicationService    = "gosionsvc.external.apps"
 	SafetyService         = "gosionsvc.external.safety"
 	AuthenticationService = "gosionsvc.external.authentication"

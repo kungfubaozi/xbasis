@@ -68,7 +68,7 @@ func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
 
 func (repo *applicationRepo) GetApplication(appId string) (*appInfo, error) {
 	var appInfo *appInfo
-	err := repo.collection().Find(bson.M{"_id": appId}).One(appInfo)
+	err := repo.collection().Find(bson.M{"_id": appId}).One(&appInfo)
 	return appInfo, err
 }
 

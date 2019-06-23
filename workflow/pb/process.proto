@@ -9,9 +9,6 @@ service Process {
     //启动一个流程
     rpc Launch (LaunchRequest) returns (LaunchResponse);
 
-    //创建
-    rpc Create (CreateRequest) returns (CreateResponse);
-
     //构建
     rpc Build (BuildRequest) returns (BuildResponse);
 
@@ -30,18 +27,27 @@ service Process {
     //获取流程图
     rpc GetImage (GetImageRequest) returns (GetImageResponse);
 
-    rpc Search(SearchRequest) returns (SearchResponse);
+    rpc Search (SearchProcessRequest) returns (SearchProcessResponse);
 }
 
-message SearchRequest {
-    string value = 1;
-    string key = 2;
+message SearchProcessRequest {
+    string appId = 1;
+    string name = 2;
     int64 page = 3;
     int64 size = 4;
 }
 
-message SearchResponse {
+message SearchProcessResponse {
     gs.commons.dto.State state = 1;
+    repeated SearchProcessItem data = 2;
+}
+
+message SearchProcessItem {
+    string name = 1;
+    string appId = 2;
+    string processId = 3;
+    string updateAt = 4;
+    string desc = 6;
 }
 
 message DetailRequest {
@@ -50,6 +56,10 @@ message DetailRequest {
 
 message DetailResponse {
     gs.commons.dto.State state = 1;
+    string nodeDataArray = 2;
+    string linkDataArray = 3;
+    string desc = 4;
+    string name = 5;
 }
 
 message GetImageRequest {
@@ -58,7 +68,7 @@ message GetImageRequest {
 
 message GetImageResponse {
     gs.commons.dto.State state = 1;
-    string url = 2;
+    string image = 2;
 }
 
 message CreateRequest {
@@ -93,10 +103,15 @@ message UpdateRequest {
     string processId = 1;
     string name = 2;
     string desc = 3;
+    string nodeDataArray = 4;
+    string linkDataArray = 5;
+    string appId = 6;
+    string image = 7;
 }
 
 message UpdateResponse {
     gs.commons.dto.State state = 1;
+    string processId = 2;
 }
 
 message OpenRequest {

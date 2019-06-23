@@ -3,24 +3,22 @@ package applicationhanderls
 import (
 	"fmt"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/encrypt"
 	"konekko.me/gosion/commons/hashcode"
-	"konekko.me/gosion/commons/indexutils"
 	"time"
 )
 
 type syncRepo struct {
-	*indexutils.Client
 	session *mgo.Session
 }
 
-func (repo *syncRepo) Synced(userId, appId, relation string) (int64, error) {
-
-	count, err := repo.Client.Count(repo.GetKey(relation), map[string]interface{}{"user_id": userId, "app_id": appId, "sha_relation": relation})
+func (repo *syncRepo) Synced(userId, appId, relation string) (bool, error) {
+	n, err := repo.collection(relation).Find(bson.M{"user_id": userId, "app_id": appId, "sha_relation": encrypt.SHA1(relation)}).Count()
 	if err != nil {
-		return 0, err
+		return false, nil
 	}
-	return count, nil
+	return n == 1, nil
 }
 
 func (repo *syncRepo) Sync(userId, appId, relation string) error {
@@ -32,12 +30,20 @@ func (repo *syncRepo) Sync(userId, appId, relation string) error {
 		Timestamp:   time.Now().UnixNano(),
 	}
 
-	_, err := repo.Client.AddData(repo.GetKey(relation), s)
+	err := repo.collection(relation).Insert(s)
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
+func (repo *syncRepo) collection(relation string) *mgo.Collection {
+	return repo.session.DB(dbName).C(repo.GetKey(relation))
+}
+
 func (repo *syncRepo) GetKey(relation string) string {
-	return fmt.Sprintf("%s.%d", "gosion-synced.", hashcode.Get(relation))
+	return fmt.Sprintf("%s_%d", synclogCollection, hashcode.Get(relation))
 }
 
 func (repo *syncRepo) Close() {

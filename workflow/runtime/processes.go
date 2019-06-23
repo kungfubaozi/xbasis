@@ -1,12 +1,17 @@
 package runtime
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/commons/generator"
+	"konekko.me/gosion/commons/hashcode"
 	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/workflow/distribute"
 	"konekko.me/gosion/workflow/flowerr"
@@ -21,6 +26,81 @@ type processes struct {
 	client   *indexutils.Client
 	relation distribute.Handler
 	id       gs_commons_generator.IDGenerator
+}
+
+func (pro *processes) imageCollection(session *mgo.Session, processId string) *mgo.Collection {
+	return session.DB(dbName).C(fmt.Sprintf("flow_image_%d", hashcode.Get(processId)%5))
+}
+
+func (pro *processes) SaveImage(processId string, base64 string) error {
+	session := pro.session.Clone()
+	defer session.Close()
+
+	f := &models.FlowImage{
+		ProcessId: processId,
+		Image:     base64,
+	}
+
+	_, err := pro.imageCollection(session, processId).Upsert(bson.M{"_id": processId}, f)
+	return err
+}
+
+func (pro *processes) GetImage(processId string) (string, error) {
+	session := pro.session.Clone()
+	defer session.Close()
+
+	f := &models.FlowImage{}
+
+	err := pro.imageCollection(session, processId).Find(bson.M{"_id": processId}).One(&f)
+
+	return f.Image, err
+}
+
+func (pro *processes) Search(appId, name string, pageIndex, pageSize int64) ([]*models.SearchFlowItem, error) {
+
+	q := elastic.NewBoolQuery()
+	q.Must(elastic.NewMatchPhraseQuery("fields.app_id", appId))
+	if len(name) > 1 {
+		q.Must(elastic.NewMatchQuery("fields.name", name))
+	}
+
+	v, err := pro.client.GetElasticClient().Search("gosion-index.flowarrays.*").Type("_doc").
+		Query(q).Size(int(pageSize)).From(int(pageSize*pageIndex)).Sort("timestamp", true).Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	var items []*models.SearchFlowItem
+	if v.Hits.TotalHits > 0 {
+		for _, v := range v.Hits.Hits {
+			var data *models.SearchFlowResponse
+			b, err := v.Source.MarshalJSON()
+			if err == nil {
+				err = json.Unmarshal(b, &data)
+				if err == nil {
+					items = append(items, data.Fields)
+				}
+			}
+		}
+	}
+	return items, nil
+}
+
+func (pro *processes) SaveFlowDataArrays(data *models.FlowDataArray) error {
+	session := pro.session.Clone()
+	defer session.Close()
+
+	_, err := session.DB(dbName).C("flow_arrays").Upsert(bson.M{"_id": data.ProcessId}, data)
+
+	return err
+}
+
+func (pro *processes) GetFlowDataArray(processId string) (*models.FlowDataArray, error) {
+	session := pro.session.Clone()
+	defer session.Close()
+
+	f := &models.FlowDataArray{}
+	err := session.DB(dbName).C("flow_arrays").Find(bson.M{"_id": processId}).One(f)
+	return f, err
 }
 
 func (pro *processes) FindNode(instanceId, nodeId string) (interface{}, *flowerr.Error) {

@@ -1,4 +1,4 @@
-package handlers
+package workflowhandlers
 
 import (
 	"konekko.me/gosion/workflow/modules"

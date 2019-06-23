@@ -104,6 +104,9 @@ func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvite
 		defer repo.Close()
 
 		m, err := repo.FindByKey(key, value)
+		if err != nil && err == mgo.ErrNotFound {
+			return errstate.Success
+		}
 		if err != nil {
 			return nil
 		}

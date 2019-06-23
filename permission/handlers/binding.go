@@ -81,7 +81,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 			}
 
 			//去重
-			role, err := repo.FindUserById(in.Id, in.AppId)
+			role, err := repo.FindRelationUserById(in.Id, in.AppId)
 			if err != nil {
 				return nil
 			}

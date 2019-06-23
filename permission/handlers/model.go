@@ -7,7 +7,7 @@ const (
 
 	groupCollection = "user_groups"
 
-	groupUsersCollection = "group_users"
+	groupUsersCollection = "user_group_relation"
 
 	functionCollection = "functions"
 

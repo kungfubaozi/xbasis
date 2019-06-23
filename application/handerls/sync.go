@@ -2,12 +2,12 @@ package applicationhanderls
 
 import (
 	"context"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	inner "konekko.me/gosion/application/pb/inner"
 	"konekko.me/gosion/commons/constants"
 	"konekko.me/gosion/commons/dto"
 	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/indexutils"
 	"konekko.me/gosion/commons/wrapper"
 	"konekko.me/gosion/permission/pb"
 	"konekko.me/gosion/permission/pb/inner"
@@ -16,7 +16,6 @@ import (
 )
 
 type syncService struct {
-	*indexutils.Client
 	session           *mgo.Session
 	inviteService     gosionsvc_external_user.InviteService
 	accessibleService gosionsvc_internal_permission.AccessibleService
@@ -25,7 +24,7 @@ type syncService struct {
 }
 
 func (svc *syncService) GetRepo() *syncRepo {
-	return &syncRepo{Client: svc.Client, session: svc.session.Clone()}
+	return &syncRepo{session: svc.session.Clone()}
 }
 
 func (svc *syncService) GetAppRepo() *applicationRepo {
@@ -35,20 +34,22 @@ func (svc *syncService) GetAppRepo() *applicationRepo {
 func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 
-		if len(in.UserId) > 0 && len(in.AppId) > 0 && len(auth.Token.Relation) > 16 {
+		if len(in.UserId) > 0 && len(in.AppId) > 0 && len(auth.Token.Relation) > 10 {
 
 			repo := svc.GetRepo()
 			defer repo.Close()
 
 			//Check if the user is synchronized to the corresponding application
 			c, err := repo.Synced(in.UserId, in.AppId, auth.Token.Relation)
-			if err == nil && c == 1 {
+			if err == nil && c {
 				return errstate.Success
 			}
 
 			return errstate.ErrUserNotAuthorize
 
 		}
+
+		fmt.Println("enter 1")
 
 		return nil
 	})
@@ -59,7 +60,9 @@ func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *
 //2.同步用户信息至app（SyncUserURL）
 func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+
 		if len(in.GId) > 0 && len(in.AppId) > 0 {
+
 			appRepo := svc.GetAppRepo()
 			defer appRepo.Close()
 
@@ -70,10 +73,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 
 			next := true
 			switch appInfo.Type {
-			case gs_commons_constants.AppTypeManage:
-			case gs_commons_constants.AppTypeRoute:
-			case gs_commons_constants.AppTypeSafe:
-			case gs_commons_constants.AppTypeUser:
+			case gs_commons_constants.AppTypeManage, gs_commons_constants.AppTypeRoute, gs_commons_constants.AppTypeSafe, gs_commons_constants.AppTypeUser:
 				next = false
 			}
 
@@ -195,9 +195,9 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 	})
 }
 
-func NewSyncService(client *indexutils.Client, session *mgo.Session, inviteService gosionsvc_external_user.InviteService,
+func NewSyncService(session *mgo.Session, inviteService gosionsvc_external_user.InviteService,
 	accessibleService gosionsvc_internal_permission.AccessibleService,
 	bindingService gosionsvc_external_permission.BindingService,
 	groupService gosionsvc_external_permission.UserGroupService) inner.UserSyncHandler {
-	return &syncService{Client: client, session: session, inviteService: inviteService, accessibleService: accessibleService, bindingService: bindingService, groupService: groupService}
+	return &syncService{session: session, inviteService: inviteService, accessibleService: accessibleService, bindingService: bindingService, groupService: groupService}
 }

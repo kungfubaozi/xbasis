@@ -4,6 +4,8 @@ const (
 	dbName = "gs_applications"
 
 	applicationCollection = "applications"
+
+	synclogCollection = "sync_log"
 )
 
 type appInfo struct {
@@ -40,8 +42,8 @@ type appClient struct {
 }
 
 type syncLog struct {
-	UserId      string `json:"user_id"`
-	AppId       string `json:"app_id"`
-	SHARelation string `json:"sha_relation"`
-	Timestamp   int64  `json:"timestamp"`
+	UserId      string `json:"user_id" bson:"user_id"`
+	AppId       string `json:"app_id" bson:"app_id"`
+	SHARelation string `json:"sha_relation" bson:"sha_relation"`
+	Timestamp   int64  `json:"timestamp" bson:"timestamp"`
 }

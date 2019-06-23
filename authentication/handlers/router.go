@@ -68,6 +68,7 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 		if !info.State.Ok {
 			return info.State
 		}
+
 		s1, err := svc.innerUserSyncService.Update(ctx, &gosionsvc_internal_application.UserInfo{
 			Username: info.Username,
 			GId:      info.UserId,
@@ -78,10 +79,7 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 		if err != nil {
 			return nil
 		}
-		if s1.State.Ok {
-			return errstate.Success
-		}
-		return nil
+		return s1.State
 	})
 }
 
@@ -327,8 +325,8 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 func NewRouteService(client *indexutils.Client, pool *redis.Pool, innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService,
 	innerUserSyncService gosionsvc_internal_application.UserSyncService,
 	innerTokenService gosionsvc_internal_authentication.TokenService,
-	connectioncli connectioncli.ConnectionClient, innerUserService gosionsvc_internal_user.UserService) external.RouterHandler {
+	connectioncli connectioncli.ConnectionClient, innerUserService gosionsvc_internal_user.UserService, innerAccessible gosionsvc_internal_permission.AccessibleService) external.RouterHandler {
 	return &routeService{Client: client, pool: pool, innerTokenService: innerTokenService,
 		innerUserSyncService: innerUserSyncService, innerUserService: innerUserService,
-		innerApplicationStatusService: innerApplicationStatusService, connectioncli: connectioncli}
+		innerApplicationStatusService: innerApplicationStatusService, connectioncli: connectioncli, innerAccessible: innerAccessible}
 }
