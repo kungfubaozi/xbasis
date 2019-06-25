@@ -9,7 +9,7 @@ import (
 func getURFIndex(fix string) string {
 	f := "*"
 	if fix != "*" {
-		fix = fmt.Sprintf("%d", hashcode.Get(fix)%5)
+		fix = fmt.Sprintf("%d", hashcode.Equa(fix))
 	}
 	return fmt.Sprintf("gosion_urf_relations.%s", f)
 }

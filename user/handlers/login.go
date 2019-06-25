@@ -56,11 +56,11 @@ func (svc *loginService) WithAccount(ctx context.Context, in *external.EntryRequ
 			var err error
 
 			if gs_commons_regx.Phone(in.Account) {
-				id, err = repo.FindIndexTable("phone", in.Account)
+				id, err = repo.FindIndexTable("fields.phone", in.Account)
 			} else if gs_commons_regx.Email(in.Account) {
-				id, err = repo.FindIndexTable("email", in.Account)
+				id, err = repo.FindIndexTable("fields.email", in.Account)
 			} else {
-				id, err = repo.FindIndexTable("account", in.Account)
+				id, err = repo.FindIndexTable("fields.account", in.Account)
 			}
 
 			if err != nil || len(id) == 0 {

@@ -46,6 +46,7 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 			groupItems = append(groupItems, &external.GroupItem{
 				Id:   v.Id,
 				Name: v.Name,
+				User: false,
 			})
 		}
 
@@ -173,11 +174,13 @@ func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out 
 		_, err := repo.FindByName(in.AppId, in.Name)
 		if err != nil && err == mgo.ErrNotFound {
 
-			err = repo.Save(in.AppId, auth.User, in.Name, in.BindGroupId)
+			id, err := repo.Save(in.AppId, auth.User, in.Name, in.BindGroupId)
 
 			if err != nil {
 				return errstate.ErrRequest
 			}
+
+			out.Content = id
 
 			return errstate.Success
 		}

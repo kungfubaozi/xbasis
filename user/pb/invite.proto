@@ -10,7 +10,7 @@ service Invite {
     //邀请的流程并不是直接把用户放在库中
     //需要被邀请
     //1.如果没有注册，需要注册再进行
-    rpc User (InviteDetail) returns (gs.commons.dto.Status);
+    rpc User (InviteUserRequest) returns (gs.commons.dto.Status);
 
     rpc Search (InviteSearchRequest) returns (InviteSearchResponse);
 
@@ -24,6 +24,16 @@ service Invite {
     rpc SetState (SetStateRequest) returns (gs.commons.dto.Status);
 
     rpc Append (AppendRequest) returns (gs.commons.dto.Status);
+}
+
+message InviteUserRequest {
+    string phone = 1;
+    string email = 2;
+    string username = 3;
+    string realName = 4;
+    repeated InviteItem items = 5;
+    int64 expiredAt = 6;
+    string userId = 7;
 }
 
 message AppendRequest {
@@ -64,19 +74,14 @@ message InviteSearchResponse {
 message GetDetailResponse {
     gs.commons.dto.State state = 1;
     repeated InviteItem items = 2;
-}
-
-message InviteDetail {
-    string phone = 1;
-    string email = 2;
     string username = 3;
     string realName = 4;
-    repeated InviteItem items = 5;
-    int64 expiredAt = 6;
+    string phone = 5;
+    string email = 6;
 }
 
 message InviteItem {
     string appId = 1;
     repeated string roles = 2;
-    string bindGroupId = 3;
+    repeated string bindGroupIds = 3;
 }

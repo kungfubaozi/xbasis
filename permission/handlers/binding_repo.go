@@ -24,7 +24,7 @@ func (repo *bindingRepo) functionCollection() *mgo.Collection {
 }
 
 func (repo *bindingRepo) userRelationCollection(userId string) *mgo.Collection {
-	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Get(userId)%5))
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Equa(userId)))
 }
 
 func (repo *bindingRepo) FindFunctionById(id string) (*function, error) {

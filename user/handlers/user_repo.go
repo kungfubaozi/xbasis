@@ -1,7 +1,6 @@
 package userhandlers
 
 import (
-	"errors"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -25,38 +24,26 @@ func (repo *userRepo) AddUser(user *userModel) error {
 	return repo.userCollection(user.Id).Insert(user)
 }
 
-func (repo *userRepo) AddUserIndex(index *userModelIndex) error {
-	id, err := repo.AddData(typeUserIndex, index)
-	if err != nil {
-		return nil
-	}
-	if len(id) > 0 {
-		return nil
-	}
-	return errors.New("")
-}
-
 func (repo *userRepo) AddUserInfo(info *userInfo) error {
 	return repo.infoCollection(info.UserId).Insert(info)
 }
 
 func (repo *userRepo) userCollection(userId string) *mgo.Collection {
-	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userCollection, hashcode.Get(userId)))
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userCollection, hashcode.Equa(userId)))
 }
 
 func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
-	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userOAuthCollection, hashcode.Get(openId)))
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userOAuthCollection, hashcode.Equa(openId)))
 }
 
 func (repo *userRepo) FindIndexTable(key string, content string) (string, error) {
-	userIndex := &userModelIndex{}
-
-	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content}, &userIndex)
+	var m map[string]interface{}
+	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content, "invite": false}, &m, "id")
 	if err != nil {
 		return "", nil
 	}
 	if ok {
-		return userIndex.UserId, nil
+		return m["id"].(string), nil
 	}
 	return "", indexutils.ErrNotFound
 }
@@ -66,7 +53,7 @@ func (repo *userRepo) index(c string) string {
 }
 
 func (repo *userRepo) infoCollection(userId string) *mgo.Collection {
-	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userInfoCollection, hashcode.Get(userId)))
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userInfoCollection, hashcode.Equa(userId)))
 }
 
 func (repo *userRepo) FindUserInfo(userId string) (*userInfo, error) {

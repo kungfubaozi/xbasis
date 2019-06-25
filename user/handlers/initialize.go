@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/config"
+	"konekko.me/gosion/commons/hashcode"
 	"konekko.me/gosion/commons/indexutils"
 	"time"
 )
@@ -44,25 +45,32 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 				CreateAt: time.Now().UnixNano(),
 			}
 
-			index := &userModelIndex{
-				Username: info.Username,
-				Phone:    u.Phone,
-				Email:    u.Email,
-				UserId:   u.Id,
-				Account:  u.Account,
-			}
-
-			err = userRepo.AddUserIndex(index)
-			if err != nil {
-				panic(err)
-			}
-
 			err = userRepo.AddUser(u)
 			if err != nil {
 				panic(err)
 			}
 
 			err = userRepo.AddUserInfo(info)
+			if err != nil {
+				panic(err)
+			}
+
+			_, err = client.AddData(fmt.Sprintf("gosion-index.users.%d", hashcode.Equa(u.Id)), map[string]interface{}{
+				"index": map[string]interface{}{
+					"name": "users",
+					"id":   u.Id,
+					"fields": map[string]interface{}{
+						"username":  info.Username,
+						"real_name": info.RealName,
+						"phone":     u.Phone,
+						"email":     u.Email,
+						"user_id":   u.Id,
+						"invite":    false,
+						"account":   u.Account,
+					},
+				},
+			})
+
 			if err != nil {
 				panic(err)
 			}

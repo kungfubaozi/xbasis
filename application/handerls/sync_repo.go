@@ -43,7 +43,7 @@ func (repo *syncRepo) collection(relation string) *mgo.Collection {
 }
 
 func (repo *syncRepo) GetKey(relation string) string {
-	return fmt.Sprintf("%s_%d", synclogCollection, hashcode.Get(relation))
+	return fmt.Sprintf("%s_%d", synclogCollection, hashcode.Equa(relation))
 }
 
 func (repo *syncRepo) Close() {

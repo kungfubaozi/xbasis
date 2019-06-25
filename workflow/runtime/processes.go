@@ -29,7 +29,7 @@ type processes struct {
 }
 
 func (pro *processes) imageCollection(session *mgo.Session, processId string) *mgo.Collection {
-	return session.DB(dbName).C(fmt.Sprintf("flow_image_%d", hashcode.Get(processId)%5))
+	return session.DB(dbName).C(fmt.Sprintf("flow_image_%d", hashcode.Equa(processId)%5))
 }
 
 func (pro *processes) SaveImage(processId string, base64 string) error {

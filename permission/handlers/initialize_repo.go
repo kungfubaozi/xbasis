@@ -96,7 +96,7 @@ func (repo *initializeRepo) SaveAndClose() {
 	if repo.bulk != nil && repo.bulk.NumberOfActions() > 0 {
 		db := repo.session.DB("gs_permission")
 		if repo.userRolesRelation != nil && len(repo.userRolesRelation) > 0 {
-			check(db.C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Get(repo.config.UserId)%5)).Insert(repo.userRolesRelation...))
+			check(db.C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Equa(repo.config.UserId))).Insert(repo.userRolesRelation...))
 		}
 
 		if len(repo.userRoles) > 0 {
@@ -113,7 +113,7 @@ func (repo *initializeRepo) SaveAndClose() {
 
 		if len(repo.groupUsers) > 0 {
 			for _, v := range repo.groupUsers {
-				check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Get(v.AppId)%5)).Insert(v))
+				check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Equa(v.AppId))).Insert(v))
 			}
 		}
 
@@ -238,7 +238,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 							id := encrypt.Md5(dr.FunctionId + dr.UserId)
 
-							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("gosion-urf-relations.%d", hashcode.Get(repo.config.UserId)%5)).Id(id).Type("_doc").Doc(dr))
+							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("gosion-urf-relations.%d", hashcode.Equa(repo.config.UserId))).Id(id).Type("_doc").Doc(dr))
 						}
 					}
 				}

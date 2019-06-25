@@ -8,6 +8,7 @@ It is generated from these files:
 	user/pb/invite.proto
 
 It has these top-level messages:
+	InviteUserRequest
 	AppendRequest
 	SetStateRequest
 	HasInvitedRequest
@@ -15,7 +16,6 @@ It has these top-level messages:
 	InviteSearchRequest
 	InviteSearchResponse
 	GetDetailResponse
-	InviteDetail
 	InviteItem
 */
 package gosionsvc_external_user
@@ -55,7 +55,7 @@ type InviteService interface {
 	// 邀请的流程并不是直接把用户放在库中
 	// 需要被邀请
 	// 1.如果没有注册，需要注册再进行
-	User(ctx context.Context, in *InviteDetail, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	User(ctx context.Context, in *InviteUserRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
 	Search(ctx context.Context, in *InviteSearchRequest, opts ...client.CallOption) (*InviteSearchResponse, error)
 	// 是否被邀请
 	HasInvited(ctx context.Context, in *HasInvitedRequest, opts ...client.CallOption) (*HasInvitedResponse, error)
@@ -84,7 +84,7 @@ func NewInviteService(name string, c client.Client) InviteService {
 	}
 }
 
-func (c *inviteService) User(ctx context.Context, in *InviteDetail, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *inviteService) User(ctx context.Context, in *InviteUserRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Invite.User", in)
 	out := new(gs_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
@@ -151,7 +151,7 @@ type InviteHandler interface {
 	// 邀请的流程并不是直接把用户放在库中
 	// 需要被邀请
 	// 1.如果没有注册，需要注册再进行
-	User(context.Context, *InviteDetail, *gs_commons_dto.Status) error
+	User(context.Context, *InviteUserRequest, *gs_commons_dto.Status) error
 	Search(context.Context, *InviteSearchRequest, *InviteSearchResponse) error
 	// 是否被邀请
 	HasInvited(context.Context, *HasInvitedRequest, *HasInvitedResponse) error
@@ -164,7 +164,7 @@ type InviteHandler interface {
 
 func RegisterInviteHandler(s server.Server, hdlr InviteHandler, opts ...server.HandlerOption) error {
 	type invite interface {
-		User(ctx context.Context, in *InviteDetail, out *gs_commons_dto.Status) error
+		User(ctx context.Context, in *InviteUserRequest, out *gs_commons_dto.Status) error
 		Search(ctx context.Context, in *InviteSearchRequest, out *InviteSearchResponse) error
 		HasInvited(ctx context.Context, in *HasInvitedRequest, out *HasInvitedResponse) error
 		GetDetail(ctx context.Context, in *HasInvitedRequest, out *GetDetailResponse) error
@@ -182,7 +182,7 @@ type inviteHandler struct {
 	InviteHandler
 }
 
-func (h *inviteHandler) User(ctx context.Context, in *InviteDetail, out *gs_commons_dto.Status) error {
+func (h *inviteHandler) User(ctx context.Context, in *InviteUserRequest, out *gs_commons_dto.Status) error {
 	return h.InviteHandler.User(ctx, in, out)
 }
 

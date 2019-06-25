@@ -4,6 +4,7 @@ import (
 	"context"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
+	"konekko.me/gosion/analysis/client"
 	"konekko.me/gosion/application/pb/inner"
 	"konekko.me/gosion/commons/config/call"
 	"konekko.me/gosion/commons/constants"
@@ -26,6 +27,7 @@ type registerService struct {
 	groupService             gosionsvc_external_permission.UserGroupService
 	id                       gs_commons_generator.IDGenerator
 	applicationStatusService gosionsvc_internal_application.ApplicationStatusService
+	log                      analysisclient.LogClient
 }
 
 func (svc *registerService) GetRepo() *userRepo {
@@ -37,6 +39,12 @@ func (svc *registerService) GetRepo() *userRepo {
 func (svc *registerService) New(ctx context.Context, in *external.NewRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
+
+		header := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: gs_commons_constants.UserService,
+			ModuleName:  "Register",
+		}
 
 		status, err := svc.applicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
 			ClientId: in.ClientId,
@@ -86,6 +94,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			return errstate.ErrSystem
 		}
 
+		//验证验证码发送对象是否当前contract
 		if auth.Access.To != in.Contract {
 			return errstate.ErrValidationCode
 		}
@@ -134,28 +143,43 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		user.Id = userId
 		user.Password = string(p)
 
+		info := &userInfo{
+			UserId: userId,
+		}
+
+		if invited {
+			v, err := svc.inviteService.GetDetail(ctx, &external.HasInvitedRequest{
+				UserId: s.UserId,
+			})
+			if err != nil {
+				return nil
+			}
+			if !v.State.Ok {
+				return v.State
+			}
+			info.RealName = v.RealName
+			if len(v.Email) > 0 {
+				user.Email = v.Email
+			}
+			if len(v.Phone) > 0 {
+				user.Phone = v.Phone
+			}
+			if len(v.Username) > 0 {
+				info.Username = v.Username
+			}
+		}
+
+		//需要设置用户名
+		if len(info.Username) == 0 {
+			return errstate.ErrUserNeedSetUsername
+		}
+
 		err = repo.AddUser(user)
 		if err != nil {
 			return errstate.ErrSystem
 		}
 
-		info := &userInfo{
-			UserId:   userId,
-			Username: in.Username,
-		}
-
 		err = repo.AddUserInfo(info)
-		if err != nil {
-			return errstate.ErrRequest
-		}
-
-		index := &userModelIndex{
-			Username: in.Username,
-			Phone:    user.Phone,
-			Email:    user.Email,
-		}
-
-		err = repo.AddUserIndex(index)
 		if err != nil {
 			return errstate.ErrRequest
 		}
@@ -172,6 +196,30 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 				return s.State
 			}
 		}
+
+		svc.log.Info(&analysisclient.LogContent{
+			Headers: header,
+			Action:  "NewUserRegister",
+			Fields: &analysisclient.LogFields{
+				"username":  info.Username,
+				"user_id":   info.UserId,
+				"timestamp": time.Now().Unix(),
+				"client_id": in.ClientId,
+				"app_id":    auth.AppId,
+			},
+			Index: &analysisclient.LogIndex{
+				Name: "users",
+				Id:   userId,
+				Fields: &analysisclient.LogFields{
+					"username":  info.Username,
+					"real_name": info.RealName,
+					"phone":     user.Phone,
+					"email":     user.Email,
+					"user_id":   user.Id,
+					"invite":    false,
+				},
+			},
+		})
 
 		return errstate.Success
 	})

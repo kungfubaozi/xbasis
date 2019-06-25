@@ -53,15 +53,20 @@ func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvited
 			return nil
 		}
 
+		out.Username = m.Username
+		out.RealName = m.RealName
+		out.Email = m.Email
+		out.Phone = m.Phone
+
 		var items []*external.InviteItem
 		for _, v := range m.Items {
 			if len(in.AppId) > 8 && v.AppId != in.AppId {
 				continue
 			}
 			items = append(items, &external.InviteItem{
-				AppId:       v.AppId,
-				BindGroupId: v.BingGroupId,
-				Roles:       v.Roles,
+				AppId:        v.AppId,
+				BindGroupIds: v.BingGroupIds,
+				Roles:        v.Roles,
 			})
 			if len(in.AppId) > 8 {
 				break
@@ -127,34 +132,43 @@ func (svc *inviteService) GetRepo() *inviteRepo {
 当用户注册时会检测(按照registerType查找对应的数据匹配)是否有对应邀请用户，如果有则会合并数据，没有则进入正常流程
 如果被邀请用户已经注册会不通过
 */
-func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, out *gs_commons_dto.Status) error {
+func (svc *inviteService) User(ctx context.Context, in *external.InviteUserRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		configuration := serviceconfiguration.Get()
 
-		key := ""
-		value := ""
-		if len(in.Phone) > 0 && gs_commons_regx.Phone(in.Phone) {
-			return errstate.ErrFormatPhone
-		}
-		if len(in.Email) > 0 && gs_commons_regx.Email(in.Email) {
-			return errstate.ErrFormatEmail
-		}
-		if configuration.RegisterType == 1001 { //phone
-			if len(in.Phone) <= 8 {
-				return errstate.ErrRequest
-			}
-			key = "phone"
-			value = in.Phone
-		} else if configuration.RegisterType == 1002 { //email
-			if len(in.Email) <= 8 {
-				return errstate.ErrRequest
-			}
-			key = "email"
-			value = in.Email
+		header := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: gs_commons_constants.UserService,
+			ModuleName:  "Invite",
 		}
 
-		if len(key) == 0 || len(value) < 6 {
-			return nil
+		key := "user_id"
+		value := in.UserId
+
+		if len(in.UserId) == 0 {
+			if len(in.Phone) > 0 && gs_commons_regx.Phone(in.Phone) {
+				return errstate.ErrFormatPhone
+			}
+			if len(in.Email) > 0 && gs_commons_regx.Email(in.Email) {
+				return errstate.ErrFormatEmail
+			}
+			if configuration.RegisterType == 1001 { //phone
+				if len(in.Phone) <= 8 {
+					return errstate.ErrRequest
+				}
+				key = "phone"
+				value = in.Phone
+			} else if configuration.RegisterType == 1002 { //email
+				if len(in.Email) <= 8 {
+					return errstate.ErrRequest
+				}
+				key = "email"
+				value = in.Email
+			}
+
+			if len(key) == 0 || len(value) < 6 {
+				return nil
+			}
 		}
 
 		repo := svc.GetRepo()
@@ -170,6 +184,7 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, o
 				UserId:       svc.id.Get(),
 				Username:     in.Username,
 				RealName:     in.RealName,
+				Side:         len(in.UserId) == 0, //side的作用是判断user是内部还是外部新的
 				State:        gs_commons_constants.InviteStateOfWaiting,
 			}
 
@@ -177,9 +192,9 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, o
 
 			for _, v := range in.Items {
 				items = append(items, &inviteItem{
-					AppId:       v.AppId,
-					Roles:       v.Roles,
-					BingGroupId: v.BindGroupId,
+					AppId:        v.AppId,
+					Roles:        v.Roles,
+					BingGroupIds: v.BindGroupIds,
 				})
 			}
 
@@ -189,6 +204,28 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteDetail, o
 			if err != nil {
 				return errstate.ErrRequest
 			}
+
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: header,
+				Action:  "NewInviteUser",
+				Fields: &analysisclient.LogFields{
+					"username":  in.Username,
+					"user_id":   m.UserId,
+					"timestamp": time.Now().Unix(),
+				},
+				Index: &analysisclient.LogIndex{
+					Name: "users",
+					Id:   m.UserId,
+					Fields: &analysisclient.LogFields{
+						"username":  in.Username,
+						"real_name": in.RealName,
+						"phone":     in.Phone,
+						"email":     in.Email,
+						"user_id":   m.UserId,
+						"invite":    true,
+					},
+				},
+			})
 
 			return errstate.Success
 		}

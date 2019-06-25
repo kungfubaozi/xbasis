@@ -73,7 +73,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 
 			next := true
 			switch appInfo.Type {
-			case gs_commons_constants.AppTypeManage, gs_commons_constants.AppTypeRoute, gs_commons_constants.AppTypeSafe, gs_commons_constants.AppTypeUser:
+			case gs_commons_constants.AppTypeRoute, gs_commons_constants.AppTypeSafe:
 				next = false
 			}
 
@@ -114,7 +114,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 					if len(as.Items) > 0 {
 						item := as.Items[0]
 						roles = item.Roles
-						bindGroupIds = append(bindGroupIds, item.BindGroupId)
+						bindGroupIds = append(bindGroupIds, item.BindGroupIds...)
 					}
 				}
 
