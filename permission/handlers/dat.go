@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/vmihailenco/msgpack"
@@ -37,7 +38,10 @@ func (svc *durationAccessService) GetRepo() functionRepo {
 
 func (svc *durationAccessService) Send(ctx context.Context, in *external.SendRequest, out *gs_commons_dto.Status) error {
 	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
-		if len(in.Credential) > 0 {
+
+		fmt.Println("send")
+
+		if len(in.Credential) <= 40 {
 			return errstate.ErrRequest
 		}
 
@@ -47,7 +51,6 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 		if !es.Ok {
 			return es
 		}
-
 		//
 		////credential的有效时间为10s
 		//if time.Now().UnixNano()-credential.Timestamp >= 10*1e6 {
@@ -64,19 +67,21 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 			to = auth.Token.UserId
 		}
 
-		hkey := encrypt.SHA256(to + credential.FuncId + auth.FromClientId)
+		hkey := encrypt.SHA1(to + credential.FuncId + auth.FromClientId)
 
-		path := "gs.dat.lock/" + hkey
+		path := "/gs-dat-lock@" + hkey
 		var version int32
 		invalid := false
+		version = 0
 
 		_, s, err := svc.zk.Get(path)
-		if err != nil && err != zk.ErrInvalidPath {
+		if err != nil && err == zk.ErrInvalidPath || err == zk.ErrNoNode {
 			err = nil
 			invalid = true
 		}
 
 		if err != nil {
+			fmt.Println("s1", err)
 			return errstate.ErrRequest
 		}
 
@@ -85,11 +90,14 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 
 			if s != nil {
 				t = s.Mtime
-				version = s.Version
+				if s.Version > 0 {
+					version = s.Version
+				}
+				fmt.Println("v", version)
 			}
 			//limit
 			if time.Now().Unix()-t < configuration.DurationAccessTokenRetryTime*1000 {
-				return errstate.ErrDurationAccessTokenBusy
+				//return errstate.ErrDurationAccessTokenBusy
 			}
 		}
 
@@ -98,6 +106,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 
 		api, err := repo.FindApiByPrimaryId(credential.FuncId)
 		if err != nil {
+			fmt.Println("s2", err)
 			return errstate.ErrRequest
 		}
 
@@ -121,24 +130,20 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 			if !gs_commons_regx.Email(to) && !credential.FromAuth {
 				return errstate.ErrFormatEmail
 			}
-			var t int64
-			t = 10 * 60
+			ext = 10 * 60 * 1000
 			if configuration.EmailVerificationCodeExpiredTime > 0 {
-				t = configuration.EmailVerificationCodeExpiredTime
+				ext = configuration.EmailVerificationCodeExpiredTime
 			}
-			ext = t * 1e6
 		} else if configuration.DurationAccessTokenSendCodeToType == 1001 { //phone
 			if !gs_commons_regx.Phone(to) && !credential.FromAuth {
 				return errstate.ErrFormatPhone
 			}
-			var t int64
-			t = 10 * 60
+			ext = 10 * 60 * 1000
 			if configuration.PhoneVerificationCodeExpiredTime > 0 {
-				t = configuration.PhoneVerificationCodeExpiredTime
+				ext = configuration.PhoneVerificationCodeExpiredTime
 			}
-			ext = t * 1e6
 		} else {
-			ext = 10 * 60 * 1e6 //10min
+			ext = 10 * 60 * 1000 //10min
 		}
 
 		from := encrypt.SHA1(auth.IP + auth.UserAgent + auth.UserDevice + auth.FromClientId)
@@ -149,12 +154,14 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 			ClientId:      auth.FromClientId,
 			From:          from,
 			User:          to,
+			Life:          api.ValTokenTimes,
 			CreateAt:      time.Now().UnixNano(),
-			CodeExpiredAt: ext + time.Now().UnixNano(),
+			CodeExpiredAt: ext + time.Now().Unix(),
 			Code:          rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000000),
 		}
 
 		if write(dat) != nil {
+			fmt.Println("err1", err)
 			return errstate.ErrSystem
 		}
 
@@ -166,6 +173,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 		})
 
 		if err != nil {
+			fmt.Println("err2", err)
 			return errstate.ErrSystem
 		}
 
@@ -177,12 +185,18 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 		if invalid {
 			_, err = svc.zk.Create(path, data, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 			if err != nil {
+				fmt.Println("err4", err)
 				return errstate.ErrRequest
 			}
+		} else {
+			if version > 0 {
+
+			}
+			_, err = svc.zk.Set(path, data, version)
 		}
-		_, err = svc.zk.Set(path, data, version+1)
 
 		if err != nil {
+			fmt.Println("err3", err)
 			return errstate.ErrRequest
 		}
 
@@ -202,7 +216,7 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 			return es
 		}
 
-		hkey := encrypt.SHA256(in.To + credential.FuncId + auth.FromClientId)
+		hkey := encrypt.SHA1(in.To + credential.FuncId + auth.FromClientId)
 
 		conn := svc.pool.Get()
 
@@ -220,17 +234,19 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 			return errstate.ErrRequest
 		}
 
+		spew.Dump(da)
+
 		if in.To != da.User || in.Code != da.Code || auth.FromClientId != da.ClientId {
 			return errstate.ErrDurationAccessCode
 		}
 
-		if da.CodeExpiredAt >= time.Now().UnixNano() {
+		if time.Now().Unix()-da.CodeExpiredAt > 0 {
 			return errstate.ErrDurationAccessExpired
 		}
 
 		//generate token
 		id := gs_commons_generator.NewIDG()
-		tokenKey := id.Get()
+		tokenKey := id.String()
 
 		key, err := encrypt.AESEncrypt([]byte(tokenKey), []byte(configuration.CurrencySecretKey))
 		if err != nil {
@@ -253,7 +269,7 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 		dat := &durationAccessToken{
 			ClientId: da.ClientId,
 			FuncId:   da.FuncId,
-			User:     da.Key,
+			User:     da.User,
 			Times:    0,
 			Auth:     da.Auth,
 			From:     da.From,
@@ -281,11 +297,12 @@ func (svc *durationAccessService) getCredential(credential string) (*durationAcc
 
 	var c *durationAccessCredential
 	b, err := encrypt.AESDecrypt(credential, []byte(configuration.CurrencySecretKey))
+
 	if err != nil {
 		return nil, errstate.ErrSystem
 	}
 
-	err = msgpack.Unmarshal([]byte(b), &credential)
+	err = msgpack.Unmarshal([]byte(b), &c)
 	if err != nil {
 		return nil, errstate.ErrSystem
 	}
@@ -296,7 +313,7 @@ func (svc *durationAccessService) getCredential(credential string) (*durationAcc
 	return c, errstate.Success
 }
 
-func NewDurationAccessService(pool *redis.Pool, session *mgo.Session,
+func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, conn *zk.Conn,
 	messageService gosionsvc_internal_user.MessageService, client *indexutils.Client, log analysisclient.LogClient) external.DurationAccessHandler {
-	return &durationAccessService{pool: pool, Client: client, session: session, messageService: messageService, log: log}
+	return &durationAccessService{pool: pool, Client: client, session: session, messageService: messageService, log: log, zk: conn}
 }

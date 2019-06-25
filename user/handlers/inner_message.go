@@ -2,6 +2,7 @@ package userhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/commons/dto"
@@ -20,7 +21,8 @@ func (svc *messageService) sendCode(t int64, to, code string) error {
 	if t == 1002 { //email
 
 	} else if t == 1001 { //phone
-		return svc.message.SendSMS(to, code)
+		s := fmt.Sprintf("您的验证码为%s，请于10分钟内正确输入，如非本人操作，请忽略此短信。", code)
+		return svc.message.SendSMS(to, s)
 	}
 	return errors.New("unsupp")
 }
@@ -30,7 +32,7 @@ func (svc *messageService) GetRepo() *userRepo {
 }
 
 func (svc *messageService) SendVerificationCode(ctx context.Context, in *inner.SendRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, in, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
 		to := in.To
 		if in.Auth {
 			repo := svc.GetRepo()
@@ -59,6 +61,7 @@ func (svc *messageService) SendVerificationCode(ctx context.Context, in *inner.S
 		}
 		err := svc.sendCode(in.MessageType, to, in.Code)
 		if err != nil {
+			fmt.Println("send error", err, in.MessageType)
 			return errstate.ErrRequest
 		}
 		return errstate.Success

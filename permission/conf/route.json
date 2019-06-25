@@ -49,6 +49,22 @@
       ]
     },
     {
+      "group_name": "Permission",
+      "prefix": "/permission",
+      "functions": [
+        {
+          "api": "/durationAccess/send",
+          "name": "SendDAT",
+          "share": true
+        },
+        {
+          "api": "/durationAccess/verify",
+          "name": "CodeVerify",
+          "share": true
+        }
+      ]
+    },
+    {
       "group_name": "User",
       "prefix": "/user",
       "functions": [
@@ -70,6 +86,7 @@
         {
           "api": "/register/new",
           "name": "Register",
+          "val_token_times": 1,
           "auth_type": [
             352
           ]

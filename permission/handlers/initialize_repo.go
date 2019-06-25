@@ -31,12 +31,13 @@ type functionGroupData struct {
 }
 
 type functionData struct {
-	Api      string   `json:"api"`
-	Name     string   `json:"name"`
-	AuthType []int64  `json:"auth_type"`
-	Roles    []string `json:"roles"`
-	Share    bool     `json:"share"`
-	Desc     string   `json:"desc"`
+	Api           string   `json:"api"`
+	Name          string   `json:"name"`
+	AuthType      []int64  `json:"auth_type"`
+	ValTokenTimes int64    `json:"val_token_times"`
+	Roles         []string `json:"roles"`
+	Share         bool     `json:"share"`
+	Desc          string   `json:"desc"`
 }
 
 type initializeRepo struct {

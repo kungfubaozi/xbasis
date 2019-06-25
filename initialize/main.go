@@ -97,15 +97,17 @@ func main() {
 	}
 
 	configuration := &gs_commons_config.GosionConfiguration{
-		AccessTokenExpiredTime:           10 * 60 * 1000,
-		RefreshTokenExpiredTime:          7 * 24 * 60 * 60 * 1000,
-		EmailVerificationCodeExpiredTime: 10 * 60 * 1000,
-		PhoneVerificationCodeExpiredTime: 10 * 60 * 1000,
-		LoginIntervalToStartLock:         30 * 24 * 60 * 60 * 1000,
-		CurrencySecretKey:                encrypt.Md5("currency-secret" + strconv.FormatInt(time.Now().UnixNano(), 10)),
-		RegisterType:                     1001 | 1002 | 1003,
-		LoginType:                        1001 | 1002 | 1003,
-		TokenSecretKey:                   secretKey,
+		AccessTokenExpiredTime:            10 * 60 * 1000,
+		RefreshTokenExpiredTime:           7 * 24 * 60 * 60 * 1000,
+		EmailVerificationCodeExpiredTime:  10 * 60 * 1000,
+		PhoneVerificationCodeExpiredTime:  10 * 60 * 1000,
+		LoginIntervalToStartLock:          30 * 24 * 60 * 60 * 1000,
+		CurrencySecretKey:                 encrypt.Md5("currency-secret" + strconv.FormatInt(time.Now().UnixNano(), 10)),
+		RegisterType:                      1001,
+		LoginType:                         1001,
+		TokenSecretKey:                    secretKey,
+		DurationAccessTokenSendCodeToType: 1001,
+		DurationAccessTokenRetryTime:      60,
 	}
 
 	b, err := msgpack.Marshal(initConfig)

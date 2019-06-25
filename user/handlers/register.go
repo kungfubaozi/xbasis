@@ -2,6 +2,7 @@ package userhandlers
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
@@ -46,21 +47,21 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			ModuleName:  "Register",
 		}
 
-		status, err := svc.applicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
-			ClientId: in.ClientId,
-		})
-		if err != nil {
-			return errstate.ErrRequest
-		}
-
-		if !status.State.Ok {
-			return status.State
-		}
-
-		//只允许注册到route项目中
-		if status.Type != gs_commons_constants.AppTypeRoute {
-			return errstate.ErrRequest
-		}
+		//status, err := svc.applicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+		//	ClientId: in.ClientId,
+		//})
+		//if err != nil {
+		//	return errstate.ErrRequest
+		//}
+		//
+		//if !status.State.Ok {
+		//	return status.State
+		//}
+		//
+		////只允许注册到route项目中
+		//if status.Type != gs_commons_constants.AppTypeRoute {
+		//	return errstate.ErrRequest
+		//}
 
 		key := ""
 		value := in.Contract
@@ -104,11 +105,12 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		defer repo.Close()
 
 		u, err := repo.FindIndexTable(key, value)
-		if err != nil {
+		if err != nil && err != indexutils.ErrNotFound {
 			return nil
 		}
 
 		if len(u) != 0 {
+			fmt.Println("err1", "8")
 			return errstate.ErrUserAlreadyRegister
 		}
 
@@ -119,10 +121,12 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		})
 
 		if err != nil {
+			fmt.Println("err1", "9", err)
 			return nil
 		}
 
 		if !s.State.Ok {
+			fmt.Println("err1", "10")
 			return s.State
 		}
 
@@ -144,7 +148,8 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		user.Password = string(p)
 
 		info := &userInfo{
-			UserId: userId,
+			UserId:   userId,
+			Username: in.Username,
 		}
 
 		if invited {
@@ -225,11 +230,11 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 	})
 }
 
-func NewRegisterService(session *mgo.Session, inviteService external.InviteService,
+func NewRegisterService(log analysisclient.LogClient, session *mgo.Session, inviteService external.InviteService,
 	client *indexutils.Client,
 	bindingService gosionsvc_external_permission.BindingService,
 	groupService gosionsvc_external_permission.UserGroupService,
 	applicationStatusService gosionsvc_internal_application.ApplicationStatusService) external.RegisterHandler {
-	return &registerService{session: session, inviteService: inviteService, client: client, bindingService: bindingService,
+	return &registerService{log: log, session: session, inviteService: inviteService, client: client, bindingService: bindingService,
 		groupService: groupService, id: gs_commons_generator.NewIDG(), applicationStatusService: applicationStatusService}
 }

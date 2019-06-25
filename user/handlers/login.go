@@ -2,6 +2,7 @@ package userhandlers
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/gosion/analysis/client"
@@ -56,14 +57,15 @@ func (svc *loginService) WithAccount(ctx context.Context, in *external.EntryRequ
 			var err error
 
 			if gs_commons_regx.Phone(in.Account) {
-				id, err = repo.FindIndexTable("fields.phone", in.Account)
+				id, err = repo.FindIndexTable("phone", in.Account)
 			} else if gs_commons_regx.Email(in.Account) {
-				id, err = repo.FindIndexTable("fields.email", in.Account)
+				id, err = repo.FindIndexTable("email", in.Account)
 			} else {
-				id, err = repo.FindIndexTable("fields.account", in.Account)
+				id, err = repo.FindIndexTable("account", in.Account)
 			}
 
 			if err != nil || len(id) == 0 {
+				fmt.Println("err", err)
 				return nil
 			}
 

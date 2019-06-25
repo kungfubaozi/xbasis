@@ -25,6 +25,8 @@ func StartService() {
 		panic(err)
 	}
 
+	errc := make(chan error, 1)
+
 	messages, err := ch.Consume(gs_commons_constants.MessageChannel, "",
 		false, false, false, false, nil)
 	if err != nil {
@@ -49,4 +51,5 @@ func StartService() {
 		}
 	}()
 
+	<-errc
 }

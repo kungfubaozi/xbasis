@@ -56,18 +56,16 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 			}
 
 			_, err = client.AddData(fmt.Sprintf("gosion-index.users.%d", hashcode.Equa(u.Id)), map[string]interface{}{
-				"index": map[string]interface{}{
-					"name": "users",
-					"id":   u.Id,
-					"fields": map[string]interface{}{
-						"username":  info.Username,
-						"real_name": info.RealName,
-						"phone":     u.Phone,
-						"email":     u.Email,
-						"user_id":   u.Id,
-						"invite":    false,
-						"account":   u.Account,
-					},
+				"name": "users",
+				"id":   u.Id,
+				"fields": map[string]interface{}{
+					"username":  info.Username,
+					"real_name": info.RealName,
+					"phone":     u.Phone,
+					"email":     u.Email,
+					"user_id":   u.Id,
+					"invite":    false,
+					"account":   u.Account,
 				},
 			})
 

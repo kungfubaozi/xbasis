@@ -63,7 +63,7 @@ func StartService() {
 
 		gosionsvc_external_user.RegisterLoginHandler(s.Server(), userhandlers.NewLoginService(session, ss, ts, client, logger))
 
-		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(session, userclient.NewInviteClient(s.Client()),
+		gosionsvc_external_user.RegisterRegisterHandler(s.Server(), userhandlers.NewRegisterService(logger, session, userclient.NewInviteClient(s.Client()),
 			client, permissioncli.NewBindingClient(s.Client()), permissioncli.NewGroupClient(s.Client()), applicationclient.NewStatusClient(s.Client())))
 
 		gosionsvc_external_user.RegisterSafetyHandler(s.Server(), userhandlers.NewSafetyService(session))

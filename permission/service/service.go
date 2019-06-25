@@ -66,7 +66,7 @@ func StartService() {
 
 		gosionsvc_external_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(client, session, us, logger))
 
-		gosionsvc_external_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, mc, client, logger))
+		gosionsvc_external_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, zk, mc, client, logger))
 
 		gosionsvc_external_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
 

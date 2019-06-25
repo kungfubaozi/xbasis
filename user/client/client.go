@@ -16,5 +16,5 @@ func NewExtMessageClient(client client.Client) gosionsvc_internal_user.MessageSe
 }
 
 func NewInviteClient(client client.Client) gosionsvc_external_user.InviteService {
-	return gosionsvc_external_user.NewInviteService(gs_commons_constants.InternalUserService, client)
+	return gosionsvc_external_user.NewInviteService(gs_commons_constants.UserService, client)
 }

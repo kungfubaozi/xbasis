@@ -2,6 +2,7 @@ package userhandlers
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/gosion/commons/encrypt"
@@ -37,11 +38,13 @@ func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
 }
 
 func (repo *userRepo) FindIndexTable(key string, content string) (string, error) {
+	fmt.Println("key", key, "content", content)
 	var m map[string]interface{}
-	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content, "invite": false}, &m, "id")
+	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{"fields." + key: content, "fields.invite": false}, &m)
 	if err != nil {
 		return "", nil
 	}
+	spew.Dump(m)
 	if ok {
 		return m["id"].(string), nil
 	}

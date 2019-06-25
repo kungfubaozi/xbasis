@@ -196,6 +196,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 						Content: rh.ip,
 					})
 				if err != nil {
+					fmt.Println("err blacklist ip", err)
 					resp(errstate.ErrRequest)
 					return
 				}
@@ -211,6 +212,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 						Content: rh.userDevice,
 					})
 				if err != nil {
+					fmt.Println("err blacklist user device", err)
 					resp(errstate.ErrRequest)
 					return
 				}
@@ -227,6 +229,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				})
 				if err != nil {
 					resp(errstate.ErrRequest)
+					fmt.Println("err app", err)
 					return
 				}
 				resp(s.State)
@@ -327,7 +330,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 							if len(rh.dat) == 0 {
 								//生成生成验证码凭证
 								//(先请求原API，生成凭证，然后调用dat获取验证码，再请求API)
-								resp(errstate.ErrRequest)
+								resp(errstate.Success)
 
 								credential = &durationAccessCredential{
 									FromClientId: rh.fromClientId,
@@ -347,8 +350,14 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 
 							cv = v
 
+							if conn == nil {
+								conn = svc.pool.Get()
+							}
+
+							fmt.Println("v", v)
+
 							b, err := redis.Bytes(conn.Do("hget", "dat."+f.Id, v))
-							if err != nil && err == redis.ErrNil {
+							if err != nil {
 								resp(errstate.ErrRequest)
 								return
 							}
@@ -449,7 +458,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				}
 
 				if dat != nil {
-					from := encrypt.SHA1(rh.ip + rh.userAgent + rh.userAgent + rh.fromClientId)
+					from := encrypt.SHA1(rh.ip + rh.userAgent + rh.userDevice + rh.fromClientId)
 					if dat.From != from {
 						return errstate.ErrDurationAccess
 					}
@@ -464,11 +473,10 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 						return errstate.ErrDurationAccess
 					}
 
-					if dat.MaxTimes <= dat.Times {
+					if dat.MaxTimes >= dat.Times {
 						dat.Times = dat.Times + 1
 						b, err := msgpack.Marshal(dat)
 						if err != nil {
-
 							return errstate.ErrSystem
 						}
 						_, err = conn.Do("hset", "dat."+f.Id, cv, b)
@@ -507,6 +515,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 
 					state = errstate.ErrDurationAccessCredential
 					state.Credential = c
+
+					return state
 				}
 
 				out.AppId = appResp.AppId
@@ -519,6 +529,10 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				out.TraceId = traceId
 				out.AppType = appResp.Type
 				out.Platform = appResp.ClientPlatform
+
+				if conn != nil {
+					conn.Close()
+				}
 
 				if len(userId) == 0 {
 					userId = rh.ip
@@ -544,11 +558,11 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 					Message:   "verification passed",
 					StateCode: 0,
 					Fields: &analysisclient.LogFields{
-						"id":           f.Id,
-						"userId":       userId,
-						"fromClientId": headers.FromClientId,
-						"refClientId":  headers.RefClientId,
-						"appId":        appResp.AppId,
+						"id":             f.Id,
+						"user_id":        userId,
+						"from_client_id": headers.FromClientId,
+						"ref_client_id":  headers.RefClientId,
+						"app_id":         appResp.AppId,
 					},
 				})
 

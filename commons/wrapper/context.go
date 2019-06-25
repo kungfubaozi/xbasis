@@ -144,6 +144,7 @@ func ContextToAuthorize(ctx context.Context, out interface{}, event WrapperEvent
 
 			v.Timestamp = time.Now().Unix()
 			s.Set(reflect.ValueOf(v))
+
 			return nil
 		}
 	}
