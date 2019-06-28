@@ -255,7 +255,7 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 
 				fmt.Println("function", auth.FunctionId, "userId", auth.Token.UserId)
 
-				c, err := svc.Client.Count("gosion-urf-relations.*", map[string]interface{}{"functionId": auth.FunctionId, "userId": auth.Token.UserId})
+				c, err := svc.Client.Count("xbs-urf-relations.*", map[string]interface{}{"functionId": auth.FunctionId, "userId": auth.Token.UserId})
 				if err != nil {
 					return nil
 				}

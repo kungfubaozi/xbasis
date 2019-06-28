@@ -22,7 +22,7 @@ func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
 	}
 
 	b.Content = encrypt.SHA1(b.Content)
-	id, err := repo.AddData("gs-safety-blacklist", b)
+	id, err := repo.AddData(blacklistIndex, b)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (repo *blacklistRepo) Save(bt int64, content, userId string) error {
 }
 
 func (repo *blacklistRepo) Remove(id string) error {
-	ok, err := repo.Delete("gs-safety-blacklist", map[string]interface{}{"content": encrypt.SHA1(id)})
+	ok, err := repo.Delete(blacklistIndex, map[string]interface{}{"content": encrypt.SHA1(id)})
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (repo *blacklistRepo) Remove(id string) error {
 }
 
 func (repo *blacklistRepo) Exists(bt int64, content string) bool {
-	count, err := repo.Count("gs-safety-blacklist", map[string]interface{}{"type": bt, "content": content})
+	count, err := repo.Count(blacklistIndex, map[string]interface{}{"type": bt, "content": content})
 	if err != nil {
 		return false
 	}

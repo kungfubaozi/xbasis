@@ -57,7 +57,7 @@ func (repo *lockingRepo) IsExists(userId string) (bool, error) {
 }
 
 func (repo *lockingRepo) collection() *mgo.Collection {
-	return repo.session.DB("gs-safety").C("locking")
+	return repo.session.DB(dbName).C("locking")
 }
 
 func (repo *lockingRepo) Remove(userId string) error {

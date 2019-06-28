@@ -12,7 +12,7 @@ type functionRepo struct {
 }
 
 func (repo *functionRepo) AddFunction(function *function) error {
-	id, err := repo.AddData("gs-functions", function)
+	id, err := repo.AddData(functionIndex, function)
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func (repo *functionRepo) AddFunction(function *function) error {
 }
 
 func (repo *functionRepo) AddGroup(group *functionGroup) error {
-	id, err := repo.AddData("gs-functions-groups", group)
+	id, err := repo.AddData(functionGroupRelationIndex, group)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (repo *functionRepo) FindGroupExists(groupId string) bool {
 func (repo *functionRepo) SimplifiedLookupApi(appId, api string) (*simplifiedFunction, error) {
 	var sf simplifiedFunction
 
-	ok, err := repo.QueryFirst("gs-functions", map[string]interface{}{"app_id": appId, "path": api}, &sf)
+	ok, err := repo.QueryFirst(functionIndex, map[string]interface{}{"app_id": appId, "path": api}, &sf)
 	if err != nil {
 		return nil, err
 	}

@@ -262,7 +262,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		//today visit count
 		go func() {
 			defer wg.Done()
-			c, err := svc.GetElasticClient().Count("gosion-logger." + now).Type("_doc").Query(q).Do(context.Background())
+			c, err := svc.GetElasticClient().Count("xbs-logger." + now).Type("_doc").Query(q).Do(context.Background())
 			if err != nil {
 				return
 			}
@@ -272,7 +272,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		//today visit user count
 		go func() {
 			defer wg.Done()
-			v, err := svc.GetElasticClient().Search("gosion-logger."+now).Type("_doc").Query(q).Aggregation("count", elastic.NewCardinalityAggregation().Field("headers.userId.keyword")).Do(context.Background())
+			v, err := svc.GetElasticClient().Search("xbs-logger."+now).Type("_doc").Query(q).Aggregation("count", elastic.NewCardinalityAggregation().Field("headers.userId.keyword")).Do(context.Background())
 			if err != nil {
 				return
 			}
@@ -288,7 +288,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		go func() {
 			defer wg.Done()
 			t := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM)
-			c, err := svc.GetElasticClient().Count(fmt.Sprintf("gosion-logger.%s.*", t)).Type("_doc").Query(q).Do(context.Background())
+			c, err := svc.GetElasticClient().Count(fmt.Sprintf("xbs-logger.%s.*", t)).Type("_doc").Query(q).Do(context.Background())
 			if err != nil {
 				return
 			}
@@ -298,7 +298,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		//total
 		go func() {
 			defer wg.Done()
-			c, err := svc.GetElasticClient().Count("gosion-logger.*").Type("_doc").Query(q).Do(context.Background())
+			c, err := svc.GetElasticClient().Count("xbs-logger.*").Type("_doc").Query(q).Do(context.Background())
 			if err != nil {
 				return
 			}

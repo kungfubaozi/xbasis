@@ -20,7 +20,7 @@ func (repo *applicationRepo) FindAll() ([]*appInfo, error) {
 
 func (repo *applicationRepo) findAppInfo(key, value string) (*appInfo, error) {
 	var info appInfo
-	ok, err := repo.QueryFirst("gs-applications", map[string]interface{}{key: value}, &info)
+	ok, err := repo.QueryFirst(applicationIndex, map[string]interface{}{key: value}, &info)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (repo *applicationRepo) RedirectUrlExists(url string) bool {
 }
 
 func (repo *applicationRepo) Add(info *appInfo) error {
-	id, err := repo.AddData("gs-applications", info)
+	id, err := repo.AddData(applicationIndex, info)
 	if err != nil {
 		return err
 	}

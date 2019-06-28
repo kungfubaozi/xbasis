@@ -22,43 +22,43 @@ type initializeRepo struct {
 
 //user应用是用户基本操作应用，用户可以在此项目进行更改用户信息
 func (repo *initializeRepo) AddUserApp() {
-	app := repo.getApp(repo.config.UserAppId, "Gsuser", constants.AppTypeUser)
+	app := repo.getApp(repo.config.UserAppId, "User", constants.AppTypeUser)
 	app.Settings.AllowNewUsers = &allowNewUsersToEnter{
 		DefaultRole:  []string{repo.config.UserAppRoleId},
 		DefaultGroup: "register",
 		Enabled:      true,
 	}
-	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
+	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 //不允许用户注册到此项目，邀请可忽略
 func (repo *initializeRepo) AddManageApp() {
-	app := repo.getApp(repo.config.AdminAppId, "Gsadmin", constants.AppTypeManage)
+	app := repo.getApp(repo.config.AdminAppId, "Admin", constants.AppTypeManage)
 	app.Settings.Quarantine = true
 	app.Settings.RedirectURL = "http://localhost:9527"
-	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
+	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 //route项目是用户默认项目，不需要同步，也不用隔离
 func (repo *initializeRepo) AddRouteApp() {
-	app := repo.getApp(repo.config.RouteAppId, "Gsrouter", constants.AppTypeRoute)
-	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
+	app := repo.getApp(repo.config.RouteAppId, "Router", constants.AppTypeRoute)
+	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 //安全项目，不要同步数据，也不用隔离
 func (repo *initializeRepo) AddSafeApp() {
-	app := repo.getApp(repo.config.SafeAppId, "Gssafety", constants.AppTypeSafe)
-	repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-applications").Type("_doc").Doc(app))
+	app := repo.getApp(repo.config.SafeAppId, "Safety", constants.AppTypeSafe)
+	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
 
 func (repo *initializeRepo) SaveAndClose() {
 	defer repo.session.Close()
 	if len(repo.apps) > 0 {
-		check(repo.session.DB("gs_applications").C("applications").Insert(repo.apps...))
+		check(repo.session.DB(dbName).C(applicationCollection).Insert(repo.apps...))
 		ok, err := repo.bulk.Do(context.Background())
 		check(err)
 		if ok.Errors {

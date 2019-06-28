@@ -69,7 +69,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 
 		hkey := encrypt.SHA1(to + credential.FuncId + auth.FromClientId)
 
-		path := "/gs-dat-lock@" + hkey
+		path := "/xbs-dat-lock@" + hkey
 		var version int32
 		invalid := false
 		version = 0

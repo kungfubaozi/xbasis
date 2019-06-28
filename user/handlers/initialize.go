@@ -55,7 +55,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) xconfig.OnConfi
 				panic(err)
 			}
 
-			_, err = client.AddData(fmt.Sprintf("gosion-index.users.%d", hashcode.Equa(u.Id)), map[string]interface{}{
+			_, err = client.AddData(fmt.Sprintf("xbs-index.users.%d", hashcode.Equa(u.Id)), map[string]interface{}{
 				"name": "users",
 				"id":   u.Id,
 				"fields": map[string]interface{}{

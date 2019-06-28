@@ -1,7 +1,7 @@
 package permissionhandlers
 
 const (
-	dbName = "gs_permission"
+	dbName = "xbs_permission"
 
 	roleCollection = "user_roles"
 
@@ -14,6 +14,12 @@ const (
 	functionGroupCollection = "function_groups"
 
 	userRoleRelationCollection = "user_roles_relation"
+
+	functionIndex = "xbs-functions"
+
+	functionGroupRelationIndex = "xbs-function-groups"
+
+	roleIndex = "xbs-roles"
 )
 
 //直接联系(用在es上)

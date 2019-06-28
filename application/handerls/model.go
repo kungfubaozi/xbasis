@@ -1,11 +1,13 @@
 package applicationhanderls
 
 const (
-	dbName = "gs_applications"
+	dbName = "xbs_applications"
 
 	applicationCollection = "applications"
 
 	synclogCollection = "sync_log"
+
+	applicationIndex = "xbs-applications"
 )
 
 type appInfo struct {

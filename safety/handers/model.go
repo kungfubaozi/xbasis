@@ -1,9 +1,11 @@
 package safetyhanders
 
 const (
-	dbName = "gs_safety"
+	dbName = "xbs_safety"
 
 	blacklistCollection = "blacklists"
+
+	blacklistIndex = "xbs-blacklists"
 )
 
 type blacklist struct {

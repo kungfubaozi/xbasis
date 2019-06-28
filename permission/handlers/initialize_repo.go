@@ -95,7 +95,7 @@ func (repo *initializeRepo) AddUGRelation(appId string) {
 func (repo *initializeRepo) SaveAndClose() {
 	defer repo.session.Close()
 	if repo.bulk != nil && repo.bulk.NumberOfActions() > 0 {
-		db := repo.session.DB("gs_permission")
+		db := repo.session.DB(dbName)
 		if repo.userRolesRelation != nil && len(repo.userRolesRelation) > 0 {
 			check(db.C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Equa(repo.config.UserId))).Insert(repo.userRolesRelation...))
 		}
@@ -170,7 +170,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			role.Id = repo.config.UserAppRoleId
 		}
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-roles").Type("_doc").Doc(role))
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(roleIndex).Type("_doc").Doc(role))
 
 		repo.userRoles = append(repo.userRoles, role)
 
@@ -206,7 +206,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		repo.functionGroups = append(repo.functionGroups, g)
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-function-groups").Type("_doc").Doc(g))
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionGroupRelationIndex).Type("_doc").Doc(g))
 
 		for _, v := range v.Functions {
 			f := &function{
@@ -239,7 +239,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 							id := encrypt.Md5(dr.FunctionId + dr.UserId)
 
-							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("gosion-urf-relations.%d", hashcode.Equa(repo.config.UserId))).Id(id).Type("_doc").Doc(dr))
+							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("xbs-urf-relations.%d", hashcode.Equa(repo.config.UserId))).Id(id).Type("_doc").Doc(dr))
 						}
 					}
 				}
@@ -259,7 +259,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				Path:          encrypt.SHA1(f.Api),
 			}
 
-			repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-functions").Type("_doc").Doc(sf))
+			repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionIndex).Type("_doc").Doc(sf))
 		}
 	}
 }

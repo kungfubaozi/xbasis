@@ -47,21 +47,21 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			ModuleName:  "Register",
 		}
 
-		//status, err := svc.applicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
-		//	ClientId: in.ClientId,
-		//})
-		//if err != nil {
-		//	return errstate.ErrRequest
-		//}
-		//
-		//if !status.State.Ok {
-		//	return status.State
-		//}
-		//
-		////只允许注册到route项目中
-		//if status.Type != gs_commons_constants.AppTypeRoute {
-		//	return errstate.ErrRequest
-		//}
+		status, err := svc.applicationStatusService.GetAppClientStatus(ctx, &xbasissvc_internal_application.GetAppClientStatusRequest{
+			ClientId: in.ClientId,
+		})
+		if err != nil {
+			return errstate.ErrRequest
+		}
+
+		if !status.State.Ok {
+			return status.State
+		}
+
+		//只允许注册到route项目中
+		if status.Type != constants.AppTypeRoute {
+			return errstate.ErrRequest
+		}
 
 		key := ""
 		value := in.Contract

@@ -11,7 +11,7 @@ func getURFIndex(fix string) string {
 	if fix != "*" {
 		fix = fmt.Sprintf("%d", hashcode.Equa(fix))
 	}
-	return fmt.Sprintf("gosion_urf_relations.%s", f)
+	return fmt.Sprintf("xbs-urf-relations.%s", f)
 }
 
 func mgoignore(err error) bool {
