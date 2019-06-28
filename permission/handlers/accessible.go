@@ -2,7 +2,6 @@ package permissionhandlers
 
 import (
 	"context"
-	"fmt"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
 	commons "konekko.me/xbasis/commons/dto"
@@ -117,14 +116,11 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 
 		c, err := svc.Client.Count(getURFIndex(in.UserId), map[string]interface{}{"userId": in.UserId, "functionId": in.FunctionId})
 		if err != nil {
-			fmt.Println("err 1")
 			return errstate.ErrSystem
 		}
 		if c == 1 {
-			fmt.Println("err 2")
 			return errstate.Success
 		}
-		fmt.Println("err 3")
 		return errstate.ErrUserPermission
 	})
 }

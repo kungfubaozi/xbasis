@@ -116,11 +116,10 @@ func (log *logClient) buildMessage(content *LogContent) {
 	}
 	message := &sarama.ProducerMessage{
 		Partition: 1,
-		Topic:     "gs-kafka-analysis-logger-topic-7",
+		Topic:     "xbs-analysis-logger-topic-1",
 		Value:     sarama.StringEncoder(string(b)),
 	}
 	_, _, err = log.producer.SendMessage(message)
-	fmt.Println("err ", err)
 }
 
 /**

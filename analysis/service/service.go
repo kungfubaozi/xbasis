@@ -44,7 +44,7 @@ func StartService() {
 
 		defer consumer.Close()
 
-		partitionConsumer, err := consumer.ConsumePartition("gs-analysis-logger-resp-2", 0, sarama.OffsetOldest)
+		partitionConsumer, err := consumer.ConsumePartition("xbs-analysis-loggerresp-topic-1", 0, sarama.OffsetOldest)
 		if err != nil {
 			panic(err.Error())
 		}

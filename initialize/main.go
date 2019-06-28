@@ -144,7 +144,7 @@ func main() {
 		fmt.Println("set init config err", err)
 	}
 
-	_, s, err = c.Get(constants.GosionConfiguration)
+	_, s, err = c.Get(constants.XBasisConfiguration)
 	if err != nil {
 
 	}
@@ -162,7 +162,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.Set(constants.GosionConfiguration, b, int32(v))
+	_, err = c.Set(constants.XBasisConfiguration, b, int32(v))
 	if err != nil {
 		panic(err)
 	}

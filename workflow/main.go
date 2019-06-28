@@ -48,6 +48,8 @@ func main() {
 
 		pb.RegisterProcessHandler(s.Server(), workflowhandlers.NewProcessService(flow.Modules(), id, log))
 
+		pb.RegisterFormHandler(s.Server(), workflowhandlers.NewFormService(flow.Modules(), id, log))
+
 		errc <- s.Run()
 	}()
 

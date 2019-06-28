@@ -416,8 +416,6 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 									AppType:  status.AppType,
 								}
 
-								fmt.Println("appType-s", status.AppType)
-
 								userId = status.UserId
 
 							} else {
@@ -583,6 +581,6 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 func NewVerificationService(pool *redis.Pool, session *mgo.Session,
 	innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService, blacklistService xbasissvc_external_safety.BlacklistService,
 	innerAuthService xbasissvc_internal_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) inner.VerificationHandler {
-	return &verificationService{pool: pool, session: session, innerApplicationStatusService: innerApplicationStatusService,
+	return &verificationService{pool: pool, session: session, innerApplicationStatusService: innerApplicationStatusService, id: generator.NewIDG(),
 		blacklistService: blacklistService, innerAuthService: innerAuthService, Client: client, log: logger, _log: logrus.New()}
 }

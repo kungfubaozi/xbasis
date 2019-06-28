@@ -298,8 +298,6 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 						return token.State
 					}
 
-					fmt.Println("1")
-
 					out.RefreshToken = token.RefreshToken
 
 					//当web端登录时，不传入accessToken，需要进行refresh，保证其refreshToken是有效的

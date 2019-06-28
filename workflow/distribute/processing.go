@@ -246,6 +246,9 @@ func (f *processing) formCheck(formId string, callback types.ErrCallback) *flowe
 				}
 				resp(flowerr.ErrUnknow)
 			}()
+
+			wg.Wait()
+
 			return s
 		}
 	}

@@ -6,17 +6,9 @@ import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Form {
 
-    rpc CreatePlaceholder (CreatePlaceholderRequest) returns (CreatePlaceholderResponse);
+    rpc Delete (DeleteRequest) returns (DeleteResponse);
 
-    rpc DeletePlaceholder (DeletePlaceholderRequest) returns (DeletePlaceholderResponse);
-
-    rpc UpdatePlaceholder (UpdatePlaceholderRequest) returns (UpdatePlaceholderResponse);
-
-    rpc AddField (AddFieldRequest) returns (AddFieldResponse);
-
-    rpc RemoveField (RemoveFieldRequest) returns (RemoveFieldResponse);
-
-    rpc UpdateFieldProps (UpdateFieldPropsRequest) returns (UpdateFieldPropsResponse);
+    rpc Update (UpdateRequest) returns (UpdateResponse);
 
     rpc GetAllTypeFields (GetAllTypeFieldsRequest) returns (GetAllTypeFieldsResponse);
 
@@ -24,8 +16,19 @@ service Form {
     rpc CheckFiledValue (CheckFiledValueRequest) returns (CheckFieldValueResponse);
 
     rpc Search(SearchFormRequest) returns (SearchFormResponse);
+
+    rpc Detail(DetailRequest) returns (DetailResponse);
 }
 
+message DetailResponse {
+    xbasis.commons.dto.State state = 1;
+    string name = 2;
+    string json = 3;
+}
+
+message DetailRequest {
+    string id = 1;
+}
 
 message SearchFormRequest {
     string value = 1;
@@ -54,61 +57,22 @@ message GetAllTypeFieldsResponse {
     xbasis.commons.dto.State state = 1;
 }
 
-message CreatePlaceholderRequest {
-    string key = 1;
-    string name = 2;
-    string desc = 3;
-}
-
-message CreatePlaceholderResponse {
-    xbasis.commons.dto.State state = 1;
-    string id = 2;
-}
-
-message DeletePlaceholderRequest {
+message DeleteRequest {
     string id = 1;
 }
 
-message DeletePlaceholderResponse {
+message DeleteResponse {
     xbasis.commons.dto.State state = 1;
 }
 
-message UpdatePlaceholderRequest {
+message UpdateRequest {
     string id = 1;
     string name = 2;
     string desc = 3;
     string key = 4;
+    repeated string fields = 5;
 }
 
-message UpdatePlaceholderResponse {
-    xbasis.commons.dto.State state = 1;
-}
-
-message AddFieldRequest {
-    string name = 1;
-    string desc = 2;
-    string label = 3;
-    int64 type = 4;
-}
-
-message AddFieldResponse {
-    xbasis.commons.dto.State state = 1;
-}
-
-message RemoveFieldRequest {
-    string phId = 1;
-    string fieldId = 2;
-}
-
-message RemoveFieldResponse {
-    xbasis.commons.dto.State state = 1;
-}
-
-message UpdateFieldPropsRequest {
-    string phId = 1;
-    string fieldId = 2;
-}
-
-message UpdateFieldPropsResponse {
+message UpdateResponse {
     xbasis.commons.dto.State state = 1;
 }

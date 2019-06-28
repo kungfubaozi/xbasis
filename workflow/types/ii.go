@@ -3,8 +3,8 @@ package types
 import "fmt"
 
 var (
-	IndexSubmitForm = "gosion-workflow-forms"
-	DBFlow          = "gosion-workflow"
+	IndexSubmitForm = "xbs-workflow-forms"
+	DBFlow          = "xbs-workflow"
 )
 
 func GetSubmitFormCollection(instanceId, nodeId string) string {

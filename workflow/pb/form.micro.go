@@ -8,24 +8,18 @@ It is generated from these files:
 	pb/form.proto
 
 It has these top-level messages:
+	DetailResponse
+	DetailRequest
 	SearchFormRequest
 	SearchFormResponse
 	CheckFiledValueRequest
 	CheckFieldValueResponse
 	GetAllTypeFieldsRequest
 	GetAllTypeFieldsResponse
-	CreatePlaceholderRequest
-	CreatePlaceholderResponse
-	DeletePlaceholderRequest
-	DeletePlaceholderResponse
-	UpdatePlaceholderRequest
-	UpdatePlaceholderResponse
-	AddFieldRequest
-	AddFieldResponse
-	RemoveFieldRequest
-	RemoveFieldResponse
-	UpdateFieldPropsRequest
-	UpdateFieldPropsResponse
+	DeleteRequest
+	DeleteResponse
+	UpdateRequest
+	UpdateResponse
 */
 package xbasissvc_external_workflow
 
@@ -59,16 +53,13 @@ var _ server.Option
 // Client API for Form service
 
 type FormService interface {
-	CreatePlaceholder(ctx context.Context, in *CreatePlaceholderRequest, opts ...client.CallOption) (*CreatePlaceholderResponse, error)
-	DeletePlaceholder(ctx context.Context, in *DeletePlaceholderRequest, opts ...client.CallOption) (*DeletePlaceholderResponse, error)
-	UpdatePlaceholder(ctx context.Context, in *UpdatePlaceholderRequest, opts ...client.CallOption) (*UpdatePlaceholderResponse, error)
-	AddField(ctx context.Context, in *AddFieldRequest, opts ...client.CallOption) (*AddFieldResponse, error)
-	RemoveField(ctx context.Context, in *RemoveFieldRequest, opts ...client.CallOption) (*RemoveFieldResponse, error)
-	UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, opts ...client.CallOption) (*UpdateFieldPropsResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
+	Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
 	GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, opts ...client.CallOption) (*GetAllTypeFieldsResponse, error)
 	// 检查form的filed value是否符合
 	CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, opts ...client.CallOption) (*CheckFieldValueResponse, error)
 	Search(ctx context.Context, in *SearchFormRequest, opts ...client.CallOption) (*SearchFormResponse, error)
+	Detail(ctx context.Context, in *DetailRequest, opts ...client.CallOption) (*DetailResponse, error)
 }
 
 type formService struct {
@@ -89,9 +80,9 @@ func NewFormService(name string, c client.Client) FormService {
 	}
 }
 
-func (c *formService) CreatePlaceholder(ctx context.Context, in *CreatePlaceholderRequest, opts ...client.CallOption) (*CreatePlaceholderResponse, error) {
-	req := c.c.NewRequest(c.name, "Form.CreatePlaceholder", in)
-	out := new(CreatePlaceholderResponse)
+func (c *formService) Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error) {
+	req := c.c.NewRequest(c.name, "Form.Delete", in)
+	out := new(DeleteResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,49 +90,9 @@ func (c *formService) CreatePlaceholder(ctx context.Context, in *CreatePlacehold
 	return out, nil
 }
 
-func (c *formService) DeletePlaceholder(ctx context.Context, in *DeletePlaceholderRequest, opts ...client.CallOption) (*DeletePlaceholderResponse, error) {
-	req := c.c.NewRequest(c.name, "Form.DeletePlaceholder", in)
-	out := new(DeletePlaceholderResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *formService) UpdatePlaceholder(ctx context.Context, in *UpdatePlaceholderRequest, opts ...client.CallOption) (*UpdatePlaceholderResponse, error) {
-	req := c.c.NewRequest(c.name, "Form.UpdatePlaceholder", in)
-	out := new(UpdatePlaceholderResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *formService) AddField(ctx context.Context, in *AddFieldRequest, opts ...client.CallOption) (*AddFieldResponse, error) {
-	req := c.c.NewRequest(c.name, "Form.AddField", in)
-	out := new(AddFieldResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *formService) RemoveField(ctx context.Context, in *RemoveFieldRequest, opts ...client.CallOption) (*RemoveFieldResponse, error) {
-	req := c.c.NewRequest(c.name, "Form.RemoveField", in)
-	out := new(RemoveFieldResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *formService) UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, opts ...client.CallOption) (*UpdateFieldPropsResponse, error) {
-	req := c.c.NewRequest(c.name, "Form.UpdateFieldProps", in)
-	out := new(UpdateFieldPropsResponse)
+func (c *formService) Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Form.Update", in)
+	out := new(UpdateResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -179,32 +130,36 @@ func (c *formService) Search(ctx context.Context, in *SearchFormRequest, opts ..
 	return out, nil
 }
 
+func (c *formService) Detail(ctx context.Context, in *DetailRequest, opts ...client.CallOption) (*DetailResponse, error) {
+	req := c.c.NewRequest(c.name, "Form.Detail", in)
+	out := new(DetailResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Form service
 
 type FormHandler interface {
-	CreatePlaceholder(context.Context, *CreatePlaceholderRequest, *CreatePlaceholderResponse) error
-	DeletePlaceholder(context.Context, *DeletePlaceholderRequest, *DeletePlaceholderResponse) error
-	UpdatePlaceholder(context.Context, *UpdatePlaceholderRequest, *UpdatePlaceholderResponse) error
-	AddField(context.Context, *AddFieldRequest, *AddFieldResponse) error
-	RemoveField(context.Context, *RemoveFieldRequest, *RemoveFieldResponse) error
-	UpdateFieldProps(context.Context, *UpdateFieldPropsRequest, *UpdateFieldPropsResponse) error
+	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
+	Update(context.Context, *UpdateRequest, *UpdateResponse) error
 	GetAllTypeFields(context.Context, *GetAllTypeFieldsRequest, *GetAllTypeFieldsResponse) error
 	// 检查form的filed value是否符合
 	CheckFiledValue(context.Context, *CheckFiledValueRequest, *CheckFieldValueResponse) error
 	Search(context.Context, *SearchFormRequest, *SearchFormResponse) error
+	Detail(context.Context, *DetailRequest, *DetailResponse) error
 }
 
 func RegisterFormHandler(s server.Server, hdlr FormHandler, opts ...server.HandlerOption) error {
 	type form interface {
-		CreatePlaceholder(ctx context.Context, in *CreatePlaceholderRequest, out *CreatePlaceholderResponse) error
-		DeletePlaceholder(ctx context.Context, in *DeletePlaceholderRequest, out *DeletePlaceholderResponse) error
-		UpdatePlaceholder(ctx context.Context, in *UpdatePlaceholderRequest, out *UpdatePlaceholderResponse) error
-		AddField(ctx context.Context, in *AddFieldRequest, out *AddFieldResponse) error
-		RemoveField(ctx context.Context, in *RemoveFieldRequest, out *RemoveFieldResponse) error
-		UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, out *UpdateFieldPropsResponse) error
+		Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error
+		Update(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
 		GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, out *GetAllTypeFieldsResponse) error
 		CheckFiledValue(ctx context.Context, in *CheckFiledValueRequest, out *CheckFieldValueResponse) error
 		Search(ctx context.Context, in *SearchFormRequest, out *SearchFormResponse) error
+		Detail(ctx context.Context, in *DetailRequest, out *DetailResponse) error
 	}
 	type Form struct {
 		form
@@ -217,28 +172,12 @@ type formHandler struct {
 	FormHandler
 }
 
-func (h *formHandler) CreatePlaceholder(ctx context.Context, in *CreatePlaceholderRequest, out *CreatePlaceholderResponse) error {
-	return h.FormHandler.CreatePlaceholder(ctx, in, out)
+func (h *formHandler) Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error {
+	return h.FormHandler.Delete(ctx, in, out)
 }
 
-func (h *formHandler) DeletePlaceholder(ctx context.Context, in *DeletePlaceholderRequest, out *DeletePlaceholderResponse) error {
-	return h.FormHandler.DeletePlaceholder(ctx, in, out)
-}
-
-func (h *formHandler) UpdatePlaceholder(ctx context.Context, in *UpdatePlaceholderRequest, out *UpdatePlaceholderResponse) error {
-	return h.FormHandler.UpdatePlaceholder(ctx, in, out)
-}
-
-func (h *formHandler) AddField(ctx context.Context, in *AddFieldRequest, out *AddFieldResponse) error {
-	return h.FormHandler.AddField(ctx, in, out)
-}
-
-func (h *formHandler) RemoveField(ctx context.Context, in *RemoveFieldRequest, out *RemoveFieldResponse) error {
-	return h.FormHandler.RemoveField(ctx, in, out)
-}
-
-func (h *formHandler) UpdateFieldProps(ctx context.Context, in *UpdateFieldPropsRequest, out *UpdateFieldPropsResponse) error {
-	return h.FormHandler.UpdateFieldProps(ctx, in, out)
+func (h *formHandler) Update(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.FormHandler.Update(ctx, in, out)
 }
 
 func (h *formHandler) GetAllTypeFields(ctx context.Context, in *GetAllTypeFieldsRequest, out *GetAllTypeFieldsResponse) error {
@@ -251,4 +190,8 @@ func (h *formHandler) CheckFiledValue(ctx context.Context, in *CheckFiledValueRe
 
 func (h *formHandler) Search(ctx context.Context, in *SearchFormRequest, out *SearchFormResponse) error {
 	return h.FormHandler.Search(ctx, in, out)
+}
+
+func (h *formHandler) Detail(ctx context.Context, in *DetailRequest, out *DetailResponse) error {
+	return h.FormHandler.Detail(ctx, in, out)
 }

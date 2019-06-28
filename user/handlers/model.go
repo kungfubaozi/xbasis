@@ -1,7 +1,7 @@
 package userhandlers
 
 const (
-	dbName = "gs_users"
+	dbName = "xbs_users"
 
 	userCollection = "users"
 
@@ -13,7 +13,7 @@ const (
 )
 
 const (
-	typeUserIndex = "gosion-index.users.*"
+	typeUserIndex = "xbs-index.users.*"
 )
 
 const (
