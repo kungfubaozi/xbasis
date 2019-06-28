@@ -3,26 +3,28 @@ package userhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/regx"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/user/pb"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	regx "konekko.me/xbasis/commons/regx"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/user/pb"
+	"konekko.me/xbasis/user/pb/inner"
 	"time"
 )
 
 type inviteService struct {
-	session *mgo.Session
-	log     analysisclient.LogClient
-	id      gs_commons_generator.IDGenerator
+	session          *mgo.Session
+	log              analysisclient.LogClient
+	id               generator.IDGenerator
+	innerUserService xbasissvc_internal_user.UserService
 }
 
-func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.UserId) > 10 && len(in.AppId) > 8 && in.State > 0 {
 			repo := svc.GetRepo()
@@ -39,7 +41,7 @@ func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateReq
 }
 
 func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvitedRequest, out *external.GetDetailResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.UserId) < 10 {
 			return nil
@@ -80,13 +82,13 @@ func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvited
 }
 
 func (svc *inviteService) Search(ctx context.Context, in *external.InviteSearchRequest, out *external.InviteSearchResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *external.HasInvitedResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		key := ""
 		var value interface{}
@@ -130,45 +132,43 @@ func (svc *inviteService) GetRepo() *inviteRepo {
 /**
 必须要填写初始化配置的信息，registerType
 当用户注册时会检测(按照registerType查找对应的数据匹配)是否有对应邀请用户，如果有则会合并数据，没有则进入正常流程
-如果被邀请用户已经注册会不通过
+如果被邀请用户已经注册
 */
-func (svc *inviteService) User(ctx context.Context, in *external.InviteUserRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *inviteService) User(ctx context.Context, in *external.InviteUserRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		configuration := serviceconfiguration.Get()
 
 		header := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
-			ServiceName: gs_commons_constants.UserService,
-			ModuleName:  "Invite",
+			ServiceName: constants.UserService,
+			ModuleName:  "InviteUser",
 		}
 
-		key := "user_id"
-		value := in.UserId
+		key := ""
+		value := ""
 
-		if len(in.UserId) == 0 {
-			if len(in.Phone) > 0 && gs_commons_regx.Phone(in.Phone) {
-				return errstate.ErrFormatPhone
+		if len(in.Phone) > 0 && regx.Phone(in.Phone) {
+			return errstate.ErrFormatPhone
+		}
+		if len(in.Email) > 0 && regx.Email(in.Email) {
+			return errstate.ErrFormatEmail
+		}
+		if configuration.RegisterType == 1001 { //phone
+			if len(in.Phone) <= 8 {
+				return errstate.ErrRequest
 			}
-			if len(in.Email) > 0 && gs_commons_regx.Email(in.Email) {
-				return errstate.ErrFormatEmail
+			key = "phone"
+			value = in.Phone
+		} else if configuration.RegisterType == 1002 { //email
+			if len(in.Email) <= 8 {
+				return errstate.ErrRequest
 			}
-			if configuration.RegisterType == 1001 { //phone
-				if len(in.Phone) <= 8 {
-					return errstate.ErrRequest
-				}
-				key = "phone"
-				value = in.Phone
-			} else if configuration.RegisterType == 1002 { //email
-				if len(in.Email) <= 8 {
-					return errstate.ErrRequest
-				}
-				key = "email"
-				value = in.Email
-			}
+			key = "email"
+			value = in.Email
+		}
 
-			if len(key) == 0 || len(value) < 6 {
-				return nil
-			}
+		if len(key) == 0 || len(value) < 6 {
+			return nil
 		}
 
 		repo := svc.GetRepo()
@@ -184,8 +184,8 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 				UserId:       svc.id.Get(),
 				Username:     in.Username,
 				RealName:     in.RealName,
-				Side:         len(in.UserId) == 0, //side的作用是判断user是内部还是外部新的
-				State:        gs_commons_constants.InviteStateOfWaiting,
+				Side:         false, //side的作用是判断user是内部还是外部新的
+				State:        constants.InviteStateOfWaiting,
 			}
 
 			var items []*inviteItem
@@ -238,13 +238,126 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 	})
 }
 
-func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+/**
+Append是在邀请用户或已经注册用户中添加邀请信息，不同与User接口
+*/
+func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+		if len(in.UserId) < 10 || in.Item == nil {
+			return nil
+		}
 
-		return nil
+		header := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: constants.UserService,
+			ModuleName:  "InviteUser",
+		}
+
+		//检查用户是否被注册/被邀请
+		//如果是邀请用户则直接在原有内容上继续添加
+		//如果是注册用户，则新建invite，保存
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		m, err := repo.FindByKey("user_id", in.UserId)
+		e := false
+		if err != nil && err == mgo.ErrNotFound {
+			err = nil
+			e = true
+		}
+
+		if err != nil {
+			return nil
+		}
+
+		if e {
+			s, err := svc.innerUserService.IsExists(ctx, &xbasissvc_internal_user.ExistsRequest{
+				UserId: in.UserId,
+			})
+
+			if err != nil {
+				return nil
+			}
+
+			if !s.State.Ok {
+				return s.State
+			}
+
+			u := &inviteModel{
+				UserId: in.UserId,
+				Side:   true,
+				Items: []*inviteItem{
+					{
+						BingGroupIds: in.Item.BindGroupIds,
+						AppId:        in.Item.AppId,
+						Roles:        in.Item.Roles,
+					},
+				},
+				CreateAt:     time.Now().UnixNano(),
+				CreateUserId: auth.Token.UserId,
+			}
+
+			err = repo.Add(u)
+
+			if err == nil {
+
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: header,
+					Action:  "InviteSideUserToApp",
+					Fields: &analysisclient.LogFields{
+						"app_id":    in.Item.AppId,
+						"user_id":   m.UserId,
+						"timestamp": time.Now().Unix(),
+					},
+					Index: &analysisclient.LogIndex{
+						Name: "users",
+						Id:   m.UserId,
+						Fields: &analysisclient.LogFields{
+							"user_id": m.UserId,
+							"invite":  true,
+							"side":    true,
+						},
+					},
+				})
+
+			}
+
+		} else {
+			//已经邀请但未注册
+			if m == nil {
+				return nil
+			}
+
+			//去除原有的
+			for k, v := range m.Items {
+				if v.AppId == in.Item.AppId {
+					i := k - 1
+					if i < 0 {
+						i = 0
+					}
+					m.Items = append(m.Items[:i], m.Items[k:]...)
+					break
+				}
+			}
+
+			m.Items = append(m.Items, &inviteItem{
+				BingGroupIds: in.Item.BindGroupIds,
+				Roles:        in.Item.Roles,
+				AppId:        in.Item.AppId,
+			})
+
+			err = repo.UpdateItems(in.UserId, m.Items)
+		}
+
+		if err != nil {
+			return nil
+		}
+
+		return errstate.Success
 	})
 }
 
 func NewInviteService(session *mgo.Session, log analysisclient.LogClient) external.InviteHandler {
-	return &inviteService{session: session, log: log, id: gs_commons_generator.NewIDG()}
+	return &inviteService{session: session, log: log, id: generator.NewIDG()}
 }

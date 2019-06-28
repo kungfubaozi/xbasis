@@ -4,16 +4,16 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/analysis/client"
-	inner "konekko.me/gosion/authentication/pb/inner"
-	"konekko.me/gosion/commons/actions"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/connection/cmd/connectioncli"
+	"konekko.me/xbasis/analysis/client"
+	inner "konekko.me/xbasis/authentication/pb/inner"
+	"konekko.me/xbasis/commons/actions"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	geneartor "konekko.me/xbasis/commons/generator"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
 	"time"
 )
 
@@ -21,6 +21,7 @@ type tokenService struct {
 	pool          *redis.Pool
 	connectioncli connectioncli.ConnectionClient
 	log           analysisclient.LogClient
+	id            geneartor.IDGenerator
 }
 
 func (svc *tokenService) GetRepo() *tokenRepo {
@@ -28,7 +29,7 @@ func (svc *tokenService) GetRepo() *tokenRepo {
 }
 
 func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest, out *inner.GenerateResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		if len(auth.FromClientId) <= 10 {
 			return nil
@@ -37,7 +38,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 		headers := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
 			ModuleName:  "Token",
-			ServiceName: gs_commons_constants.InternalAuthenticationService,
+			ServiceName: constants.InternalAuthenticationService,
 		}
 
 		repo := svc.GetRepo()
@@ -50,7 +51,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 			return s
 		}
 
-		id := gs_commons_generator.NewIDG()
+		id := svc.id
 
 		if len(in.RelationId) <= 30 {
 
@@ -63,7 +64,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
 			Relation: in.RelationId,
-			Type:     gs_commons_constants.RefreshToken,
+			Type:     constants.RefreshToken,
 		}
 
 		access := &simpleUserToken{
@@ -72,7 +73,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 			AppId:    in.Auth.AppId,
 			ClientId: in.Auth.ClientId,
 			Relation: in.RelationId,
-			Type:     gs_commons_constants.AccessToken,
+			Type:     constants.AccessToken,
 		}
 
 		ui := &userAuthorizeInfo{
@@ -132,5 +133,5 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 }
 
 func NewTokenService(pool *redis.Pool, connectioncli connectioncli.ConnectionClient, log analysisclient.LogClient) inner.TokenHandler {
-	return &tokenService{pool: pool, connectioncli: connectioncli, log: log}
+	return &tokenService{pool: pool, connectioncli: connectioncli, log: log, id: geneartor.NewIDG()}
 }

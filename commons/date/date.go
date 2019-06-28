@@ -1,4 +1,4 @@
-package gs_commons_date
+package xbasisdate
 
 import (
 	"strings"

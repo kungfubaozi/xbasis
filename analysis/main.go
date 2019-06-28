@@ -1,6 +1,6 @@
 package main
 
-import "konekko.me/gosion/analysis/service"
+import "konekko.me/xbasis/analysis/service"
 
 func main() {
 	analysisservice.StartService()

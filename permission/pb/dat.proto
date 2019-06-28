@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package gosionsvc.external.permission;
+package xbasissvc.external.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service DurationAccess {
 
-    rpc Send (SendRequest) returns (gs.commons.dto.Status);
+    rpc Send (SendRequest) returns (xbasis.commons.dto.Status);
 
     rpc Verify (VerifyRequest) returns (VerifyResponse);
 }
@@ -18,7 +18,7 @@ message VerifyRequest {
 }
 
 message VerifyResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string dat = 2;
 }
 

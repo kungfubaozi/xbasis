@@ -8,17 +8,17 @@ import (
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/regx"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/config/call"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/encrypt"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	regx "konekko.me/xbasis/commons/regx"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/permission/pb"
+	"konekko.me/xbasis/user/pb/inner"
 	"math/rand"
 	"time"
 )
@@ -27,7 +27,7 @@ type durationAccessService struct {
 	pool    *redis.Pool
 	session *mgo.Session
 	*indexutils.Client
-	messageService gosionsvc_internal_user.MessageService
+	messageService xbasissvc_internal_user.MessageService
 	log            analysisclient.LogClient
 	zk             *zk.Conn
 }
@@ -36,8 +36,8 @@ func (svc *durationAccessService) GetRepo() functionRepo {
 	return functionRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
-func (svc *durationAccessService) Send(ctx context.Context, in *external.SendRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *durationAccessService) Send(ctx context.Context, in *external.SendRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		fmt.Println("send")
 
@@ -127,7 +127,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 		var ext int64
 
 		if configuration.DurationAccessTokenSendCodeToType == 1002 { //email
-			if !gs_commons_regx.Email(to) && !credential.FromAuth {
+			if !regx.Email(to) && !credential.FromAuth {
 				return errstate.ErrFormatEmail
 			}
 			ext = 10 * 60 * 1000
@@ -135,7 +135,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 				ext = configuration.EmailVerificationCodeExpiredTime
 			}
 		} else if configuration.DurationAccessTokenSendCodeToType == 1001 { //phone
-			if !gs_commons_regx.Phone(to) && !credential.FromAuth {
+			if !regx.Phone(to) && !credential.FromAuth {
 				return errstate.ErrFormatPhone
 			}
 			ext = 10 * 60 * 1000
@@ -165,7 +165,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 			return errstate.ErrSystem
 		}
 
-		st, err := svc.messageService.SendVerificationCode(ctx, &gosionsvc_internal_user.SendRequest{
+		st, err := svc.messageService.SendVerificationCode(ctx, &xbasissvc_internal_user.SendRequest{
 			To:          to,
 			Auth:        credential.FromAuth,
 			Code:        fmt.Sprintf("%d", dat.Code),
@@ -205,7 +205,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 }
 
 func (svc *durationAccessService) Verify(ctx context.Context, in *external.VerifyRequest, out *external.VerifyResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.Credential) > 0 && len(in.To) <= 8 && (in.Code <= 1000000 && in.Code >= 100000) {
 			return errstate.ErrRequest
 		}
@@ -245,7 +245,7 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 		}
 
 		//generate token
-		id := gs_commons_generator.NewIDG()
+		id := generator.NewIDG()
 		tokenKey := id.String()
 
 		key, err := encrypt.AESEncrypt([]byte(tokenKey), []byte(configuration.CurrencySecretKey))
@@ -292,7 +292,7 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 	})
 }
 
-func (svc *durationAccessService) getCredential(credential string) (*durationAccessCredential, *gs_commons_dto.State) {
+func (svc *durationAccessService) getCredential(credential string) (*durationAccessCredential, *commons.State) {
 	configuration := serviceconfiguration.Get()
 
 	var c *durationAccessCredential
@@ -314,6 +314,6 @@ func (svc *durationAccessService) getCredential(credential string) (*durationAcc
 }
 
 func NewDurationAccessService(pool *redis.Pool, session *mgo.Session, conn *zk.Conn,
-	messageService gosionsvc_internal_user.MessageService, client *indexutils.Client, log analysisclient.LogClient) external.DurationAccessHandler {
+	messageService xbasissvc_internal_user.MessageService, client *indexutils.Client, log analysisclient.LogClient) external.DurationAccessHandler {
 	return &durationAccessService{pool: pool, Client: client, session: session, messageService: messageService, log: log, zk: conn}
 }

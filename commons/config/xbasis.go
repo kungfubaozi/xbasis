@@ -1,10 +1,10 @@
-package gs_commons_config
+package xbasisconfig
 
 import (
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/constants"
+	constants "konekko.me/xbasis/commons/constants"
 )
 
 type GosionConfiguration struct {
@@ -32,7 +32,7 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 	c := NewConnect("192.168.2.57:2181")
 	//one same service process
 	acl := zk.WorldACL(zk.PermAll)
-	_, err := c.Create(gs_commons_constants.GosionConfiguration, nil, 0, acl)
+	_, err := c.Create(constants.XBasisConfiguration, nil, 0, acl)
 	if err != nil {
 		fmt.Println("node register error:", err)
 		//return
@@ -49,7 +49,7 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 		return true
 	}
 
-	v, _, err := c.Get(gs_commons_constants.GosionConfiguration)
+	v, _, err := c.Get(constants.XBasisConfiguration)
 	//fmt.Println("v", v)
 	//fmt.Println("s", s)
 	//spew.Dump(s)
@@ -63,7 +63,7 @@ func WatchGosionConfig(event OnGosionConfigurationChanged) {
 		}
 	}
 
-	watch(c, gs_commons_constants.GosionConfiguration, func(data []byte, version int32) bool {
+	watch(c, constants.XBasisConfiguration, func(data []byte, version int32) bool {
 		return back(data)
 	})
 }

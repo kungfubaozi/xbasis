@@ -1,7 +1,7 @@
 package connection
 
 import (
-	"konekko.me/gosion/connection/cmd/connectioncli"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
 )
 
 type Message struct {

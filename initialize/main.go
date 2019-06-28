@@ -4,11 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/regx"
+	xconfig "konekko.me/xbasis/commons/config"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/encrypt"
+	generator "konekko.me/xbasis/commons/generator"
+	regx "konekko.me/xbasis/commons/regx"
 	"os"
 	"strconv"
 	"time"
@@ -46,11 +46,11 @@ func main() {
 	//	fmt.Println("please set admin face local path.")
 	//	return
 	//}
-	if !gs_commons_regx.Email(email) {
+	if !regx.Email(email) {
 		fmt.Println("email format err.")
 		return
 	}
-	if !gs_commons_regx.Phone(phone) {
+	if !regx.Phone(phone) {
 		fmt.Println("phone format err.")
 		return
 	}
@@ -77,11 +77,11 @@ func main() {
 	fmt.Println("system initialize...")
 	time.Sleep(200)
 
-	id := gs_commons_generator.NewIDG()
+	id := generator.NewIDG()
 
 	secretKey := encrypt.Md5(time.Now().String())
 
-	initConfig := &gs_commons_config.GosionInitializeConfig{
+	initConfig := &xconfig.GosionInitializeConfig{
 		AppName:       enterprise,
 		UserId:        id.Get(),
 		Desc:          desc,
@@ -96,7 +96,7 @@ func main() {
 		AdminAppId:    id.Short(),
 	}
 
-	configuration := &gs_commons_config.GosionConfiguration{
+	configuration := &xconfig.GosionConfiguration{
 		AccessTokenExpiredTime:            10 * 60 * 1000,
 		RefreshTokenExpiredTime:           7 * 24 * 60 * 60 * 1000,
 		EmailVerificationCodeExpiredTime:  10 * 60 * 1000,
@@ -121,9 +121,9 @@ func main() {
 	}
 
 	//once
-	c := gs_commons_config.NewConnect(config)
+	c := xconfig.NewConnect(config)
 	//set def configs
-	_, s, err := c.Get(gs_commons_constants.ZKWatchInitializeConfigPath)
+	_, s, err := c.Get(constants.ZKWatchInitializeConfigPath)
 	if err != nil {
 		panic(err)
 	}
@@ -139,12 +139,12 @@ func main() {
 
 	fmt.Println("version -", s.Version)
 
-	_, err = c.Set(gs_commons_constants.ZKWatchInitializeConfigPath, b, int32(v))
+	_, err = c.Set(constants.ZKWatchInitializeConfigPath, b, int32(v))
 	if err != nil {
 		fmt.Println("set init config err", err)
 	}
 
-	_, s, err = c.Get(gs_commons_constants.GosionConfiguration)
+	_, s, err = c.Get(constants.GosionConfiguration)
 	if err != nil {
 
 	}
@@ -162,7 +162,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.Set(gs_commons_constants.GosionConfiguration, b, int32(v))
+	_, err = c.Set(constants.GosionConfiguration, b, int32(v))
 	if err != nil {
 		panic(err)
 	}

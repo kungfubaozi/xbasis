@@ -2,7 +2,7 @@
 // source: pb/instance.proto
 
 /*
-Package gosionsvc_external_workflow is a generated protocol buffer package.
+Package xbasissvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/instance.proto
@@ -23,13 +23,13 @@ It has these top-level messages:
 	GetMyLaunchInstancesRequest
 	GetMyLaunchInstancesResponse
 */
-package gosionsvc_external_workflow
+package xbasissvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import _ "github.com/golang/protobuf/ptypes/any"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -80,7 +80,7 @@ func NewInstanceService(name string, c client.Client) InstanceService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.workflow"
+		name = "xbasissvc.external.workflow"
 	}
 	return &instanceService{
 		c:    c,

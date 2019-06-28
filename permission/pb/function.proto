@@ -1,23 +1,23 @@
 syntax = "proto3";
 
-package gosionsvc.external.permission;
+package xbasissvc.external.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 //功能
 service Function {
 
-    rpc Add (FunctionRequest) returns (gs.commons.dto.Status);
+    rpc Add (FunctionRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Rename (FunctionRequest) returns (gs.commons.dto.Status);
+    rpc Rename (FunctionRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Move (FunctionRequest) returns (gs.commons.dto.Status);
+    rpc Move (FunctionRequest) returns (xbasis.commons.dto.Status);
 
-    rpc AddGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+    rpc AddGroup (FunctionGroupRequest) returns (xbasis.commons.dto.Status);
 
-    rpc MoveGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+    rpc MoveGroup (FunctionGroupRequest) returns (xbasis.commons.dto.Status);
 
-    rpc RenameGroup (FunctionGroupRequest) returns (gs.commons.dto.Status);
+    rpc RenameGroup (FunctionGroupRequest) returns (xbasis.commons.dto.Status);
 
     rpc GetFunctionItems (GetFunctionItemsRequest) returns (GetFunctionItemsResponse);
 
@@ -34,7 +34,7 @@ message FunctionSearchRequest {
 }
 
 message FunctionSearchResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated FindItemResponse data = 2;
 }
 
@@ -44,7 +44,7 @@ message GetFunctionItemsRequest {
 }
 
 message GetFunctionItemsResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated FindItemResponse data = 2;
 }
 
@@ -61,7 +61,7 @@ message GetFunctionItemRequest {
 }
 
 message GetFunctionItemResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     FunctionItemDetail data = 2;
 }
 

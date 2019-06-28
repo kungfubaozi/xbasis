@@ -1,6 +1,6 @@
 package main
 
-import "konekko.me/gosion/authentication/service"
+import "konekko.me/xbasis/authentication/service"
 
 func main() {
 

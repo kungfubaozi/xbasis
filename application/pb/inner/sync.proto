@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package gosionsvc.internal.application;
+package xbasissvc.internal.application;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service UserSync {
 
-    rpc Check (CheckRequest) returns (gs.commons.dto.Status);
+    rpc Check (CheckRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Update (UserInfo) returns (gs.commons.dto.Status);
+    rpc Update (UserInfo) returns (xbasis.commons.dto.Status);
 }
 
 message CheckRequest {

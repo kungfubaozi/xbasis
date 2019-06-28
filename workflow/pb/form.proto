@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.external.workflow;
+package xbasissvc.external.workflow;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Form {
 
@@ -35,7 +35,7 @@ message SearchFormRequest {
 }
 
 message SearchFormResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message CheckFiledValueRequest {
@@ -51,7 +51,7 @@ message GetAllTypeFieldsRequest {
 }
 
 message GetAllTypeFieldsResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message CreatePlaceholderRequest {
@@ -61,7 +61,7 @@ message CreatePlaceholderRequest {
 }
 
 message CreatePlaceholderResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string id = 2;
 }
 
@@ -70,7 +70,7 @@ message DeletePlaceholderRequest {
 }
 
 message DeletePlaceholderResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message UpdatePlaceholderRequest {
@@ -81,7 +81,7 @@ message UpdatePlaceholderRequest {
 }
 
 message UpdatePlaceholderResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message AddFieldRequest {
@@ -92,7 +92,7 @@ message AddFieldRequest {
 }
 
 message AddFieldResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message RemoveFieldRequest {
@@ -101,7 +101,7 @@ message RemoveFieldRequest {
 }
 
 message RemoveFieldResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message UpdateFieldPropsRequest {
@@ -110,5 +110,5 @@ message UpdateFieldPropsRequest {
 }
 
 message UpdateFieldPropsResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }

@@ -20,7 +20,7 @@ package gosionsvc_external_authentication
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -32,7 +32,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -50,8 +50,8 @@ var _ server.Option
 type RouterService interface {
 	Push(ctx context.Context, in *PushRequest, opts ...client.CallOption) (*PushResponse, error)
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...client.CallOption) (*RefreshResponse, error)
-	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type routerService struct {
@@ -92,9 +92,9 @@ func (c *routerService) Refresh(ctx context.Context, in *RefreshRequest, opts ..
 	return out, nil
 }
 
-func (c *routerService) Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *routerService) Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Router.Logout", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -102,9 +102,9 @@ func (c *routerService) Logout(ctx context.Context, in *LogoutRequest, opts ...c
 	return out, nil
 }
 
-func (c *routerService) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *routerService) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Router.Authorize", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -117,16 +117,16 @@ func (c *routerService) Authorize(ctx context.Context, in *AuthorizeRequest, opt
 type RouterHandler interface {
 	Push(context.Context, *PushRequest, *PushResponse) error
 	Refresh(context.Context, *RefreshRequest, *RefreshResponse) error
-	Logout(context.Context, *LogoutRequest, *gs_commons_dto.Status) error
-	Authorize(context.Context, *AuthorizeRequest, *gs_commons_dto.Status) error
+	Logout(context.Context, *LogoutRequest, *xbasis_commons_dto.Status) error
+	Authorize(context.Context, *AuthorizeRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterRouterHandler(s server.Server, hdlr RouterHandler, opts ...server.HandlerOption) error {
 	type router interface {
 		Push(ctx context.Context, in *PushRequest, out *PushResponse) error
 		Refresh(ctx context.Context, in *RefreshRequest, out *RefreshResponse) error
-		Logout(ctx context.Context, in *LogoutRequest, out *gs_commons_dto.Status) error
-		Authorize(ctx context.Context, in *AuthorizeRequest, out *gs_commons_dto.Status) error
+		Logout(ctx context.Context, in *LogoutRequest, out *xbasis_commons_dto.Status) error
+		Authorize(ctx context.Context, in *AuthorizeRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Router struct {
 		router
@@ -147,10 +147,10 @@ func (h *routerHandler) Refresh(ctx context.Context, in *RefreshRequest, out *Re
 	return h.RouterHandler.Refresh(ctx, in, out)
 }
 
-func (h *routerHandler) Logout(ctx context.Context, in *LogoutRequest, out *gs_commons_dto.Status) error {
+func (h *routerHandler) Logout(ctx context.Context, in *LogoutRequest, out *xbasis_commons_dto.Status) error {
 	return h.RouterHandler.Logout(ctx, in, out)
 }
 
-func (h *routerHandler) Authorize(ctx context.Context, in *AuthorizeRequest, out *gs_commons_dto.Status) error {
+func (h *routerHandler) Authorize(ctx context.Context, in *AuthorizeRequest, out *xbasis_commons_dto.Status) error {
 	return h.RouterHandler.Authorize(ctx, in, out)
 }

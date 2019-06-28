@@ -1,31 +1,31 @@
 package applicationservice
 
 import (
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/handerls"
-	"konekko.me/gosion/application/pb"
-	"konekko.me/gosion/application/pb/inner"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/microservice"
-	"konekko.me/gosion/permission/client"
-	"konekko.me/gosion/user/client"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/application/handerls"
+	"konekko.me/xbasis/application/pb"
+	"konekko.me/xbasis/application/pb/inner"
+	config "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/dao"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/microservice"
+	"konekko.me/xbasis/permission/client"
+	"konekko.me/xbasis/user/client"
 )
 
 func StartService() {
 
 	errc := make(chan error, 2)
 
-	session, err := gs_commons_dao.CreateSession("192.168.2.60:27017")
+	session, err := xbasisdao.CreateSession("192.168.2.60:27017")
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 
-	pool, err := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	pool, err := xbasisdao.CreatePool("192.168.2.60:6379")
 	if err != nil {
 		panic(err)
 	}
@@ -39,21 +39,21 @@ func StartService() {
 	logger := analysisclient.NewLoggerClient()
 
 	go func() {
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.ApplicationService,
+		config.WatchInitializeConfig(constants.ApplicationService,
 			applicationhanderls.Initialize(session.Clone(), c))
 	}()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
+		config.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.InternalApplicationService, true)
+		s := microservice.NewService(constants.InternalApplicationService, true)
 		s.Init()
 
-		gosionsvc_internal_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, logger))
+		xbasissvc_internal_application.RegisterApplicationStatusHandler(s.Server(), applicationhanderls.NewApplicationStatusService(c, pool, logger))
 
-		gosionsvc_internal_application.RegisterUserSyncHandler(s.Server(),
+		xbasissvc_internal_application.RegisterUserSyncHandler(s.Server(),
 			applicationhanderls.NewSyncService(session, userclient.NewInviteClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), permissioncli.NewBindingClient(s.Client()),
 				permissioncli.NewGroupClient(s.Client())))
 
@@ -61,12 +61,12 @@ func StartService() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.ApplicationService, true)
+		s := microservice.NewService(constants.ApplicationService, true)
 		s.Init()
 
-		gosionsvc_external_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger))
+		xbasissvc_external_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger))
 
-		gosionsvc_external_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, c))
+		xbasissvc_external_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, c))
 
 		errc <- s.Run()
 	}()

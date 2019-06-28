@@ -3,7 +3,7 @@ package authenticationhandlers
 import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
-	"konekko.me/gosion/commons/encrypt"
+	"konekko.me/xbasis/commons/encrypt"
 )
 
 type tokenRepo struct {

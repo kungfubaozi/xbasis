@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package gosionsvc.internal.permission;
+package xbasissvc.internal.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Accessible {
 
-    rpc Check (CheckRequest) returns (gs.commons.dto.Status);
+    rpc Check (CheckRequest) returns (xbasis.commons.dto.Status);
 
-    rpc HasGrant (HasGrantRequest) returns (gs.commons.dto.Status);
+    rpc HasGrant (HasGrantRequest) returns (xbasis.commons.dto.Status);
 }
 
 message HasGrantRequest {

@@ -2,7 +2,7 @@
 // source: application/pb/settings.proto
 
 /*
-Package gosionsvc_external_application is a generated protocol buffer package.
+Package xbasissvc_external_application is a generated protocol buffer package.
 
 It is generated from these files:
 	application/pb/settings.proto
@@ -12,12 +12,12 @@ It has these top-level messages:
 	EnabledRequest
 	GetRequest
 */
-package gosionsvc_external_application
+package xbasissvc_external_application
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -29,7 +29,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -45,8 +45,8 @@ var _ server.Option
 // Client API for Settings service
 
 type SettingsService interface {
-	Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	EnabledClient(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	EnabledClient(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type settingsService struct {
@@ -59,7 +59,7 @@ func NewSettingsService(name string, c client.Client) SettingsService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.application"
+		name = "xbasissvc.external.application"
 	}
 	return &settingsService{
 		c:    c,
@@ -67,9 +67,9 @@ func NewSettingsService(name string, c client.Client) SettingsService {
 	}
 }
 
-func (c *settingsService) Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *settingsService) Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Settings.Update", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,9 +77,9 @@ func (c *settingsService) Update(ctx context.Context, in *UpdateRequest, opts ..
 	return out, nil
 }
 
-func (c *settingsService) EnabledClient(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *settingsService) EnabledClient(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Settings.EnabledClient", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,14 +90,14 @@ func (c *settingsService) EnabledClient(ctx context.Context, in *EnabledRequest,
 // Server API for Settings service
 
 type SettingsHandler interface {
-	Update(context.Context, *UpdateRequest, *gs_commons_dto.Status) error
-	EnabledClient(context.Context, *EnabledRequest, *gs_commons_dto.Status) error
+	Update(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
+	EnabledClient(context.Context, *EnabledRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterSettingsHandler(s server.Server, hdlr SettingsHandler, opts ...server.HandlerOption) error {
 	type settings interface {
-		Update(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error
-		EnabledClient(ctx context.Context, in *EnabledRequest, out *gs_commons_dto.Status) error
+		Update(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
+		EnabledClient(ctx context.Context, in *EnabledRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Settings struct {
 		settings
@@ -110,10 +110,10 @@ type settingsHandler struct {
 	SettingsHandler
 }
 
-func (h *settingsHandler) Update(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error {
+func (h *settingsHandler) Update(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error {
 	return h.SettingsHandler.Update(ctx, in, out)
 }
 
-func (h *settingsHandler) EnabledClient(ctx context.Context, in *EnabledRequest, out *gs_commons_dto.Status) error {
+func (h *settingsHandler) EnabledClient(ctx context.Context, in *EnabledRequest, out *xbasis_commons_dto.Status) error {
 	return h.SettingsHandler.EnabledClient(ctx, in, out)
 }

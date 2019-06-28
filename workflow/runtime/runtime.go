@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/micro/go-micro/metadata"
 	"github.com/samuel/go-zookeeper/zk"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/workflow/distribute"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/modules"
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/analysis/client"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/workflow/distribute"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/modules"
+	"konekko.me/xbasis/workflow/types"
 	"sync"
 )
 
@@ -40,7 +40,7 @@ func (r *runtime) Submit(ctx1 context.Context, instanceId, nodeId string, value 
 
 		//progress...
 		ctx := context.Background()
-		user := gs_commons_wrapper.GetData(data)
+		user := wrapper.GetData(data)
 		ctx = context.WithValue(ctx, "auth", user)
 
 		i, err := r.modules.Instance().FindById(instanceId)

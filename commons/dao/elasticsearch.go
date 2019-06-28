@@ -1,4 +1,4 @@
-package gs_commons_dao
+package xbasisdao
 
 func NewElasticsearch() {
 

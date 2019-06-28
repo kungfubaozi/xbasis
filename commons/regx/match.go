@@ -1,4 +1,4 @@
-package gs_commons_regx
+package xbasisregx
 
 import (
 	"regexp"

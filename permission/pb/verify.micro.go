@@ -2,7 +2,7 @@
 // source: permission/pb/verify.proto
 
 /*
-Package gosionsvc_external_permission is a generated protocol buffer package.
+Package xbasissvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/verify.proto
@@ -10,12 +10,12 @@ It is generated from these files:
 It has these top-level messages:
 	AuthRequest
 */
-package gosionsvc_external_permission
+package xbasissvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +27,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Check service
 
 type CheckService interface {
-	Auth(ctx context.Context, in *AuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Auth(ctx context.Context, in *AuthRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type checkService struct {
@@ -56,7 +56,7 @@ func NewCheckService(name string, c client.Client) CheckService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.permission"
+		name = "xbasissvc.external.permission"
 	}
 	return &checkService{
 		c:    c,
@@ -64,9 +64,9 @@ func NewCheckService(name string, c client.Client) CheckService {
 	}
 }
 
-func (c *checkService) Auth(ctx context.Context, in *AuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *checkService) Auth(ctx context.Context, in *AuthRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Check.Auth", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +77,12 @@ func (c *checkService) Auth(ctx context.Context, in *AuthRequest, opts ...client
 // Server API for Check service
 
 type CheckHandler interface {
-	Auth(context.Context, *AuthRequest, *gs_commons_dto.Status) error
+	Auth(context.Context, *AuthRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterCheckHandler(s server.Server, hdlr CheckHandler, opts ...server.HandlerOption) error {
 	type check interface {
-		Auth(ctx context.Context, in *AuthRequest, out *gs_commons_dto.Status) error
+		Auth(ctx context.Context, in *AuthRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Check struct {
 		check
@@ -95,6 +95,6 @@ type checkHandler struct {
 	CheckHandler
 }
 
-func (h *checkHandler) Auth(ctx context.Context, in *AuthRequest, out *gs_commons_dto.Status) error {
+func (h *checkHandler) Auth(ctx context.Context, in *AuthRequest, out *xbasis_commons_dto.Status) error {
 	return h.CheckHandler.Auth(ctx, in, out)
 }

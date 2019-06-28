@@ -2,7 +2,7 @@
 // source: permission/pb/group.proto
 
 /*
-Package gosionsvc_external_permission is a generated protocol buffer package.
+Package xbasissvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/group.proto
@@ -19,12 +19,12 @@ It has these top-level messages:
 	SimpleUserNode
 	AddUserRequest
 */
-package gosionsvc_external_permission
+package xbasissvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -36,7 +36,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -52,13 +52,13 @@ var _ server.Option
 // Client API for UserGroup service
 
 type UserGroupService interface {
-	LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error)
 	GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, opts ...client.CallOption) (*GetGroupItemDetailResponse, error)
 }
@@ -73,7 +73,7 @@ func NewUserGroupService(name string, c client.Client) UserGroupService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.permission"
+		name = "xbasissvc.external.permission"
 	}
 	return &userGroupService{
 		c:    c,
@@ -81,9 +81,9 @@ func NewUserGroupService(name string, c client.Client) UserGroupService {
 	}
 }
 
-func (c *userGroupService) LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.LinkTo", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -91,9 +91,9 @@ func (c *userGroupService) LinkTo(ctx context.Context, in *SimpleGroup, opts ...
 	return out, nil
 }
 
-func (c *userGroupService) Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.Unlink", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -101,9 +101,9 @@ func (c *userGroupService) Unlink(ctx context.Context, in *SimpleGroup, opts ...
 	return out, nil
 }
 
-func (c *userGroupService) Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.Add", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -111,9 +111,9 @@ func (c *userGroupService) Add(ctx context.Context, in *SimpleGroup, opts ...cli
 	return out, nil
 }
 
-func (c *userGroupService) Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.Remove", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -121,9 +121,9 @@ func (c *userGroupService) Remove(ctx context.Context, in *SimpleGroup, opts ...
 	return out, nil
 }
 
-func (c *userGroupService) Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.Rename", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -131,9 +131,9 @@ func (c *userGroupService) Rename(ctx context.Context, in *SimpleGroup, opts ...
 	return out, nil
 }
 
-func (c *userGroupService) AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.AddUser", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -141,9 +141,9 @@ func (c *userGroupService) AddUser(ctx context.Context, in *AddUserRequest, opts
 	return out, nil
 }
 
-func (c *userGroupService) MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userGroupService) MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.MoveUser", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -174,26 +174,26 @@ func (c *userGroupService) GetGroupItemDetail(ctx context.Context, in *GetGroupI
 // Server API for UserGroup service
 
 type UserGroupHandler interface {
-	LinkTo(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	Unlink(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	Add(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	Remove(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	Rename(context.Context, *SimpleGroup, *gs_commons_dto.Status) error
-	AddUser(context.Context, *AddUserRequest, *gs_commons_dto.Status) error
-	MoveUser(context.Context, *SimpleUserNode, *gs_commons_dto.Status) error
+	LinkTo(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
+	Unlink(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
+	Add(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
+	Remove(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
+	Rename(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
+	AddUser(context.Context, *AddUserRequest, *xbasis_commons_dto.Status) error
+	MoveUser(context.Context, *SimpleUserNode, *xbasis_commons_dto.Status) error
 	GetGroupItems(context.Context, *GetGroupItemsRequest, *GetGroupItemsResponse) error
 	GetGroupItemDetail(context.Context, *GetGroupItemDetailRequest, *GetGroupItemDetailResponse) error
 }
 
 func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...server.HandlerOption) error {
 	type userGroup interface {
-		LinkTo(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		Unlink(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		Add(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		Remove(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error
-		AddUser(ctx context.Context, in *AddUserRequest, out *gs_commons_dto.Status) error
-		MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error
+		LinkTo(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
+		Unlink(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
+		Add(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
+		Remove(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
+		Rename(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
+		AddUser(ctx context.Context, in *AddUserRequest, out *xbasis_commons_dto.Status) error
+		MoveUser(ctx context.Context, in *SimpleUserNode, out *xbasis_commons_dto.Status) error
 		GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error
 		GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error
 	}
@@ -208,31 +208,31 @@ type userGroupHandler struct {
 	UserGroupHandler
 }
 
-func (h *userGroupHandler) LinkTo(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) LinkTo(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.LinkTo(ctx, in, out)
 }
 
-func (h *userGroupHandler) Unlink(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) Unlink(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.Unlink(ctx, in, out)
 }
 
-func (h *userGroupHandler) Add(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) Add(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.Add(ctx, in, out)
 }
 
-func (h *userGroupHandler) Remove(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) Remove(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.Remove(ctx, in, out)
 }
 
-func (h *userGroupHandler) Rename(ctx context.Context, in *SimpleGroup, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) Rename(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.Rename(ctx, in, out)
 }
 
-func (h *userGroupHandler) AddUser(ctx context.Context, in *AddUserRequest, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) AddUser(ctx context.Context, in *AddUserRequest, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.AddUser(ctx, in, out)
 }
 
-func (h *userGroupHandler) MoveUser(ctx context.Context, in *SimpleUserNode, out *gs_commons_dto.Status) error {
+func (h *userGroupHandler) MoveUser(ctx context.Context, in *SimpleUserNode, out *xbasis_commons_dto.Status) error {
 	return h.UserGroupHandler.MoveUser(ctx, in, out)
 }
 

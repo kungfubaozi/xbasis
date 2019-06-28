@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package gosionsvc.external.safety;
+package xbasissvc.external.safety;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Userlock {
 
-    rpc Lock (UserLockRequest) returns (gs.commons.dto.Status);
+    rpc Lock (UserLockRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Unlock (UserUnlockRequest) returns (gs.commons.dto.Status);
+    rpc Unlock (UserUnlockRequest) returns (xbasis.commons.dto.Status);
 
 }
 

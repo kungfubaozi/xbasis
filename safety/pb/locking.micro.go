@@ -2,7 +2,7 @@
 // source: safety/pb/locking.proto
 
 /*
-Package gosionsvc_external_safety is a generated protocol buffer package.
+Package xbasissvc_external_safety is a generated protocol buffer package.
 
 It is generated from these files:
 	safety/pb/locking.proto
@@ -14,12 +14,12 @@ It has these top-level messages:
 	LockRequest
 	UnlockRequest
 */
-package gosionsvc_external_safety
+package xbasissvc_external_safety
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -31,7 +31,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -47,8 +47,8 @@ var _ server.Option
 // Client API for Locking service
 
 type LockingService interface {
-	Lock(ctx context.Context, in *LockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Unlock(ctx context.Context, in *UnlockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Lock(ctx context.Context, in *LockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Unlock(ctx context.Context, in *UnlockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
@@ -62,7 +62,7 @@ func NewLockingService(name string, c client.Client) LockingService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.safety"
+		name = "xbasissvc.external.safety"
 	}
 	return &lockingService{
 		c:    c,
@@ -70,9 +70,9 @@ func NewLockingService(name string, c client.Client) LockingService {
 	}
 }
 
-func (c *lockingService) Lock(ctx context.Context, in *LockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *lockingService) Lock(ctx context.Context, in *LockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Locking.Lock", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -80,9 +80,9 @@ func (c *lockingService) Lock(ctx context.Context, in *LockRequest, opts ...clie
 	return out, nil
 }
 
-func (c *lockingService) Unlock(ctx context.Context, in *UnlockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *lockingService) Unlock(ctx context.Context, in *UnlockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Locking.Unlock", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -103,15 +103,15 @@ func (c *lockingService) Search(ctx context.Context, in *SearchRequest, opts ...
 // Server API for Locking service
 
 type LockingHandler interface {
-	Lock(context.Context, *LockRequest, *gs_commons_dto.Status) error
-	Unlock(context.Context, *UnlockRequest, *gs_commons_dto.Status) error
+	Lock(context.Context, *LockRequest, *xbasis_commons_dto.Status) error
+	Unlock(context.Context, *UnlockRequest, *xbasis_commons_dto.Status) error
 	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterLockingHandler(s server.Server, hdlr LockingHandler, opts ...server.HandlerOption) error {
 	type locking interface {
-		Lock(ctx context.Context, in *LockRequest, out *gs_commons_dto.Status) error
-		Unlock(ctx context.Context, in *UnlockRequest, out *gs_commons_dto.Status) error
+		Lock(ctx context.Context, in *LockRequest, out *xbasis_commons_dto.Status) error
+		Unlock(ctx context.Context, in *UnlockRequest, out *xbasis_commons_dto.Status) error
 		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Locking struct {
@@ -125,11 +125,11 @@ type lockingHandler struct {
 	LockingHandler
 }
 
-func (h *lockingHandler) Lock(ctx context.Context, in *LockRequest, out *gs_commons_dto.Status) error {
+func (h *lockingHandler) Lock(ctx context.Context, in *LockRequest, out *xbasis_commons_dto.Status) error {
 	return h.LockingHandler.Lock(ctx, in, out)
 }
 
-func (h *lockingHandler) Unlock(ctx context.Context, in *UnlockRequest, out *gs_commons_dto.Status) error {
+func (h *lockingHandler) Unlock(ctx context.Context, in *UnlockRequest, out *xbasis_commons_dto.Status) error {
 	return h.LockingHandler.Unlock(ctx, in, out)
 }
 

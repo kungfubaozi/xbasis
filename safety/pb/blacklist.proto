@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package gosionsvc.external.safety;
+package xbasissvc.external.safety;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Blacklist {
 
-    rpc Add (AddRequest) returns (gs.commons.dto.Status);
+    rpc Add (AddRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Remove (RemoveRequest) returns (gs.commons.dto.Status);
+    rpc Remove (RemoveRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Check (CheckRequest) returns (gs.commons.dto.Status);
+    rpc Check (CheckRequest) returns (xbasis.commons.dto.Status);
 
     rpc Search (BlacklistSearchRequest) returns (BlacklistSearchResponse);
 
@@ -24,7 +24,7 @@ message BlacklistSearchRequest {
 }
 
 message BlacklistSearchResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated BlacklistItem item = 2;
 }
 

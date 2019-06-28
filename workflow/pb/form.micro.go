@@ -2,7 +2,7 @@
 // source: pb/form.proto
 
 /*
-Package gosionsvc_external_workflow is a generated protocol buffer package.
+Package xbasissvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/form.proto
@@ -27,12 +27,12 @@ It has these top-level messages:
 	UpdateFieldPropsRequest
 	UpdateFieldPropsResponse
 */
-package gosionsvc_external_workflow
+package xbasissvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -81,7 +81,7 @@ func NewFormService(name string, c client.Client) FormService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.workflow"
+		name = "xbasissvc.external.workflow"
 	}
 	return &formService{
 		c:    c,

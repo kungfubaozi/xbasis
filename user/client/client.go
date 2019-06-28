@@ -2,19 +2,19 @@ package userclient
 
 import (
 	"github.com/micro/go-micro/client"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/user/pb"
-	"konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/user/pb"
+	"konekko.me/xbasis/user/pb/inner"
 )
 
-func NewExtUserClient(client client.Client) gosionsvc_internal_user.UserService {
-	return gosionsvc_internal_user.NewUserService(gs_commons_constants.InternalUserService, client)
+func NewExtUserClient(client client.Client) xbasissvc_internal_user.UserService {
+	return xbasissvc_internal_user.NewUserService(xbasisconstants.InternalUserService, client)
 }
 
-func NewExtMessageClient(client client.Client) gosionsvc_internal_user.MessageService {
-	return gosionsvc_internal_user.NewMessageService(gs_commons_constants.InternalUserService, client)
+func NewExtMessageClient(client client.Client) xbasissvc_internal_user.MessageService {
+	return xbasissvc_internal_user.NewMessageService(xbasisconstants.InternalUserService, client)
 }
 
-func NewInviteClient(client client.Client) gosionsvc_external_user.InviteService {
-	return gosionsvc_external_user.NewInviteService(gs_commons_constants.UserService, client)
+func NewInviteClient(client client.Client) xbasissvc_external_user.InviteService {
+	return xbasissvc_external_user.NewInviteService(xbasisconstants.UserService, client)
 }

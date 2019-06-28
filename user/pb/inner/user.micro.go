@@ -2,7 +2,7 @@
 // source: user/pb/inner/user.proto
 
 /*
-Package gosionsvc_internal_user is a generated protocol buffer package.
+Package xbasissvc_internal_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/inner/user.proto
@@ -12,12 +12,12 @@ It has these top-level messages:
 	SimpleUserInfo
 	GetUserInfoByIdRequest
 */
-package gosionsvc_internal_user
+package xbasissvc_internal_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -29,7 +29,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -45,7 +45,7 @@ var _ server.Option
 // Client API for User service
 
 type UserService interface {
-	IsExists(ctx context.Context, in *ExistsRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	IsExists(ctx context.Context, in *ExistsRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRequest, opts ...client.CallOption) (*SimpleUserInfo, error)
 }
 
@@ -59,7 +59,7 @@ func NewUserService(name string, c client.Client) UserService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.user"
+		name = "xbasissvc.internal.user"
 	}
 	return &userService{
 		c:    c,
@@ -67,9 +67,9 @@ func NewUserService(name string, c client.Client) UserService {
 	}
 }
 
-func (c *userService) IsExists(ctx context.Context, in *ExistsRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userService) IsExists(ctx context.Context, in *ExistsRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "User.isExists", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,13 +90,13 @@ func (c *userService) GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRe
 // Server API for User service
 
 type UserHandler interface {
-	IsExists(context.Context, *ExistsRequest, *gs_commons_dto.Status) error
+	IsExists(context.Context, *ExistsRequest, *xbasis_commons_dto.Status) error
 	GetUserInfoById(context.Context, *GetUserInfoByIdRequest, *SimpleUserInfo) error
 }
 
 func RegisterUserHandler(s server.Server, hdlr UserHandler, opts ...server.HandlerOption) error {
 	type user interface {
-		IsExists(ctx context.Context, in *ExistsRequest, out *gs_commons_dto.Status) error
+		IsExists(ctx context.Context, in *ExistsRequest, out *xbasis_commons_dto.Status) error
 		GetUserInfoById(ctx context.Context, in *GetUserInfoByIdRequest, out *SimpleUserInfo) error
 	}
 	type User struct {
@@ -110,7 +110,7 @@ type userHandler struct {
 	UserHandler
 }
 
-func (h *userHandler) IsExists(ctx context.Context, in *ExistsRequest, out *gs_commons_dto.Status) error {
+func (h *userHandler) IsExists(ctx context.Context, in *ExistsRequest, out *xbasis_commons_dto.Status) error {
 	return h.UserHandler.IsExists(ctx, in, out)
 }
 

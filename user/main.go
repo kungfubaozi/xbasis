@@ -1,6 +1,6 @@
 package main
 
-import "konekko.me/gosion/user/service"
+import "konekko.me/xbasis/user/service"
 
 func main() {
 	usersvc.StartService()

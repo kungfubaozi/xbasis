@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/message/cmd/messagecli"
-	inner "konekko.me/gosion/user/pb/inner"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/message/cmd/messagecli"
+	inner "konekko.me/xbasis/user/pb/inner"
 )
 
 type messageService struct {
@@ -31,8 +31,8 @@ func (svc *messageService) GetRepo() *userRepo {
 	return &userRepo{session: svc.session.Clone()}
 }
 
-func (svc *messageService) SendVerificationCode(ctx context.Context, in *inner.SendRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *messageService) SendVerificationCode(ctx context.Context, in *inner.SendRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		to := in.To
 		if in.Auth {
 			repo := svc.GetRepo()

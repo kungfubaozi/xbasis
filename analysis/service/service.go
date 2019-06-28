@@ -3,13 +3,13 @@ package analysisservice
 import (
 	"fmt"
 	"github.com/Shopify/sarama"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/analysis/handlers"
-	"konekko.me/gosion/analysis/pb"
-	"konekko.me/gosion/analysis/report"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/microservice"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/analysis/handlers"
+	"konekko.me/xbasis/analysis/pb"
+	"konekko.me/xbasis/analysis/report"
+	"konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/microservice"
 )
 
 func StartService() {
@@ -23,10 +23,10 @@ func StartService() {
 	logger := analysisclient.NewLoggerClient()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.AnalysisService, true)
+		s := microservice.NewService(xbasisconstants.AnalysisService, true)
 		s.Init()
 
-		gosionsvc_external_analysis.RegisterLoggerHandler(s.Server(), analysishandlers.NewLoggerService(logger, client))
+		xbasissvc_external_analysis.RegisterLoggerHandler(s.Server(), analysishandlers.NewLoggerService(logger, client))
 
 		errc <- s.Run()
 	}()
@@ -44,7 +44,7 @@ func StartService() {
 
 		defer consumer.Close()
 
-		partitionConsumer, err := consumer.ConsumePartition("gs-analysis-logger-resp-1", 0, sarama.OffsetOldest)
+		partitionConsumer, err := consumer.ConsumePartition("gs-analysis-logger-resp-2", 0, sarama.OffsetOldest)
 		if err != nil {
 			panic(err.Error())
 		}

@@ -2,7 +2,7 @@
 // source: permission/pb/role.proto
 
 /*
-Package gosionsvc_external_permission is a generated protocol buffer package.
+Package xbasissvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/role.proto
@@ -18,12 +18,12 @@ It has these top-level messages:
 	SimpleRoleInfo
 	RoleRequest
 */
-package gosionsvc_external_permission
+package xbasissvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -35,7 +35,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -51,9 +51,9 @@ var _ server.Option
 // Client API for Role service
 
 type RoleService interface {
-	Add(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Remove(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Add(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Remove(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	GetAppRoles(ctx context.Context, in *GetAppRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, opts ...client.CallOption) (*EffectUserSizeResponse, error)
@@ -70,7 +70,7 @@ func NewRoleService(name string, c client.Client) RoleService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.permission"
+		name = "xbasissvc.external.permission"
 	}
 	return &roleService{
 		c:    c,
@@ -78,9 +78,9 @@ func NewRoleService(name string, c client.Client) RoleService {
 	}
 }
 
-func (c *roleService) Add(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *roleService) Add(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Role.Add", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -88,9 +88,9 @@ func (c *roleService) Add(ctx context.Context, in *RoleRequest, opts ...client.C
 	return out, nil
 }
 
-func (c *roleService) Remove(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *roleService) Remove(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Role.Remove", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -98,9 +98,9 @@ func (c *roleService) Remove(ctx context.Context, in *RoleRequest, opts ...clien
 	return out, nil
 }
 
-func (c *roleService) Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *roleService) Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Role.Rename", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -151,9 +151,9 @@ func (c *roleService) Search(ctx context.Context, in *SearchRequest, opts ...cli
 // Server API for Role service
 
 type RoleHandler interface {
-	Add(context.Context, *RoleRequest, *gs_commons_dto.Status) error
-	Remove(context.Context, *RoleRequest, *gs_commons_dto.Status) error
-	Rename(context.Context, *RoleRequest, *gs_commons_dto.Status) error
+	Add(context.Context, *RoleRequest, *xbasis_commons_dto.Status) error
+	Remove(context.Context, *RoleRequest, *xbasis_commons_dto.Status) error
+	Rename(context.Context, *RoleRequest, *xbasis_commons_dto.Status) error
 	GetRole(context.Context, *GetRoleRequest, *GetRoleResponse) error
 	GetAppRoles(context.Context, *GetAppRolesRequest, *GetRoleResponse) error
 	EffectUserSize(context.Context, *EffectUserSizeRequest, *EffectUserSizeResponse) error
@@ -162,9 +162,9 @@ type RoleHandler interface {
 
 func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.HandlerOption) error {
 	type role interface {
-		Add(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
-		Remove(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
-		Rename(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error
+		Add(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error
+		Remove(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error
+		Rename(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error
 		GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error
 		GetAppRoles(ctx context.Context, in *GetAppRolesRequest, out *GetRoleResponse) error
 		EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error
@@ -181,15 +181,15 @@ type roleHandler struct {
 	RoleHandler
 }
 
-func (h *roleHandler) Add(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error {
+func (h *roleHandler) Add(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error {
 	return h.RoleHandler.Add(ctx, in, out)
 }
 
-func (h *roleHandler) Remove(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error {
+func (h *roleHandler) Remove(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error {
 	return h.RoleHandler.Remove(ctx, in, out)
 }
 
-func (h *roleHandler) Rename(ctx context.Context, in *RoleRequest, out *gs_commons_dto.Status) error {
+func (h *roleHandler) Rename(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error {
 	return h.RoleHandler.Rename(ctx, in, out)
 }
 

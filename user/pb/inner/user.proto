@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package gosionsvc.internal.user;
+package xbasissvc.internal.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service User {
 
-    rpc isExists (ExistsRequest) returns (gs.commons.dto.Status);
+    rpc isExists (ExistsRequest) returns (xbasis.commons.dto.Status);
 
     rpc GetUserInfoById (GetUserInfoByIdRequest) returns (SimpleUserInfo);
 
@@ -17,7 +17,7 @@ message ExistsRequest {
 }
 
 message SimpleUserInfo {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string userId = 2;
     string username = 3;
     string icon = 4;

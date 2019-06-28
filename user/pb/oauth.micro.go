@@ -2,7 +2,7 @@
 // source: user/pb/oauth.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/oauth.proto
@@ -13,12 +13,12 @@ It has these top-level messages:
 	OAuthLoginRequest
 	OAuthLoginResponse
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -30,7 +30,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -47,8 +47,8 @@ var _ server.Option
 
 type OAuthService interface {
 	Login(ctx context.Context, in *OAuthLoginRequest, opts ...client.CallOption) (*OAuthLoginResponse, error)
-	BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type oAuthService struct {
@@ -61,7 +61,7 @@ func NewOAuthService(name string, c client.Client) OAuthService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &oAuthService{
 		c:    c,
@@ -79,9 +79,9 @@ func (c *oAuthService) Login(ctx context.Context, in *OAuthLoginRequest, opts ..
 	return out, nil
 }
 
-func (c *oAuthService) BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *oAuthService) BindOAuth(ctx context.Context, in *BindOAuthRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "OAuth.BindOAuth", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -89,9 +89,9 @@ func (c *oAuthService) BindOAuth(ctx context.Context, in *BindOAuthRequest, opts
 	return out, nil
 }
 
-func (c *oAuthService) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *oAuthService) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "OAuth.UnbindOAuth", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -103,15 +103,15 @@ func (c *oAuthService) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, 
 
 type OAuthHandler interface {
 	Login(context.Context, *OAuthLoginRequest, *OAuthLoginResponse) error
-	BindOAuth(context.Context, *BindOAuthRequest, *gs_commons_dto.Status) error
-	UnbindOAuth(context.Context, *UnbindOAuthRequest, *gs_commons_dto.Status) error
+	BindOAuth(context.Context, *BindOAuthRequest, *xbasis_commons_dto.Status) error
+	UnbindOAuth(context.Context, *UnbindOAuthRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterOAuthHandler(s server.Server, hdlr OAuthHandler, opts ...server.HandlerOption) error {
 	type oAuth interface {
 		Login(ctx context.Context, in *OAuthLoginRequest, out *OAuthLoginResponse) error
-		BindOAuth(ctx context.Context, in *BindOAuthRequest, out *gs_commons_dto.Status) error
-		UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, out *gs_commons_dto.Status) error
+		BindOAuth(ctx context.Context, in *BindOAuthRequest, out *xbasis_commons_dto.Status) error
+		UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, out *xbasis_commons_dto.Status) error
 	}
 	type OAuth struct {
 		oAuth
@@ -128,10 +128,10 @@ func (h *oAuthHandler) Login(ctx context.Context, in *OAuthLoginRequest, out *OA
 	return h.OAuthHandler.Login(ctx, in, out)
 }
 
-func (h *oAuthHandler) BindOAuth(ctx context.Context, in *BindOAuthRequest, out *gs_commons_dto.Status) error {
+func (h *oAuthHandler) BindOAuth(ctx context.Context, in *BindOAuthRequest, out *xbasis_commons_dto.Status) error {
 	return h.OAuthHandler.BindOAuth(ctx, in, out)
 }
 
-func (h *oAuthHandler) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, out *gs_commons_dto.Status) error {
+func (h *oAuthHandler) UnbindOAuth(ctx context.Context, in *UnbindOAuthRequest, out *xbasis_commons_dto.Status) error {
 	return h.OAuthHandler.UnbindOAuth(ctx, in, out)
 }

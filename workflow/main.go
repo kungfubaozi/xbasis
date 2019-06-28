@@ -1,26 +1,26 @@
 package main
 
 import (
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/microservice"
-	"konekko.me/gosion/workflow/handlers"
-	"konekko.me/gosion/workflow/pb"
-	"konekko.me/gosion/workflow/runtime"
+	"konekko.me/xbasis/analysis/client"
+	constants "konekko.me/xbasis/commons/constants"
+	dao "konekko.me/xbasis/commons/dao"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/microservice"
+	"konekko.me/xbasis/workflow/handlers"
+	pb "konekko.me/xbasis/workflow/pb"
+	"konekko.me/xbasis/workflow/runtime"
 )
 
 func main() {
 
-	session, err := gs_commons_dao.CreateSession("192.168.2.60:27017")
+	session, err := dao.CreateSession("192.168.2.60:27017")
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 
-	pool, err := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	pool, err := dao.CreatePool("192.168.2.60:6379")
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 
 	flow := runtime.NewService(session, pool, client, log)
 
-	id := gs_commons_generator.NewIDG()
+	id := generator.NewIDG()
 
 	errc := make(chan error, 2)
 
@@ -44,9 +44,9 @@ func main() {
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.WorkflowService, false)
+		s := microservice.NewService(constants.WorkflowService, false)
 
-		gosionsvc_external_workflow.RegisterProcessHandler(s.Server(), workflowhandlers.NewProcessService(flow.Modules(), id, log))
+		pb.RegisterProcessHandler(s.Server(), workflowhandlers.NewProcessService(flow.Modules(), id, log))
 
 		errc <- s.Run()
 	}()

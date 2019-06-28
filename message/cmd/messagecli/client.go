@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/message"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/message"
 )
 
 type messageChannelClient struct {
@@ -26,7 +26,7 @@ func (cli *messageChannelClient) send(k string, message *message.Message) error 
 	if err != nil {
 		return err
 	}
-	return cli.channel.Publish("", gs_commons_constants.MessageChannel, false, false, amqp.Publishing{
+	return cli.channel.Publish("", constants.MessageChannel, false, false, amqp.Publishing{
 		Body: b,
 		Type: k,
 	})

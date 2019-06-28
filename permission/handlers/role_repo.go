@@ -4,16 +4,16 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/permission/utils"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/permission/utils"
 	"sync"
 	"time"
 )
 
 type roleRepo struct {
 	session *mgo.Session
-	id      gs_commons_generator.IDGenerator
+	id      generator.IDGenerator
 	conn    redis.Conn
 	*indexutils.Client
 }

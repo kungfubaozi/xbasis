@@ -1,4 +1,4 @@
-package gs_commons_constants
+package xbasisconstants
 
 const (
 	UserStateOfLocking = 8 << 2

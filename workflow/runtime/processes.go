@@ -9,14 +9,14 @@ import (
 	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/hashcode"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/workflow/distribute"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/analysis/client"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/hashcode"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/workflow/distribute"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/types"
 )
 
 type processes struct {
@@ -25,7 +25,7 @@ type processes struct {
 	log      analysisclient.LogClient
 	client   *indexutils.Client
 	relation distribute.Handler
-	id       gs_commons_generator.IDGenerator
+	id       generator.IDGenerator
 }
 
 func (pro *processes) imageCollection(session *mgo.Session, processId string) *mgo.Collection {

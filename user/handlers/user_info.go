@@ -3,11 +3,11 @@ package userhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/user/pb"
+	"konekko.me/xbasis/analysis/client"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	userpb "konekko.me/xbasis/user/pb"
 )
 
 type userInfoService struct {
@@ -19,8 +19,8 @@ func (svc *userInfoService) GetRepo() *userRepo {
 	return &userRepo{session: svc.session.Clone()}
 }
 
-func (svc *userInfoService) GetLocalInfo(ctx context.Context, in *gosionsvc_external_user.GetInfoByIdRequest, out *gosionsvc_external_user.GetInfoResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *userInfoService) GetLocalInfo(ctx context.Context, in *userpb.GetInfoByIdRequest, out *userpb.GetInfoResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -37,6 +37,6 @@ func (svc *userInfoService) GetLocalInfo(ctx context.Context, in *gosionsvc_exte
 	})
 }
 
-func NewUserInfoService(session *mgo.Session, log analysisclient.LogClient) gosionsvc_external_user.UserInfoHandler {
+func NewUserInfoService(session *mgo.Session, log analysisclient.LogClient) userpb.UserInfoHandler {
 	return &userInfoService{session: session, log: log}
 }

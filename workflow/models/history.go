@@ -1,6 +1,6 @@
 package models
 
-import "konekko.me/gosion/workflow/types"
+import "konekko.me/xbasis/workflow/types"
 
 type History struct {
 	*Info

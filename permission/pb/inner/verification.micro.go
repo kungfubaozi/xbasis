@@ -2,7 +2,7 @@
 // source: permission/pb/inner/verification.proto
 
 /*
-Package gosionsvc_internal_permission is a generated protocol buffer package.
+Package xbasissvc_internal_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/inner/verification.proto
@@ -12,12 +12,12 @@ It has these top-level messages:
 	HasPermissionResponse
 	TokenInfo
 */
-package gosionsvc_internal_permission
+package xbasissvc_internal_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -58,7 +58,7 @@ func NewVerificationService(name string, c client.Client) VerificationService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.permission"
+		name = "xbasissvc.internal.permission"
 	}
 	return &verificationService{
 		c:    c,

@@ -8,21 +8,21 @@ import (
 	"github.com/micro/go-micro/metadata"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/pb/inner"
-	"konekko.me/gosion/authentication/pb/inner"
-	"konekko.me/gosion/commons/actions"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	inner "konekko.me/gosion/permission/pb/inner"
-	"konekko.me/gosion/safety/pb"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/application/pb/inner"
+	"konekko.me/xbasis/authentication/pb/inner"
+	"konekko.me/xbasis/commons/actions"
+	xconfig "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/encrypt"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/wrapper"
+	inner "konekko.me/xbasis/permission/pb/inner"
+	"konekko.me/xbasis/safety/pb"
 	"sync"
 	"time"
 )
@@ -30,13 +30,14 @@ import (
 type verificationService struct {
 	pool                          *redis.Pool
 	session                       *mgo.Session
-	configuration                 *gs_commons_config.GosionConfiguration
-	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService
-	blacklistService              gosionsvc_external_safety.BlacklistService
-	innerAuthService              gosionsvc_internal_authentication.AuthService
+	configuration                 *xconfig.GosionConfiguration
+	innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService
+	blacklistService              xbasissvc_external_safety.BlacklistService
+	innerAuthService              xbasissvc_internal_authentication.AuthService
 	*indexutils.Client
 	log  analysisclient.LogClient
 	_log *logrus.Logger
+	id   generator.IDGenerator
 }
 
 type requestHeaders struct {
@@ -61,7 +62,7 @@ var whiteApiList = []string{"/authentication/router/refresh", "/authentication/r
 //api exists and authType verify
 func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissionRequest, out *inner.HasPermissionResponse) error {
 	var wg sync.WaitGroup
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		md, ok := metadata.FromContext(ctx)
 		svc.configuration = serviceconfiguration.Get()
@@ -109,6 +110,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				return errstate.SuccessTraceCheck
 			}
 
+			start := time.Now().UnixNano()
+
 			//new request
 			rh := &requestHeaders{
 				authorization: md["authorization"],
@@ -120,8 +123,6 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				dat:           md["gs-duration-token"],
 				refClientId:   md["gs-client-sci"],
 			}
-
-			start := time.Now().UnixNano()
 
 			//check
 			if len(rh.userDevice) == 0 ||
@@ -137,14 +138,14 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 
 			state := errstate.Success
 
-			id := gs_commons_generator.NewIDG().String()
+			id := svc.id.String()
 
 			traceId, err := encrypt.AESEncrypt([]byte(id), []byte(svc.configuration.CurrencySecretKey))
 			if err != nil {
 				return nil
 			}
 
-			resp := func(s *gs_commons_dto.State) {
+			resp := func(s *commons.State) {
 				if state.Ok {
 					state = s
 				}
@@ -154,7 +155,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 			调用的顺序是refClientId第一
 			*/
 			headers := &analysisclient.LogHeaders{
-				ServiceName:      gs_commons_constants.InternalPermission,
+				ServiceName:      constants.InternalPermission,
 				ModuleName:       "Verification",
 				UserAgent:        rh.userAgent,
 				RefClientId:      rh.refClientId,
@@ -191,8 +192,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 			go func() {
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
-					&gosionsvc_external_safety.CheckRequest{
-						Type:    gs_commons_constants.BlacklistOfIP,
+					&xbasissvc_external_safety.CheckRequest{
+						Type:    constants.BlacklistOfIP,
 						Content: rh.ip,
 					})
 				if err != nil {
@@ -207,8 +208,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 			go func() {
 				defer wg.Done()
 				s, err := svc.blacklistService.Check(ctx,
-					&gosionsvc_external_safety.CheckRequest{
-						Type:    gs_commons_constants.BlacklistOfUserDevice,
+					&xbasissvc_external_safety.CheckRequest{
+						Type:    constants.BlacklistOfUserDevice,
 						Content: rh.userDevice,
 					})
 				if err != nil {
@@ -219,12 +220,12 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				resp(s.State)
 			}()
 
-			var appResp *gosionsvc_internal_application.GetAppClientStatusResponse
+			var appResp *xbasissvc_internal_application.GetAppClientStatusResponse
 
 			////application
 			go func() {
 				defer wg.Done()
-				s, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+				s, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &xbasissvc_internal_application.GetAppClientStatusRequest{
 					ClientId: callClientId,
 				})
 				if err != nil {
@@ -253,7 +254,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 
 			if appResp != nil && len(appResp.AppId) > 0 {
 
-				if appResp.ClientEnabled != gs_commons_constants.Enabled {
+				if appResp.ClientEnabled != constants.Enabled {
 					return errstate.ErrClientClosed
 				}
 
@@ -326,7 +327,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 					go func() {
 						defer wg.Done()
 						switch v {
-						case gs_commons_constants.AuthTypeOfValcode:
+						case constants.AuthTypeOfValcode:
 							if len(rh.dat) == 0 {
 								//生成生成验证码凭证
 								//(先请求原API，生成凭证，然后调用dat获取验证码，再请求API)
@@ -369,7 +370,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 							}
 
 							break
-						case gs_commons_constants.AuthTypeOfToken:
+						case constants.AuthTypeOfToken:
 							//1.check token
 
 							auth = true
@@ -391,7 +392,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 								"transport-client-platform": fmt.Sprintf("%d", appResp.ClientPlatform),
 							})
 
-							status, err := svc.innerAuthService.Verify(ac, &gosionsvc_internal_authentication.VerifyRequest{
+							status, err := svc.innerAuthService.Verify(ac, &xbasissvc_internal_authentication.VerifyRequest{
 								Token:    rh.authorization,
 								ClientId: callClientId,
 								//FunctionRoles: f.Roles,
@@ -433,9 +434,9 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 							resp(status.State)
 
 							break
-						case gs_commons_constants.AuthTypeOfFace:
+						case constants.AuthTypeOfFace:
 							break
-						case gs_commons_constants.AuthTypeOfMobileConfirm:
+						case constants.AuthTypeOfMobileConfirm:
 							break
 						}
 					}()
@@ -580,8 +581,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 }
 
 func NewVerificationService(pool *redis.Pool, session *mgo.Session,
-	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService, blacklistService gosionsvc_external_safety.BlacklistService,
-	innerAuthService gosionsvc_internal_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) inner.VerificationHandler {
+	innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService, blacklistService xbasissvc_external_safety.BlacklistService,
+	innerAuthService xbasissvc_internal_authentication.AuthService, client *indexutils.Client, logger analysisclient.LogClient) inner.VerificationHandler {
 	return &verificationService{pool: pool, session: session, innerApplicationStatusService: innerApplicationStatusService,
 		blacklistService: blacklistService, innerAuthService: innerAuthService, Client: client, log: logger, _log: logrus.New()}
 }

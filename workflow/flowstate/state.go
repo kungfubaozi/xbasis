@@ -1,19 +1,19 @@
 package flowstate
 
 import (
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/workflow/types"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/workflow/types"
 )
 
 var (
-	NextFlow                  = &gs_commons_dto.State{Ok: true, Code: types.NFNextFlow}
-	FlowScriptTrue            = &gs_commons_dto.State{Ok: true, Code: types.NFScriptTrue}
-	FlowScriptFalse           = &gs_commons_dto.State{Ok: true, Code: types.NFScriptFalse}
-	ErrInvalidInstance        = &gs_commons_dto.State{}
-	ErrUnsupportedConnectType = &gs_commons_dto.State{}
-	ErrNode                   = &gs_commons_dto.State{}
-	ErrSubmitFormFieldNil     = &gs_commons_dto.State{}
-	ErrSubmitFormFieldType    = &gs_commons_dto.State{}
-	ErrSubmitFormFieldValue   = &gs_commons_dto.State{}
-	ErrSubmitFormFieldRegex   = &gs_commons_dto.State{}
+	NextFlow                  = &commons.State{Ok: true, Code: types.NFNextFlow}
+	FlowScriptTrue            = &commons.State{Ok: true, Code: types.NFScriptTrue}
+	FlowScriptFalse           = &commons.State{Ok: true, Code: types.NFScriptFalse}
+	ErrInvalidInstance        = &commons.State{}
+	ErrUnsupportedConnectType = &commons.State{}
+	ErrNode                   = &commons.State{}
+	ErrSubmitFormFieldNil     = &commons.State{}
+	ErrSubmitFormFieldType    = &commons.State{}
+	ErrSubmitFormFieldValue   = &commons.State{}
+	ErrSubmitFormFieldRegex   = &commons.State{}
 )

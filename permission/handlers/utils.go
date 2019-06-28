@@ -3,7 +3,7 @@ package permissionhandlers
 import (
 	"fmt"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/hashcode"
+	"konekko.me/xbasis/commons/hashcode"
 )
 
 func getURFIndex(fix string) string {

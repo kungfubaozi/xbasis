@@ -2,8 +2,8 @@ package authenticationcli
 
 import (
 	"github.com/micro/go-micro/client"
-	"konekko.me/gosion/authentication/pb/inner"
-	"konekko.me/gosion/commons/constants"
+	"konekko.me/xbasis/authentication/pb/inner"
+	constants "konekko.me/xbasis/commons/constants"
 )
 
 //func client() micro.Service {
@@ -14,10 +14,10 @@ import (
 //	return s
 //}
 
-func NewTokenClient(client client.Client) gosionsvc_internal_authentication.TokenService {
-	return gosionsvc_internal_authentication.NewTokenService(gs_commons_constants.InternalAuthenticationService, client)
+func NewTokenClient(client client.Client) xbasissvc_internal_authentication.TokenService {
+	return xbasissvc_internal_authentication.NewTokenService(constants.InternalAuthenticationService, client)
 }
 
-func NewAuthClient(client client.Client) gosionsvc_internal_authentication.AuthService {
-	return gosionsvc_internal_authentication.NewAuthService(gs_commons_constants.InternalAuthenticationService, client)
+func NewAuthClient(client client.Client) xbasissvc_internal_authentication.AuthService {
+	return xbasissvc_internal_authentication.NewAuthService(constants.InternalAuthenticationService, client)
 }

@@ -2,9 +2,9 @@ package distribute
 
 import (
 	"context"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/types"
 )
 
 type Handler interface {

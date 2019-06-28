@@ -2,7 +2,7 @@
 // source: safety/pb/blacklist.proto
 
 /*
-Package gosionsvc_external_safety is a generated protocol buffer package.
+Package xbasissvc_external_safety is a generated protocol buffer package.
 
 It is generated from these files:
 	safety/pb/blacklist.proto
@@ -15,12 +15,12 @@ It has these top-level messages:
 	RemoveRequest
 	AddRequest
 */
-package gosionsvc_external_safety
+package xbasissvc_external_safety
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -32,7 +32,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -48,9 +48,9 @@ var _ server.Option
 // Client API for Blacklist service
 
 type BlacklistService interface {
-	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Search(ctx context.Context, in *BlacklistSearchRequest, opts ...client.CallOption) (*BlacklistSearchResponse, error)
 }
 
@@ -64,7 +64,7 @@ func NewBlacklistService(name string, c client.Client) BlacklistService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.safety"
+		name = "xbasissvc.external.safety"
 	}
 	return &blacklistService{
 		c:    c,
@@ -72,9 +72,9 @@ func NewBlacklistService(name string, c client.Client) BlacklistService {
 	}
 }
 
-func (c *blacklistService) Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *blacklistService) Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Blacklist.Add", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -82,9 +82,9 @@ func (c *blacklistService) Add(ctx context.Context, in *AddRequest, opts ...clie
 	return out, nil
 }
 
-func (c *blacklistService) Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *blacklistService) Remove(ctx context.Context, in *RemoveRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Blacklist.Remove", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -92,9 +92,9 @@ func (c *blacklistService) Remove(ctx context.Context, in *RemoveRequest, opts .
 	return out, nil
 }
 
-func (c *blacklistService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *blacklistService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Blacklist.Check", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -115,17 +115,17 @@ func (c *blacklistService) Search(ctx context.Context, in *BlacklistSearchReques
 // Server API for Blacklist service
 
 type BlacklistHandler interface {
-	Add(context.Context, *AddRequest, *gs_commons_dto.Status) error
-	Remove(context.Context, *RemoveRequest, *gs_commons_dto.Status) error
-	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
+	Add(context.Context, *AddRequest, *xbasis_commons_dto.Status) error
+	Remove(context.Context, *RemoveRequest, *xbasis_commons_dto.Status) error
+	Check(context.Context, *CheckRequest, *xbasis_commons_dto.Status) error
 	Search(context.Context, *BlacklistSearchRequest, *BlacklistSearchResponse) error
 }
 
 func RegisterBlacklistHandler(s server.Server, hdlr BlacklistHandler, opts ...server.HandlerOption) error {
 	type blacklist interface {
-		Add(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error
-		Remove(ctx context.Context, in *RemoveRequest, out *gs_commons_dto.Status) error
-		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
+		Add(ctx context.Context, in *AddRequest, out *xbasis_commons_dto.Status) error
+		Remove(ctx context.Context, in *RemoveRequest, out *xbasis_commons_dto.Status) error
+		Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error
 		Search(ctx context.Context, in *BlacklistSearchRequest, out *BlacklistSearchResponse) error
 	}
 	type Blacklist struct {
@@ -139,15 +139,15 @@ type blacklistHandler struct {
 	BlacklistHandler
 }
 
-func (h *blacklistHandler) Add(ctx context.Context, in *AddRequest, out *gs_commons_dto.Status) error {
+func (h *blacklistHandler) Add(ctx context.Context, in *AddRequest, out *xbasis_commons_dto.Status) error {
 	return h.BlacklistHandler.Add(ctx, in, out)
 }
 
-func (h *blacklistHandler) Remove(ctx context.Context, in *RemoveRequest, out *gs_commons_dto.Status) error {
+func (h *blacklistHandler) Remove(ctx context.Context, in *RemoveRequest, out *xbasis_commons_dto.Status) error {
 	return h.BlacklistHandler.Remove(ctx, in, out)
 }
 
-func (h *blacklistHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
+func (h *blacklistHandler) Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error {
 	return h.BlacklistHandler.Check(ctx, in, out)
 }
 

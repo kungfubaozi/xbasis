@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
+	xconfig "konekko.me/xbasis/commons/config"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
 )
 
-func Initialize(session *mgo.Session, client *indexutils.Client, zk *zk.Conn) gs_commons_config.OnConfigNodeChanged {
-	return func(config *gs_commons_config.GosionInitializeConfig) {
+func Initialize(session *mgo.Session, client *indexutils.Client, zk *zk.Conn) xconfig.OnConfigNodeChanged {
+	return func(config *xconfig.GosionInitializeConfig) {
 		db := session.DB(dbName)
 		c, err := db.C(functionGroupCollection).Count()
 		if err != nil {
@@ -18,7 +18,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client, zk *zk.Conn) gs
 		}
 
 		if c == 0 {
-			repo := &initializeRepo{session: session, conn: zk, bulk: client.GetElasticClient().Bulk(), config: config, id: gs_commons_generator.NewIDG()}
+			repo := &initializeRepo{session: session, conn: zk, bulk: client.GetElasticClient().Bulk(), config: config, id: generator.NewIDG()}
 			repo.AddManageApp()
 			repo.AddRouteApp()
 			repo.AddSafeApp()

@@ -2,13 +2,13 @@ package applicationhanderls
 
 import (
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
+	config "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
 )
 
-func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
-	return func(config *gs_commons_config.GosionInitializeConfig) {
+func Initialize(session *mgo.Session, client *indexutils.Client) config.OnConfigNodeChanged {
+	return func(config *config.GosionInitializeConfig) {
 		defer session.Close()
 		c := session.DB(dbName).C(applicationCollection)
 		count, err := c.Count()
@@ -17,7 +17,7 @@ func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_conf
 		}
 		//init
 		if count == 0 {
-			repo := &initializeRepo{session: session, id: gs_commons_generator.NewIDG(), bulk: client.GetElasticClient().Bulk(), config: config}
+			repo := &initializeRepo{session: session, id: xbasisgenerator.NewIDG(), bulk: client.GetElasticClient().Bulk(), config: config}
 			repo.AddUserApp()
 			repo.AddSafeApp()
 			repo.AddRouteApp()

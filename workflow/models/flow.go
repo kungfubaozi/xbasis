@@ -1,7 +1,7 @@
 package models
 
 import (
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/workflow/types"
 )
 
 type SequenceFlow struct {

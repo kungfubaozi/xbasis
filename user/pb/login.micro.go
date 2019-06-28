@@ -2,7 +2,7 @@
 // source: user/pb/login.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/login.proto
@@ -13,12 +13,12 @@ It has these top-level messages:
 	EntryWithQRCodeRequest
 	EntryWithQRCodeResponse
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -63,7 +63,7 @@ func NewLoginService(name string, c client.Client) LoginService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &loginService{
 		c:    c,

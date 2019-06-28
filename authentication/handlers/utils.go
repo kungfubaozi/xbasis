@@ -3,9 +3,9 @@ package authenticationhandlers
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/connection/cmd/connectioncli"
+	"konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
 	"strings"
 	"time"
 )
@@ -58,7 +58,7 @@ func b2s(bs []uint8) string {
 	return string(ba)
 }
 
-func offlineUser(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, clientId string) *gs_commons_dto.State {
+func offlineUser(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, userId, clientId string) *xbasis_commons_dto.State {
 	v, err := repo.SizeOf(userId)
 	if err != nil {
 		return errstate.ErrSystem
@@ -80,7 +80,7 @@ func offlineUser(connectioncli connectioncli.ConnectionClient, repo *tokenRepo, 
 	return errstate.Success
 }
 
-func offlineRelation(connectioncli connectioncli.ConnectionClient, v []interface{}, repo *tokenRepo, userId, relation string) *gs_commons_dto.State {
+func offlineRelation(connectioncli connectioncli.ConnectionClient, v []interface{}, repo *tokenRepo, userId, relation string) *xbasis_commons_dto.State {
 	for _, k := range v {
 		key := b2s(k.([]uint8))
 		result := strings.Index(key, ".")

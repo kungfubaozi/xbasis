@@ -3,10 +3,10 @@ package runtime
 import (
 	"context"
 	"github.com/olivere/elastic"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
 )
 
 type store struct {

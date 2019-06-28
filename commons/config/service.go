@@ -1,11 +1,11 @@
-package gs_commons_config
+package xbasisconfig
 
 import (
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/encrypt"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/encrypt"
 	"time"
 )
 
@@ -47,7 +47,7 @@ func WatchInitializeConfig(serviceName string, event OnConfigNodeChanged) {
 
 	//c.Delete(gs_commons_constants.ZKWatchInitializeConfigPath, 0)
 
-	watch(c, gs_commons_constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {
+	watch(c, constants.ZKWatchInitializeConfigPath, func(data []byte, version int32) bool {
 		var config GosionInitializeConfig
 		err := msgpack.Unmarshal(data, &config)
 		if err != nil {

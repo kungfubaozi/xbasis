@@ -1,17 +1,17 @@
 syntax = "proto3";
 
-package gosionsvc.external.permission;
+package xbasissvc.external.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 //角色
 service Role {
 
-    rpc Add (RoleRequest) returns (gs.commons.dto.Status);
+    rpc Add (RoleRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Remove (RoleRequest) returns (gs.commons.dto.Status);
+    rpc Remove (RoleRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Rename (RoleRequest) returns (gs.commons.dto.Status);
+    rpc Rename (RoleRequest) returns (xbasis.commons.dto.Status);
 
     rpc GetRole (GetRoleRequest) returns (GetRoleResponse);
 
@@ -31,7 +31,7 @@ message SearchRequest {
 
 message SearchResponse {
     SimpleRoleInfo data = 1;
-    gs.commons.dto.State state = 2;
+    xbasis.commons.dto.State state = 2;
 }
 
 message EffectUserSizeRequest {
@@ -39,7 +39,7 @@ message EffectUserSizeRequest {
 }
 
 message EffectUserSizeResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     int64 size = 2;
 }
 
@@ -54,7 +54,7 @@ message GetRoleRequest {
 }
 
 message GetRoleResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated SimpleRoleInfo data = 2;
 }
 

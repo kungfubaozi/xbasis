@@ -1,4 +1,4 @@
-package gs_commons_config
+package xbasisconfig
 
 type AutonomyRouteConfig struct {
 	BindGroupId string

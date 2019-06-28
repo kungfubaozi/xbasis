@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package gosionsvc.external.safety;
+package xbasissvc.external.safety;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Locking {
 
-    rpc Lock (LockRequest) returns (gs.commons.dto.Status);
+    rpc Lock (LockRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Unlock (UnlockRequest) returns (gs.commons.dto.Status);
+    rpc Unlock (UnlockRequest) returns (xbasis.commons.dto.Status);
 
     rpc Search (SearchRequest) returns (SearchResponse);
 }
@@ -21,7 +21,7 @@ message SearchRequest {
 }
 
 message SearchResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message LockingItem {

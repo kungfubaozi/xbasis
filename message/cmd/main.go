@@ -1,6 +1,6 @@
 package main
 
-import "konekko.me/gosion/message/cmd/messagesvc"
+import "konekko.me/xbasis/message/cmd/messagesvc"
 
 func main() {
 

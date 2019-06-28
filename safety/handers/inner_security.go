@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/wrapper"
-	inner "konekko.me/gosion/safety/pb/inner"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/wrapper"
+	inner "konekko.me/xbasis/safety/pb/inner"
 	"sync"
 )
 
@@ -24,14 +24,14 @@ func (svc *securityService) GetRepo() *lockingRepo {
 //locking
 //different places
 func (svc *securityService) Get(ctx context.Context, in *inner.GetRequest, out *inner.GetResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.UserId) == 0 {
 			return nil
 		}
 		state := errstate.Success
-		sc := gs_commons_constants.UserStateOfClear
-		resp := func(s *gs_commons_dto.State) {
+		sc := constants.UserStateOfClear
+		resp := func(s *commons.State) {
 			if state.Ok {
 				state = s
 			}
@@ -51,7 +51,7 @@ func (svc *securityService) Get(ctx context.Context, in *inner.GetRequest, out *
 				return
 			}
 			if e {
-				sc = gs_commons_constants.UserStateOfLocking
+				sc = constants.UserStateOfLocking
 				return
 			}
 		}()

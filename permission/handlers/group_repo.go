@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/hashcode"
+	gererator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/hashcode"
 	"time"
 )
 
 type groupRepo struct {
 	session *mgo.Session
-	id      gs_commons_generator.IDGenerator
+	id      gererator.IDGenerator
 }
 
 func (repo *groupRepo) FindByName(appId, name string) (*userGroup, error) {

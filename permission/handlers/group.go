@@ -4,13 +4,13 @@ import (
 	"context"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/analysis/client"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/permission/pb"
+	"konekko.me/xbasis/user/pb/inner"
 	"sync"
 	"time"
 )
@@ -18,12 +18,12 @@ import (
 type groupService struct {
 	pool             *redis.Pool
 	session          *mgo.Session
-	innerUserService gosionsvc_internal_user.UserService
+	innerUserService xbasissvc_internal_user.UserService
 	log              analysisclient.LogClient
 }
 
 func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGroupItemsRequest, out *external.GetGroupItemsResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 6 {
 			return nil
 		}
@@ -58,14 +58,14 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 		var wg sync.WaitGroup
 		if len(users) > 0 {
 			s := errstate.Success
-			resp := func(s1 *gs_commons_dto.State) {
+			resp := func(s1 *commons.State) {
 				if s.Ok {
 					s = s1
 				}
 			}
 
 			getUserInfo := func(userId string) (string, bool) {
-				s, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
+				s, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
 					UserId: userId,
 				})
 				if err != nil {
@@ -139,12 +139,12 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 }
 
 func (svc *groupService) GetGroupItemDetail(ctx context.Context, in *external.GetGroupItemDetailRequest, out *external.GetGroupItemDetailResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 8 {
 			return nil
 		}
 
-		s, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
+		s, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
 			UserId: in.Id,
 		})
 
@@ -162,11 +162,11 @@ func (svc *groupService) GetGroupItemDetail(ctx context.Context, in *external.Ge
 }
 
 func (svc *groupService) GetRepo() *groupRepo {
-	return &groupRepo{session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
+	return &groupRepo{session: svc.session.Clone(), id: generator.NewIDG()}
 }
 
-func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -194,27 +194,27 @@ func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out 
 }
 
 //You can link to other application groups, or to this application group.
-func (svc *groupService) LinkTo(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) LinkTo(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
-func (svc *groupService) Unlink(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) Unlink(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
-func (svc *groupService) Rename(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) Rename(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 //User cannot be in the same group under the same application
-func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 5 && len(in.UserId) < 16 && len(in.GroupIds) == 0 {
 			return nil
 		}
@@ -278,19 +278,19 @@ func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserReques
 	})
 }
 
-func (svc *groupService) MoveUser(ctx context.Context, in *external.SimpleUserNode, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) MoveUser(ctx context.Context, in *external.SimpleUserNode, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 //If there are users under the current group, they cannot be deleted
-func (svc *groupService) Remove(ctx context.Context, in *external.SimpleGroup, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *groupService) Remove(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
-func NewGroupService(pool *redis.Pool, session *mgo.Session, innerUserService gosionsvc_internal_user.UserService) external.UserGroupHandler {
+func NewGroupService(pool *redis.Pool, session *mgo.Session, innerUserService xbasissvc_internal_user.UserService) external.UserGroupHandler {
 	return &groupService{pool: pool, session: session, innerUserService: innerUserService}
 }

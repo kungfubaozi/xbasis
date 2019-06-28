@@ -1,28 +1,28 @@
-package gs_commons_constants
+package xbasisconstants
 
 const (
-	PermissionService     = "gosionsvc.external.permission"
-	AnalysisService       = "gosionsvc.external.analysis"
-	MessageService        = "gosionsvc.external.message"
-	ConnectionService     = "gosionsvc.external.connection"
-	UserService           = "gosionsvc.external.user"
-	WorkflowService       = "gosionsvc.external.workflow"
-	ApplicationService    = "gosionsvc.external.apps"
-	SafetyService         = "gosionsvc.external.safety"
-	AuthenticationService = "gosionsvc.external.authentication"
+	PermissionService     = "xbasis.external.permission"
+	AnalysisService       = "xbasis.external.analysis"
+	MessageService        = "xbasis.external.message"
+	ConnectionService     = "xbasis.external.connection"
+	UserService           = "xbasis.external.user"
+	WorkflowService       = "xbasis.external.workflow"
+	ApplicationService    = "xbasis.external.apps"
+	SafetyService         = "xbasis.external.safety"
+	AuthenticationService = "xbasis.external.authentication"
 )
 
 const (
-	InternalPermission            = "gosionsvc.internal.permission" //permission
-	InternalUserService           = "gosionsvc.internal.user"
-	InternalSafetyService         = "gosionsvc.internal.safety"
-	InternalApplicationService    = "gosionsvc.internal.application"
-	InternalAuthenticationService = "gosionsvc.internal.authentication"
+	InternalPermission            = "xbasis.internal.permission" //permission
+	InternalUserService           = "xbasis.internal.user"
+	InternalSafetyService         = "xbasis.internal.safety"
+	InternalApplicationService    = "xbasis.internal.application"
+	InternalAuthenticationService = "xbasis.internal.authentication"
 )
 
 const (
-	MessageChannel          = "gs.channel.message"
-	ConnectionFanoutChannel = "gs.channel.connection.fanout"
+	MessageChannel          = "xbasis.channel.message"
+	ConnectionFanoutChannel = "xbasis.channel.connection.fanout"
 )
 
 const (
@@ -106,10 +106,10 @@ const (
 )
 
 const (
-	ZKWatchInitializeConfigPath        = "/gosion-initialize-configuration"
-	ZKWatchInitializeVersionListenPath = "/gosion-initialize-version"
-	GosionConfiguration                = "/gosion-configuration"
-	ZKAutonomyRegister                 = "/gosion-autonomy-register"
+	ZKWatchInitializeConfigPath        = "/xbasis-initialize-configuration"
+	ZKWatchInitializeVersionListenPath = "/xbasis-initialize-version"
+	XBasisConfiguration                = "/xbasis-configuration"
+	ZKAutonomyRegister                 = "/xbasis-autonomy-register"
 )
 
 const (

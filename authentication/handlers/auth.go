@@ -5,28 +5,28 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/pb/inner"
-	inner "konekko.me/gosion/authentication/pb/inner"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/connection/cmd/connectioncli"
-	"konekko.me/gosion/permission/pb/inner"
-	"konekko.me/gosion/safety/pb"
-	"konekko.me/gosion/safety/pb/inner"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/application/pb/inner"
+	inner "konekko.me/xbasis/authentication/pb/inner"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
+	"konekko.me/xbasis/permission/pb/inner"
+	"konekko.me/xbasis/safety/pb"
+	"konekko.me/xbasis/safety/pb/inner"
 	"sync"
 )
 
 type authService struct {
 	pool                          *redis.Pool
-	blacklistService              gosionsvc_external_safety.BlacklistService
-	innerSecurityService          gosionsvc_internal_safety.SecurityService
-	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService
-	innerAccessibleService        gosionsvc_internal_permission.AccessibleService
+	blacklistService              xbasissvc_external_safety.BlacklistService
+	innerSecurityService          xbasissvc_internal_safety.SecurityService
+	innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService
+	innerAccessibleService        xbasissvc_internal_permission.AccessibleService
 	connectioncli                 connectioncli.ConnectionClient
 	*indexutils.Client
 	log analysisclient.LogClient
@@ -37,7 +37,7 @@ func (svc *authService) GetRepo() *tokenRepo {
 }
 
 func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out *inner.VerifyResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		configuration := serviceconfiguration.Get()
 
@@ -47,7 +47,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 
 		headers := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
-			ServiceName: gs_commons_constants.InternalAuthenticationService,
+			ServiceName: constants.InternalAuthenticationService,
 			ModuleName:  "Auth",
 		}
 
@@ -73,7 +73,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 			return errstate.ErrAccessTokenExpired
 		}
 
-		if claims.Token.Type != gs_commons_constants.AccessToken {
+		if claims.Token.Type != constants.AccessToken {
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
 				Action:  "ErrTokenType",
@@ -83,14 +83,14 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 
 		state := errstate.Success
 
-		resp := func(s *gs_commons_dto.State) {
+		resp := func(s *commons.State) {
 			if state.Ok && s != nil {
 				state = s
 			}
 		}
 
 		var uai *userAuthorizeInfo
-		var tokenApp *gosionsvc_internal_application.GetAppClientStatusResponse
+		var tokenApp *xbasissvc_internal_application.GetAppClientStatusResponse
 
 		//应用检查(当为分享功能时，需要检查token内使用的clientId是否为当前应用的id)
 		if in.Share && claims.Token.ClientId != auth.FromClientId {
@@ -99,7 +99,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 				defer wg.Done()
 
 				//check token side application status
-				a, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+				a, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &xbasissvc_internal_application.GetAppClientStatusRequest{
 					ClientId: claims.Token.ClientId,
 				})
 
@@ -111,7 +111,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 					resp(a.State)
 					return
 				}
-				if a.ClientEnabled != gs_commons_constants.Enabled {
+				if a.ClientEnabled != constants.Enabled {
 					svc.log.Info(&analysisclient.LogContent{
 						Headers:   headers,
 						Action:    "ApplicationClosed",
@@ -173,7 +173,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 		go func() {
 			defer wg.Done()
 
-			s, err := svc.innerSecurityService.Get(ctx, &gosionsvc_internal_safety.GetRequest{UserId: claims.Token.UserId})
+			s, err := svc.innerSecurityService.Get(ctx, &xbasissvc_internal_safety.GetRequest{UserId: claims.Token.UserId})
 			if err != nil {
 				resp(errstate.ErrSystem)
 				return
@@ -194,7 +194,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 					return
 				}
 
-				s, err := svc.innerAccessibleService.Check(ctx, &gosionsvc_internal_permission.CheckRequest{
+				s, err := svc.innerAccessibleService.Check(ctx, &xbasissvc_internal_permission.CheckRequest{
 					UserId: claims.Token.UserId,
 					//FunctionRoles: in.FunctionRoles,
 					FunctionId: in.FunctionId,
@@ -244,9 +244,9 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 	})
 }
 
-func NewAuthService(pool *redis.Pool, innerSecurityService gosionsvc_internal_safety.SecurityService,
-	connectioncli connectioncli.ConnectionClient, client *indexutils.Client, as gosionsvc_internal_application.ApplicationStatusService,
-	blacklistService gosionsvc_external_safety.BlacklistService, innerAccessibleService gosionsvc_internal_permission.AccessibleService, log analysisclient.LogClient) inner.AuthHandler {
+func NewAuthService(pool *redis.Pool, innerSecurityService xbasissvc_internal_safety.SecurityService,
+	connectioncli connectioncli.ConnectionClient, client *indexutils.Client, as xbasissvc_internal_application.ApplicationStatusService,
+	blacklistService xbasissvc_external_safety.BlacklistService, innerAccessibleService xbasissvc_internal_permission.AccessibleService, log analysisclient.LogClient) inner.AuthHandler {
 	return &authService{pool: pool, innerSecurityService: innerSecurityService, connectioncli: connectioncli, blacklistService: blacklistService,
 		Client: client, innerApplicationStatusService: as, innerAccessibleService: innerAccessibleService, log: log}
 }

@@ -2,19 +2,19 @@ package serviceconfiguration
 
 import (
 	"fmt"
-	"konekko.me/gosion/commons/config"
+	"konekko.me/xbasis/commons/config"
 )
 
-var configuration *gs_commons_config.GosionConfiguration
+var configuration *xbasisconfig.GosionConfiguration
 
-func Configuration() gs_commons_config.OnGosionConfigurationChanged {
-	return func(config *gs_commons_config.GosionConfiguration) {
+func Configuration() xbasisconfig.OnGosionConfigurationChanged {
+	return func(config *xbasisconfig.GosionConfiguration) {
 		fmt.Println("service update new config ok")
 		configuration = config
 	}
 }
 
-func Get() *gs_commons_config.GosionConfiguration {
+func Get() *xbasisconfig.GosionConfiguration {
 	if configuration == nil {
 		panic("error gosion configuration.")
 	}

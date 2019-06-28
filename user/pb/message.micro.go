@@ -2,7 +2,7 @@
 // source: user/pb/message.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/message.proto
@@ -10,12 +10,12 @@ It is generated from these files:
 It has these top-level messages:
 	SendRequest
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +27,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Message service
 
 type MessageService interface {
-	SendMessage(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	SendMessage(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type messageService struct {
@@ -56,7 +56,7 @@ func NewMessageService(name string, c client.Client) MessageService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &messageService{
 		c:    c,
@@ -64,9 +64,9 @@ func NewMessageService(name string, c client.Client) MessageService {
 	}
 }
 
-func (c *messageService) SendMessage(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *messageService) SendMessage(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Message.SendMessage", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +77,12 @@ func (c *messageService) SendMessage(ctx context.Context, in *SendRequest, opts 
 // Server API for Message service
 
 type MessageHandler interface {
-	SendMessage(context.Context, *SendRequest, *gs_commons_dto.Status) error
+	SendMessage(context.Context, *SendRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterMessageHandler(s server.Server, hdlr MessageHandler, opts ...server.HandlerOption) error {
 	type message interface {
-		SendMessage(ctx context.Context, in *SendRequest, out *gs_commons_dto.Status) error
+		SendMessage(ctx context.Context, in *SendRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Message struct {
 		message
@@ -95,6 +95,6 @@ type messageHandler struct {
 	MessageHandler
 }
 
-func (h *messageHandler) SendMessage(ctx context.Context, in *SendRequest, out *gs_commons_dto.Status) error {
+func (h *messageHandler) SendMessage(ctx context.Context, in *SendRequest, out *xbasis_commons_dto.Status) error {
 	return h.MessageHandler.SendMessage(ctx, in, out)
 }

@@ -1,4 +1,4 @@
-package gs_commons_wrapper
+package xbasiswrapper
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
 	"github.com/pkg/errors"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/permission/client"
-	"konekko.me/gosion/permission/pb/inner"
+	"konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/permission/client"
+	"konekko.me/xbasis/permission/pb/inner"
 	"reflect"
 )
 
-func set(rsp interface{}, state *gs_commons_dto.State) error {
+func set(rsp interface{}, state *xbasis_commons_dto.State) error {
 	s := reflect.ValueOf(rsp).Elem().FieldByName("State")
 	if s.CanSet() {
 		s.Set(reflect.ValueOf(state))
@@ -27,7 +27,7 @@ func AuthWrapper(c client.Client, fn server.HandlerFunc) server.HandlerFunc {
 	verificationClient := permissioncli.NewVerificationClient(c)
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 
-		status, err := verificationClient.Check(ctx, &gosionsvc_internal_permission.HasPermissionRequest{})
+		status, err := verificationClient.Check(ctx, &xbasissvc_internal_permission.HasPermissionRequest{})
 		if err != nil {
 			return set(rsp, errstate.ErrRequest)
 		}

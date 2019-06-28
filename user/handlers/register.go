@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/pb/inner"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/regx"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
-	external "konekko.me/gosion/user/pb"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/application/pb/inner"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commmons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	regx "konekko.me/xbasis/commons/regx"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/permission/pb"
+	external "konekko.me/xbasis/user/pb"
 	"time"
 )
 
@@ -24,10 +24,10 @@ type registerService struct {
 	session                  *mgo.Session
 	inviteService            external.InviteService
 	client                   *indexutils.Client
-	bindingService           gosionsvc_external_permission.BindingService
-	groupService             gosionsvc_external_permission.UserGroupService
-	id                       gs_commons_generator.IDGenerator
-	applicationStatusService gosionsvc_internal_application.ApplicationStatusService
+	bindingService           xbasissvc_external_permission.BindingService
+	groupService             xbasissvc_external_permission.UserGroupService
+	id                       generator.IDGenerator
+	applicationStatusService xbasissvc_internal_application.ApplicationStatusService
 	log                      analysisclient.LogClient
 }
 
@@ -37,13 +37,13 @@ func (svc *registerService) GetRepo() *userRepo {
 
 //自注册的用户只能有访问当前项目的权限
 //管理员invite可以选择可以访问哪些项目
-func (svc *registerService) New(ctx context.Context, in *external.NewRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *registerService) New(ctx context.Context, in *external.NewRequest, out *commmons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commmons.State {
 		configuration := serviceconfiguration.Get()
 
 		header := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
-			ServiceName: gs_commons_constants.UserService,
+			ServiceName: constants.UserService,
 			ModuleName:  "Register",
 		}
 
@@ -73,7 +73,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			if len(in.Contract) <= 8 {
 				return errstate.ErrRequest
 			}
-			if !gs_commons_regx.Phone(in.Contract) {
+			if !regx.Phone(in.Contract) {
 				return errstate.ErrFormatPhone
 			}
 			key = "phone"
@@ -82,7 +82,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			if len(in.Contract) <= 8 {
 				return errstate.ErrRequest
 			}
-			if !gs_commons_regx.Email(in.Contract) {
+			if !regx.Email(in.Contract) {
 				return errstate.ErrFormatEmail
 			}
 			key = "email"
@@ -192,7 +192,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		if invited {
 			s, err := svc.inviteService.SetState(ctx, &external.SetStateRequest{
 				UserId: userId,
-				State:  gs_commons_constants.InviteStateOfRegister,
+				State:  constants.InviteStateOfRegister,
 			})
 			if err != nil {
 				return nil
@@ -232,9 +232,9 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 
 func NewRegisterService(log analysisclient.LogClient, session *mgo.Session, inviteService external.InviteService,
 	client *indexutils.Client,
-	bindingService gosionsvc_external_permission.BindingService,
-	groupService gosionsvc_external_permission.UserGroupService,
-	applicationStatusService gosionsvc_internal_application.ApplicationStatusService) external.RegisterHandler {
+	bindingService xbasissvc_external_permission.BindingService,
+	groupService xbasissvc_external_permission.UserGroupService,
+	applicationStatusService xbasissvc_internal_application.ApplicationStatusService) external.RegisterHandler {
 	return &registerService{log: log, session: session, inviteService: inviteService, client: client, bindingService: bindingService,
-		groupService: groupService, id: gs_commons_generator.NewIDG(), applicationStatusService: applicationStatusService}
+		groupService: groupService, id: generator.NewIDG(), applicationStatusService: applicationStatusService}
 }

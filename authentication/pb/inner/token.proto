@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.internal.authentication;
+package xbasissvc.internal.authentication;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Token {
 
@@ -11,13 +11,13 @@ service Token {
 }
 
 message GenerateRequest {
-    gs.commons.dto.Authorize auth = 1;
+    xbasis.commons.dto.Authorize auth = 1;
     bool route = 2;
     string relationId = 3;
 }
 
 message GenerateResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string accessToken = 2;
     string refreshToken = 3;
 }

@@ -3,10 +3,10 @@ package userhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/user/pb"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	userpb "konekko.me/xbasis/user/pb"
 )
 
 type userService struct {
@@ -14,13 +14,13 @@ type userService struct {
 	client  *indexutils.Client
 }
 
-func (svc *userService) Search(ctx context.Context, in *gosionsvc_external_user.SearchRequest, out *gosionsvc_external_user.SearchResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, out *userpb.SearchResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func NewUserService(session *mgo.Session,
-	client *indexutils.Client) gosionsvc_external_user.UserHandler {
+	client *indexutils.Client) userpb.UserHandler {
 	return &userService{session: session, client: client}
 }

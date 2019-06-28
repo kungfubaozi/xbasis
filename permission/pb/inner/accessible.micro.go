@@ -2,7 +2,7 @@
 // source: permission/pb/inner/accessible.proto
 
 /*
-Package gosionsvc_internal_permission is a generated protocol buffer package.
+Package xbasissvc_internal_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/inner/accessible.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	HasGrantRequest
 	CheckRequest
 */
-package gosionsvc_internal_permission
+package xbasissvc_internal_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -28,7 +28,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,8 +44,8 @@ var _ server.Option
 // Client API for Accessible service
 
 type AccessibleService interface {
-	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type accessibleService struct {
@@ -58,7 +58,7 @@ func NewAccessibleService(name string, c client.Client) AccessibleService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.permission"
+		name = "xbasissvc.internal.permission"
 	}
 	return &accessibleService{
 		c:    c,
@@ -66,9 +66,9 @@ func NewAccessibleService(name string, c client.Client) AccessibleService {
 	}
 }
 
-func (c *accessibleService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *accessibleService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Accessible.Check", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,9 +76,9 @@ func (c *accessibleService) Check(ctx context.Context, in *CheckRequest, opts ..
 	return out, nil
 }
 
-func (c *accessibleService) HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *accessibleService) HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Accessible.HasGrant", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -89,14 +89,14 @@ func (c *accessibleService) HasGrant(ctx context.Context, in *HasGrantRequest, o
 // Server API for Accessible service
 
 type AccessibleHandler interface {
-	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
-	HasGrant(context.Context, *HasGrantRequest, *gs_commons_dto.Status) error
+	Check(context.Context, *CheckRequest, *xbasis_commons_dto.Status) error
+	HasGrant(context.Context, *HasGrantRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterAccessibleHandler(s server.Server, hdlr AccessibleHandler, opts ...server.HandlerOption) error {
 	type accessible interface {
-		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
-		HasGrant(ctx context.Context, in *HasGrantRequest, out *gs_commons_dto.Status) error
+		Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error
+		HasGrant(ctx context.Context, in *HasGrantRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Accessible struct {
 		accessible
@@ -109,10 +109,10 @@ type accessibleHandler struct {
 	AccessibleHandler
 }
 
-func (h *accessibleHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
+func (h *accessibleHandler) Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error {
 	return h.AccessibleHandler.Check(ctx, in, out)
 }
 
-func (h *accessibleHandler) HasGrant(ctx context.Context, in *HasGrantRequest, out *gs_commons_dto.Status) error {
+func (h *accessibleHandler) HasGrant(ctx context.Context, in *HasGrantRequest, out *xbasis_commons_dto.Status) error {
 	return h.AccessibleHandler.HasGrant(ctx, in, out)
 }

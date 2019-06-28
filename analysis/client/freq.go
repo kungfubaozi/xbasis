@@ -3,7 +3,7 @@ package analysisclient
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"konekko.me/gosion/commons/generator"
+	generator "konekko.me/xbasis/commons/generator"
 	"time"
 )
 
@@ -21,7 +21,7 @@ type FrequencyClient interface {
 }
 
 type client struct {
-	id       gs_commons_generator.IDGenerator
+	id       generator.IDGenerator
 	producer sarama.AsyncProducer
 }
 
@@ -65,6 +65,6 @@ func NewFrequencyClient() FrequencyClient {
 	}
 	return &client{
 		producer: producer,
-		id:       gs_commons_generator.NewIDG(),
+		id:       generator.NewIDG(),
 	}
 }

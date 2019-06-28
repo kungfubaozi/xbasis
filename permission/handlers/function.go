@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/actions"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/date"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/permission/pb"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/actions"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/date"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/permission/pb"
 	"sync"
 	"time"
 )
@@ -22,7 +22,7 @@ import (
 type functionService struct {
 	*indexutils.Client
 	session *mgo.Session
-	id      gs_commons_generator.IDGenerator
+	id      generator.IDGenerator
 	log     analysisclient.LogClient
 }
 
@@ -31,7 +31,7 @@ func (svc *functionService) Search(context.Context, *external.FunctionSearchRequ
 }
 
 func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.GetFunctionItemsRequest, out *external.GetFunctionItemsResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) == 0 {
 			return nil
 		}
@@ -75,7 +75,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 }
 
 func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *external.GetFunctionItemRequest, out *external.GetFunctionItemResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.Id) == 0 || len(in.AppId) == 0 {
 			return nil
 		}
@@ -85,7 +85,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		headers := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
 			ModuleName:  "Function",
-			ServiceName: gs_commons_constants.PermissionService,
+			ServiceName: constants.PermissionService,
 		}
 
 		f, err := repo.FindApiById(in.AppId, in.Id)
@@ -180,28 +180,28 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		function.AuthTypes = []*external.FunctionAuthTypes{
 			{
 				Name:    "ValCode",
-				Type:    gs_commons_constants.AuthTypeOfValcode,
-				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfValcode),
+				Type:    constants.AuthTypeOfValcode,
+				Enabled: isAuthEnabled(constants.AuthTypeOfValcode),
 			},
 			{
 				Name:    "Token",
-				Type:    gs_commons_constants.AuthTypeOfToken,
-				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfToken),
+				Type:    constants.AuthTypeOfToken,
+				Enabled: isAuthEnabled(constants.AuthTypeOfToken),
 			},
 			{
 				Name:    "MobileConfirm",
-				Type:    gs_commons_constants.AuthTypeOfMobileConfirm,
-				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfMobileConfirm),
+				Type:    constants.AuthTypeOfMobileConfirm,
+				Enabled: isAuthEnabled(constants.AuthTypeOfMobileConfirm),
 			},
 			{
 				Name:    "Face",
-				Type:    gs_commons_constants.AuthTypeOfFace,
-				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfFace),
+				Type:    constants.AuthTypeOfFace,
+				Enabled: isAuthEnabled(constants.AuthTypeOfFace),
 			},
 			{
 				Name:    "Gosion Mini Program",
-				Type:    gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm,
-				Enabled: isAuthEnabled(gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm),
+				Type:    constants.AuthTypeOfMiniProgramCodeConfirm,
+				Enabled: isAuthEnabled(constants.AuthTypeOfMiniProgramCodeConfirm),
 			},
 		}
 
@@ -217,33 +217,33 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		function.Platforms = []*external.FunctionGrantPlatforms{
 			{
 				Name:    "Web",
-				Type:    gs_commons_constants.PlatformOfWeb,
-				Enabled: isGrant(gs_commons_constants.PlatformOfWeb),
+				Type:    constants.PlatformOfWeb,
+				Enabled: isGrant(constants.PlatformOfWeb),
 			},
 			{
 				Name:    "Android",
-				Type:    gs_commons_constants.PlatformOfAndroid,
-				Enabled: isGrant(gs_commons_constants.PlatformOfAndroid),
+				Type:    constants.PlatformOfAndroid,
+				Enabled: isGrant(constants.PlatformOfAndroid),
 			},
 			{
 				Name:    "Fuchsia",
-				Type:    gs_commons_constants.PlatformOfFuchsia,
-				Enabled: isGrant(gs_commons_constants.PlatformOfFuchsia),
+				Type:    constants.PlatformOfFuchsia,
+				Enabled: isGrant(constants.PlatformOfFuchsia),
 			},
 			{
 				Name:    "iOS",
-				Type:    gs_commons_constants.PlatformOfIOS,
-				Enabled: isGrant(gs_commons_constants.PlatformOfIOS),
+				Type:    constants.PlatformOfIOS,
+				Enabled: isGrant(constants.PlatformOfIOS),
 			},
 			{
 				Name:    "Linux",
-				Type:    gs_commons_constants.PlatformOfLinux,
-				Enabled: isGrant(gs_commons_constants.PlatformOfLinux),
+				Type:    constants.PlatformOfLinux,
+				Enabled: isGrant(constants.PlatformOfLinux),
 			},
 			{
 				Name:    "Windows",
-				Type:    gs_commons_constants.PlatformOfWindows,
-				Enabled: isGrant(gs_commons_constants.PlatformOfWindows),
+				Type:    constants.PlatformOfWindows,
+				Enabled: isGrant(constants.PlatformOfWindows),
 			},
 		}
 
@@ -253,7 +253,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 			Message: "found",
 		})
 
-		now := gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_I_MM_I_DD)
+		now := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM_I_DD)
 		q := elastic.NewBoolQuery()
 		q.Must(elastic.NewMatchPhraseQuery("fields.id", f.Id), elastic.NewMatchPhraseQuery("action", "UserRequestApi"))
 
@@ -287,7 +287,7 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		//month
 		go func() {
 			defer wg.Done()
-			t := gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_I_MM)
+			t := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM)
 			c, err := svc.GetElasticClient().Count(fmt.Sprintf("gosion-logger.%s.*", t)).Type("_doc").Query(q).Do(context.Background())
 			if err != nil {
 				return
@@ -321,8 +321,8 @@ func (svc *functionService) GetRoleRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone()}
 }
 
-func (svc *functionService) Add(ctx context.Context, in *external.FunctionRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *functionService) Add(ctx context.Context, in *external.FunctionRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -340,12 +340,12 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 		if in.AuthTypes != nil && len(in.AuthTypes) > 0 {
 			for _, v := range in.AuthTypes {
 				switch v {
-				case gs_commons_constants.AuthTypeOfFace:
-				case gs_commons_constants.AuthTypeOfToken:
-				case gs_commons_constants.AuthTypeOfValcode:
-				case gs_commons_constants.AuthTypeOfMobileConfirm:
-				case gs_commons_constants.AuthTypeOfMiniProgramUserConfirm:
-				case gs_commons_constants.AuthTypeOfMiniProgramCodeConfirm:
+				case constants.AuthTypeOfFace:
+				case constants.AuthTypeOfToken:
+				case constants.AuthTypeOfValcode:
+				case constants.AuthTypeOfMobileConfirm:
+				case constants.AuthTypeOfMiniProgramUserConfirm:
+				case constants.AuthTypeOfMiniProgramCodeConfirm:
 				default:
 					return errstate.ErrFunctionAuthType
 				}
@@ -366,12 +366,12 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 				Api:          in.Api,
 				AuthTypes:    in.AuthTypes,
 				GrantPlatforms: []int64{
-					gs_commons_constants.PlatformOfWindows,
-					gs_commons_constants.PlatformOfLinux,
-					gs_commons_constants.PlatformOfIOS,
-					gs_commons_constants.PlatformOfFuchsia,
-					gs_commons_constants.PlatformOfAndroid,
-					gs_commons_constants.PlatformOfWeb},
+					constants.PlatformOfWindows,
+					constants.PlatformOfLinux,
+					constants.PlatformOfIOS,
+					constants.PlatformOfFuchsia,
+					constants.PlatformOfAndroid,
+					constants.PlatformOfWeb},
 			}
 
 			err := repo.AddFunction(f)
@@ -386,21 +386,21 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 	})
 }
 
-func (svc *functionService) Rename(ctx context.Context, in *external.FunctionRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *functionService) Rename(ctx context.Context, in *external.FunctionRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
-func (svc *functionService) Move(ctx context.Context, in *external.FunctionRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *functionService) Move(ctx context.Context, in *external.FunctionRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 //one application one root group, bindGroupId = appId
-func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionGroupRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.Name) == 0 && len(in.AppId) == 0 {
 			return nil
@@ -430,18 +430,18 @@ func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionG
 	})
 }
 
-func (svc *functionService) MoveGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *functionService) MoveGroup(ctx context.Context, in *external.FunctionGroupRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
-func (svc *functionService) RenameGroup(ctx context.Context, in *external.FunctionGroupRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *functionService) RenameGroup(ctx context.Context, in *external.FunctionGroupRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func NewFunctionService(client *indexutils.Client, session *mgo.Session, log analysisclient.LogClient) external.FunctionHandler {
-	return &functionService{Client: client, session: session, id: gs_commons_generator.NewIDG(), log: log}
+	return &functionService{Client: client, session: session, id: generator.NewIDG(), log: log}
 }

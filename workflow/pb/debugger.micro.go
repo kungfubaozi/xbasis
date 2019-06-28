@@ -2,7 +2,7 @@
 // source: pb/debugger.proto
 
 /*
-Package gosionsvc_external_workflow is a generated protocol buffer package.
+Package xbasissvc_external_workflow is a generated protocol buffer package.
 
 It is generated from these files:
 	pb/debugger.proto
@@ -13,7 +13,7 @@ It has these top-level messages:
 	RunRequest
 	RunResponse
 */
-package gosionsvc_external_workflow
+package xbasissvc_external_workflow
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -58,7 +58,7 @@ func NewDebuggerService(name string, c client.Client) DebuggerService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.workflow"
+		name = "xbasissvc.external.workflow"
 	}
 	return &debuggerService{
 		c:    c,

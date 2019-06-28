@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Register {
 
-    rpc New (NewRequest) returns (gs.commons.dto.Status);
+    rpc New (NewRequest) returns (xbasis.commons.dto.Status);
 
 }
 

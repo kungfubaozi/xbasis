@@ -3,7 +3,7 @@ package authenticationhandlers
 import (
 	"fmt"
 	"github.com/twinj/uuid"
-	"konekko.me/gosion/commons/encrypt"
+	"konekko.me/xbasis/commons/encrypt"
 	"strconv"
 	"testing"
 	"time"
@@ -14,11 +14,10 @@ func TestEncode(t *testing.T) {
 	k := encrypt.Md5("currency-secret" + strconv.FormatInt(time.Now().UnixNano(), 10))
 
 	m := &simpleUserToken{
-		UserId:    uuid.NewV4().String(),
-		AppId:     uuid.NewV4().String(),
-		ClientId:  uuid.NewV4().String(),
-		Relation:  uuid.NewV4().String(),
-		Structure: uuid.NewV4().String(),
+		UserId:   uuid.NewV4().String(),
+		AppId:    uuid.NewV4().String(),
+		ClientId: uuid.NewV4().String(),
+		Relation: uuid.NewV4().String(),
 	}
 
 	token, err := encodeToken(k,

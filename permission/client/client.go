@@ -2,23 +2,23 @@ package permissioncli
 
 import (
 	"github.com/micro/go-micro/client"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/pb/inner"
+	"konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/permission/pb"
+	"konekko.me/xbasis/permission/pb/inner"
 )
 
-func NewVerificationClient(client client.Client) gosionsvc_internal_permission.VerificationService {
-	return gosionsvc_internal_permission.NewVerificationService(gs_commons_constants.InternalPermission, client)
+func NewVerificationClient(client client.Client) xbasissvc_internal_permission.VerificationService {
+	return xbasissvc_internal_permission.NewVerificationService(xbasisconstants.InternalPermission, client)
 }
 
-func NewAccessibleClient(client client.Client) gosionsvc_internal_permission.AccessibleService {
-	return gosionsvc_internal_permission.NewAccessibleService(gs_commons_constants.InternalPermission, client)
+func NewAccessibleClient(client client.Client) xbasissvc_internal_permission.AccessibleService {
+	return xbasissvc_internal_permission.NewAccessibleService(xbasisconstants.InternalPermission, client)
 }
 
-func NewBindingClient(client client.Client) gosionsvc_external_permission.BindingService {
-	return gosionsvc_external_permission.NewBindingService(gs_commons_constants.PermissionService, client)
+func NewBindingClient(client client.Client) xbasissvc_external_permission.BindingService {
+	return xbasissvc_external_permission.NewBindingService(xbasisconstants.PermissionService, client)
 }
 
-func NewGroupClient(client client.Client) gosionsvc_external_permission.UserGroupService {
-	return gosionsvc_external_permission.NewUserGroupService(gs_commons_constants.PermissionService, client)
+func NewGroupClient(client client.Client) xbasissvc_external_permission.UserGroupService {
+	return xbasissvc_external_permission.NewUserGroupService(xbasisconstants.PermissionService, client)
 }

@@ -1,34 +1,34 @@
 package permissionsvc
 
 import (
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/client"
-	"konekko.me/gosion/authentication/client"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/microservice"
-	"konekko.me/gosion/permission/client"
-	"konekko.me/gosion/permission/handlers"
-	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/pb/inner"
-	"konekko.me/gosion/safety/client"
-	"konekko.me/gosion/user/client"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/application/client"
+	"konekko.me/xbasis/authentication/client"
+	xconfig "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/dao"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/microservice"
+	"konekko.me/xbasis/permission/client"
+	"konekko.me/xbasis/permission/handlers"
+	"konekko.me/xbasis/permission/pb"
+	"konekko.me/xbasis/permission/pb/inner"
+	"konekko.me/xbasis/safety/client"
+	"konekko.me/xbasis/user/client"
 )
 
 func StartService() {
 
 	errc := make(chan error, 3)
 
-	pool, err := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	pool, err := xbasisdao.CreatePool("192.168.2.60:6379")
 	if err != nil {
 		panic(err)
 	}
 	defer pool.Close()
 
-	session, err := gs_commons_dao.CreateSession("192.168.2.60:27017")
+	session, err := xbasisdao.CreateSession("192.168.2.60:27017")
 	if err != nil {
 		panic(err)
 	}
@@ -40,39 +40,39 @@ func StartService() {
 
 	logger := analysisclient.NewLoggerClient()
 
-	zk := gs_commons_config.NewConnect("192.168.2.57:2181")
+	zk := xconfig.NewConnect("192.168.2.57:2181")
 	defer zk.Close()
 
 	go func() {
-		m := microservice.NewService(gs_commons_constants.InternalPermission, false)
+		m := microservice.NewService(constants.InternalPermission, false)
 
-		gosionsvc_internal_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
+		xbasissvc_internal_permission.RegisterVerificationHandler(m.Server(), permissionhandlers.NewVerificationService(pool,
 			session, applicationclient.NewStatusClient(m.Client()),
 			safetyclient.NewBlacklistClient(m.Client()),
 			authenticationcli.NewAuthClient(m.Client()), client, logger))
 
-		gosionsvc_internal_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, session, logger))
+		xbasissvc_internal_permission.RegisterAccessibleHandler(m.Server(), permissionhandlers.NewAccessibleService(client, session, logger))
 
 		errc <- m.Run()
 	}()
 
 	go func() {
 
-		m := microservice.NewService(gs_commons_constants.PermissionService, true)
+		m := microservice.NewService(constants.PermissionService, true)
 
 		us := userclient.NewExtUserClient(m.Client())
 
 		mc := userclient.NewExtMessageClient(m.Client())
 
-		gosionsvc_external_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(client, session, us, logger))
+		xbasissvc_external_permission.RegisterBindingHandler(m.Server(), permissionhandlers.NewBindingService(client, session, us, logger))
 
-		gosionsvc_external_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, zk, mc, client, logger))
+		xbasissvc_external_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, zk, mc, client, logger))
 
-		gosionsvc_external_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
+		xbasissvc_external_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
 
-		gosionsvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session, userclient.NewExtUserClient(m.Client())))
+		xbasissvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session, userclient.NewExtUserClient(m.Client())))
 
-		gosionsvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool,
+		xbasissvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool,
 			permissioncli.NewBindingClient(m.Client())))
 
 		errc <- m.Run()
@@ -80,11 +80,11 @@ func StartService() {
 	}()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
+		xconfig.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	go func() {
-		gs_commons_config.WatchInitializeConfig(gs_commons_constants.PermissionService, permissionhandlers.Initialize(session.Clone(), client, zk))
+		xconfig.WatchInitializeConfig(constants.PermissionService, permissionhandlers.Initialize(session.Clone(), client, zk))
 	}()
 
 	if err := <-errc; err != nil {

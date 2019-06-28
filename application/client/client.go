@@ -3,19 +3,19 @@ package applicationclient
 import (
 	"github.com/micro/go-micro/client"
 	_ "github.com/micro/go-micro/registry/consul"
-	"konekko.me/gosion/application/pb"
-	"konekko.me/gosion/application/pb/inner"
-	"konekko.me/gosion/commons/constants"
+	"konekko.me/xbasis/application/pb"
+	"konekko.me/xbasis/application/pb/inner"
+	"konekko.me/xbasis/commons/constants"
 )
 
-func NewClient(client client.Client) gosionsvc_external_application.ApplicationService {
-	return gosionsvc_external_application.NewApplicationService(gs_commons_constants.ApplicationService, client)
+func NewClient(client client.Client) xbasissvc_external_application.ApplicationService {
+	return xbasissvc_external_application.NewApplicationService(xbasisconstants.ApplicationService, client)
 }
 
-func NewStatusClient(client client.Client) gosionsvc_internal_application.ApplicationStatusService {
-	return gosionsvc_internal_application.NewApplicationStatusService(gs_commons_constants.InternalApplicationService, client)
+func NewStatusClient(client client.Client) xbasissvc_internal_application.ApplicationStatusService {
+	return xbasissvc_internal_application.NewApplicationStatusService(xbasisconstants.InternalApplicationService, client)
 }
 
-func NewSyncClient(client client.Client) gosionsvc_internal_application.UserSyncService {
-	return gosionsvc_internal_application.NewUserSyncService(gs_commons_constants.InternalApplicationService, client)
+func NewSyncClient(client client.Client) xbasissvc_internal_application.UserSyncService {
+	return xbasissvc_internal_application.NewUserSyncService(xbasisconstants.InternalApplicationService, client)
 }

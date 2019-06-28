@@ -2,7 +2,7 @@
 // source: permission/pb/dat.proto
 
 /*
-Package gosionsvc_external_permission is a generated protocol buffer package.
+Package xbasissvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/dat.proto
@@ -12,12 +12,12 @@ It has these top-level messages:
 	VerifyResponse
 	SendRequest
 */
-package gosionsvc_external_permission
+package xbasissvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -29,7 +29,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -45,7 +45,7 @@ var _ server.Option
 // Client API for DurationAccess service
 
 type DurationAccessService interface {
-	Send(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Send(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Verify(ctx context.Context, in *VerifyRequest, opts ...client.CallOption) (*VerifyResponse, error)
 }
 
@@ -59,7 +59,7 @@ func NewDurationAccessService(name string, c client.Client) DurationAccessServic
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.permission"
+		name = "xbasissvc.external.permission"
 	}
 	return &durationAccessService{
 		c:    c,
@@ -67,9 +67,9 @@ func NewDurationAccessService(name string, c client.Client) DurationAccessServic
 	}
 }
 
-func (c *durationAccessService) Send(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *durationAccessService) Send(ctx context.Context, in *SendRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "DurationAccess.Send", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,13 +90,13 @@ func (c *durationAccessService) Verify(ctx context.Context, in *VerifyRequest, o
 // Server API for DurationAccess service
 
 type DurationAccessHandler interface {
-	Send(context.Context, *SendRequest, *gs_commons_dto.Status) error
+	Send(context.Context, *SendRequest, *xbasis_commons_dto.Status) error
 	Verify(context.Context, *VerifyRequest, *VerifyResponse) error
 }
 
 func RegisterDurationAccessHandler(s server.Server, hdlr DurationAccessHandler, opts ...server.HandlerOption) error {
 	type durationAccess interface {
-		Send(ctx context.Context, in *SendRequest, out *gs_commons_dto.Status) error
+		Send(ctx context.Context, in *SendRequest, out *xbasis_commons_dto.Status) error
 		Verify(ctx context.Context, in *VerifyRequest, out *VerifyResponse) error
 	}
 	type DurationAccess struct {
@@ -110,7 +110,7 @@ type durationAccessHandler struct {
 	DurationAccessHandler
 }
 
-func (h *durationAccessHandler) Send(ctx context.Context, in *SendRequest, out *gs_commons_dto.Status) error {
+func (h *durationAccessHandler) Send(ctx context.Context, in *SendRequest, out *xbasis_commons_dto.Status) error {
 	return h.DurationAccessHandler.Send(ctx, in, out)
 }
 

@@ -2,7 +2,7 @@
 // source: user/pb/userinfo.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/userinfo.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	GetInfoResponse
 	GetInfoByIdRequest
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -56,7 +56,7 @@ func NewUserInfoService(name string, c client.Client) UserInfoService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &userInfoService{
 		c:    c,

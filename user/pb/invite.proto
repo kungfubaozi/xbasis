@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Invite {
 
@@ -10,7 +10,7 @@ service Invite {
     //邀请的流程并不是直接把用户放在库中
     //需要被邀请
     //1.如果没有注册，需要注册再进行
-    rpc User (InviteUserRequest) returns (gs.commons.dto.Status);
+    rpc User (InviteUserRequest) returns (xbasis.commons.dto.Status);
 
     rpc Search (InviteSearchRequest) returns (InviteSearchResponse);
 
@@ -21,9 +21,9 @@ service Invite {
     rpc GetDetail (HasInvitedRequest) returns (GetDetailResponse);
 
     //完成
-    rpc SetState (SetStateRequest) returns (gs.commons.dto.Status);
+    rpc SetState (SetStateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Append (AppendRequest) returns (gs.commons.dto.Status);
+    rpc Append (AppendRequest) returns (xbasis.commons.dto.Status);
 }
 
 message InviteUserRequest {
@@ -33,7 +33,6 @@ message InviteUserRequest {
     string realName = 4;
     repeated InviteItem items = 5;
     int64 expiredAt = 6;
-    string userId = 7;
 }
 
 message AppendRequest {
@@ -55,7 +54,7 @@ message HasInvitedRequest {
 }
 
 message HasInvitedResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string userId = 2;
     int64 status = 3;
 }
@@ -68,11 +67,11 @@ message InviteSearchRequest {
 }
 
 message InviteSearchResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message GetDetailResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated InviteItem items = 2;
     string username = 3;
     string realName = 4;

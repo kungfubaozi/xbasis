@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.internal.permission;
+package xbasissvc.internal.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 //验证
 service Verification {
@@ -17,7 +17,7 @@ message HasPermissionRequest {
 }
 
 message HasPermissionResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string user = 2;
     string appId = 3;
     string refClientId = 4;

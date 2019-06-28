@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/hashcode"
-	"konekko.me/gosion/commons/indexutils"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/hashcode"
+	"konekko.me/xbasis/commons/indexutils"
 )
 
 type bindingRepo struct {
 	session *mgo.Session
 	*indexutils.Client
-	id gs_commons_generator.IDGenerator
+	id generator.IDGenerator
 }
 
 func (repo *bindingRepo) Close() {

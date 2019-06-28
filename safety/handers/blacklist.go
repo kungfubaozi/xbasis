@@ -3,12 +3,12 @@ package safetyhanders
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/safety/pb"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/safety/pb"
 )
 
 type blacklistService struct {
@@ -24,14 +24,14 @@ func (svc *blacklistService) GetRepo() blacklistRepo {
 	return blacklistRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
-func (svc *blacklistService) Check(ctx context.Context, in *external.CheckRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *blacklistService) Check(ctx context.Context, in *external.CheckRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.Content) > 0 {
 			return errstate.Success
 		}
 
-		if in.Type == gs_commons_constants.BlacklistOfIP || in.Type == gs_commons_constants.BlacklistOfUserDevice {
+		if in.Type == constants.BlacklistOfIP || in.Type == constants.BlacklistOfUserDevice {
 
 			repo := svc.GetRepo()
 			defer repo.Close()
@@ -45,8 +45,8 @@ func (svc *blacklistService) Check(ctx context.Context, in *external.CheckReques
 	})
 }
 
-func (svc *blacklistService) Add(ctx context.Context, in *external.AddRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *blacklistService) Add(ctx context.Context, in *external.AddRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -66,8 +66,8 @@ func (svc *blacklistService) Add(ctx context.Context, in *external.AddRequest, o
 	})
 }
 
-func (svc *blacklistService) Remove(ctx context.Context, in *external.RemoveRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *blacklistService) Remove(ctx context.Context, in *external.RemoveRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()

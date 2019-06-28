@@ -1,7 +1,7 @@
 package types
 
 import (
-	"konekko.me/gosion/workflow/flowerr"
+	"konekko.me/xbasis/workflow/flowerr"
 )
 
 type GetterCommand int64

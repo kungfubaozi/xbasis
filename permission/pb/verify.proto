@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package gosionsvc.external.permission;
+package xbasissvc.external.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Check {
 
-    rpc Auth (AuthRequest) returns (gs.commons.dto.Status);
+    rpc Auth (AuthRequest) returns (xbasis.commons.dto.Status);
 
 }
 

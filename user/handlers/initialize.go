@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/hashcode"
-	"konekko.me/gosion/commons/indexutils"
+	xconfig "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/hashcode"
+	"konekko.me/xbasis/commons/indexutils"
 	"time"
 )
 
-func Initialize(session *mgo.Session, client *indexutils.Client) gs_commons_config.OnConfigNodeChanged {
-	return func(config *gs_commons_config.GosionInitializeConfig) {
+func Initialize(session *mgo.Session, client *indexutils.Client) xconfig.OnConfigNodeChanged {
+	return func(config *xconfig.GosionInitializeConfig) {
 		coll := session.DB(dbName).C(userCollection)
 		c, err := coll.Count()
 		if err != nil {

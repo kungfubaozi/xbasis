@@ -3,12 +3,12 @@ package runtime
 import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/modules"
+	"konekko.me/xbasis/analysis/client"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/modules"
 )
 
 type instances struct {
@@ -17,7 +17,7 @@ type instances struct {
 	pool    *redis.Pool
 	client  *indexutils.Client
 	log     analysisclient.LogClient
-	id      gs_commons_generator.IDGenerator
+	id      generator.IDGenerator
 }
 
 func (i *instances) NamedStart(name string) *flowerr.Error {

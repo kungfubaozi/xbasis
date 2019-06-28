@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/constants"
+	"konekko.me/xbasis/commons/constants"
 )
 
 type Message struct {
@@ -123,7 +123,7 @@ func (o *operation) send(t string, msg *Message) error {
 	if err != nil {
 		return err
 	}
-	return o.ch.Publish(gs_commons_constants.ConnectionFanoutChannel, "",
+	return o.ch.Publish(xbasisconstants.ConnectionFanoutChannel, "",
 		false, false, amqp.Publishing{
 			Type: t,
 			Body: b,
@@ -138,7 +138,7 @@ func NewClient() (ConnectionClient, error) {
 	}
 	ch, err := conn.Channel()
 	err = ch.ExchangeDeclare(
-		gs_commons_constants.ConnectionFanoutChannel, // name
+		xbasisconstants.ConnectionFanoutChannel, // name
 		"fanout",
 		true,
 		false,

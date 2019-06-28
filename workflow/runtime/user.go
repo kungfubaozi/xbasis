@@ -2,24 +2,24 @@ package runtime
 
 import (
 	"context"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb/inner"
-	"konekko.me/gosion/user/pb/inner"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/permission/pb/inner"
+	"konekko.me/xbasis/user/pb/inner"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
 )
 
-func getWrapperUser(ctx context.Context) *gs_commons_wrapper.WrapperUser {
-	return ctx.Value("auth").(*gs_commons_wrapper.WrapperUser)
+func getWrapperUser(ctx context.Context) *wrapper.WrapperUser {
+	return ctx.Value("auth").(*wrapper.WrapperUser)
 }
 
 type user struct {
 	client            *indexutils.Client
 	log               analysisclient.LogClient
-	userService       gosionsvc_internal_user.UserService
-	permissionService gosionsvc_internal_permission.AccessibleService
+	userService       xbasissvc_internal_user.UserService
+	permissionService xbasissvc_internal_permission.AccessibleService
 }
 
 func (u *user) Notify(ctx context.Context, userTask *models.UserTask) {

@@ -3,7 +3,7 @@ package permissionhandlers
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/xbasis/commons/indexutils"
 )
 
 type functionRepo struct {

@@ -2,8 +2,8 @@ package modules
 
 import (
 	"context"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
 )
 
 type IUser interface {

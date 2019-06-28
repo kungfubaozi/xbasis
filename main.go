@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/twinj/uuid"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
+	"konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
 	"reflect"
 	"strings"
 )

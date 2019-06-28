@@ -2,7 +2,7 @@
 // source: safety/pb/userlock.proto
 
 /*
-Package gosionsvc_external_safety is a generated protocol buffer package.
+Package xbasissvc_external_safety is a generated protocol buffer package.
 
 It is generated from these files:
 	safety/pb/userlock.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	UserLockRequest
 	UserUnlockRequest
 */
-package gosionsvc_external_safety
+package xbasissvc_external_safety
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -28,7 +28,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,8 +44,8 @@ var _ server.Option
 // Client API for Userlock service
 
 type UserlockService interface {
-	Lock(ctx context.Context, in *UserLockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Unlock(ctx context.Context, in *UserUnlockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Lock(ctx context.Context, in *UserLockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Unlock(ctx context.Context, in *UserUnlockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type userlockService struct {
@@ -58,7 +58,7 @@ func NewUserlockService(name string, c client.Client) UserlockService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.safety"
+		name = "xbasissvc.external.safety"
 	}
 	return &userlockService{
 		c:    c,
@@ -66,9 +66,9 @@ func NewUserlockService(name string, c client.Client) UserlockService {
 	}
 }
 
-func (c *userlockService) Lock(ctx context.Context, in *UserLockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userlockService) Lock(ctx context.Context, in *UserLockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Userlock.Lock", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,9 +76,9 @@ func (c *userlockService) Lock(ctx context.Context, in *UserLockRequest, opts ..
 	return out, nil
 }
 
-func (c *userlockService) Unlock(ctx context.Context, in *UserUnlockRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userlockService) Unlock(ctx context.Context, in *UserUnlockRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Userlock.Unlock", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -89,14 +89,14 @@ func (c *userlockService) Unlock(ctx context.Context, in *UserUnlockRequest, opt
 // Server API for Userlock service
 
 type UserlockHandler interface {
-	Lock(context.Context, *UserLockRequest, *gs_commons_dto.Status) error
-	Unlock(context.Context, *UserUnlockRequest, *gs_commons_dto.Status) error
+	Lock(context.Context, *UserLockRequest, *xbasis_commons_dto.Status) error
+	Unlock(context.Context, *UserUnlockRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterUserlockHandler(s server.Server, hdlr UserlockHandler, opts ...server.HandlerOption) error {
 	type userlock interface {
-		Lock(ctx context.Context, in *UserLockRequest, out *gs_commons_dto.Status) error
-		Unlock(ctx context.Context, in *UserUnlockRequest, out *gs_commons_dto.Status) error
+		Lock(ctx context.Context, in *UserLockRequest, out *xbasis_commons_dto.Status) error
+		Unlock(ctx context.Context, in *UserUnlockRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Userlock struct {
 		userlock
@@ -109,10 +109,10 @@ type userlockHandler struct {
 	UserlockHandler
 }
 
-func (h *userlockHandler) Lock(ctx context.Context, in *UserLockRequest, out *gs_commons_dto.Status) error {
+func (h *userlockHandler) Lock(ctx context.Context, in *UserLockRequest, out *xbasis_commons_dto.Status) error {
 	return h.UserlockHandler.Lock(ctx, in, out)
 }
 
-func (h *userlockHandler) Unlock(ctx context.Context, in *UserUnlockRequest, out *gs_commons_dto.Status) error {
+func (h *userlockHandler) Unlock(ctx context.Context, in *UserUnlockRequest, out *xbasis_commons_dto.Status) error {
 	return h.UserlockHandler.Unlock(ctx, in, out)
 }

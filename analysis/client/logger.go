@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/Sirupsen/logrus"
-	"konekko.me/gosion/commons/generator"
+	"konekko.me/xbasis/commons/generator"
 	"time"
 )
 
@@ -68,7 +68,7 @@ type LogClient interface {
 }
 
 type logClient struct {
-	id       gs_commons_generator.IDGenerator
+	id       xbasisgenerator.IDGenerator
 	log      *logrus.Logger
 	producer sarama.SyncProducer
 }
@@ -116,10 +116,11 @@ func (log *logClient) buildMessage(content *LogContent) {
 	}
 	message := &sarama.ProducerMessage{
 		Partition: 1,
-		Topic:     "gs-kafka-analysis-logger-topic-6",
+		Topic:     "gs-kafka-analysis-logger-topic-7",
 		Value:     sarama.StringEncoder(string(b)),
 	}
-	log.producer.SendMessage(message)
+	_, _, err = log.producer.SendMessage(message)
+	fmt.Println("err ", err)
 }
 
 /**
@@ -143,6 +144,6 @@ func NewLoggerClient() LogClient {
 	return &logClient{
 		log:      log,
 		producer: producer,
-		id:       gs_commons_generator.NewIDG(),
+		id:       xbasisgenerator.NewIDG(),
 	}
 }

@@ -1,4 +1,4 @@
-package gs_commons_wrapper
+package xbasiswrapper
 
 import (
 	"context"

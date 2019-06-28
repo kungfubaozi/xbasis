@@ -4,23 +4,23 @@ import (
 	"context"
 	"fmt"
 	"gopkg.in/mgo.v2"
-	inner "konekko.me/gosion/application/pb/inner"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/permission/pb/inner"
-	"konekko.me/gosion/user/pb"
+	inner "konekko.me/xbasis/application/pb/inner"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/permission/pb"
+	"konekko.me/xbasis/permission/pb/inner"
+	"konekko.me/xbasis/user/pb"
 	"sync"
 )
 
 type syncService struct {
 	session           *mgo.Session
-	inviteService     gosionsvc_external_user.InviteService
-	accessibleService gosionsvc_internal_permission.AccessibleService
-	bindingService    gosionsvc_external_permission.BindingService
-	groupService      gosionsvc_external_permission.UserGroupService
+	inviteService     xbasissvc_external_user.InviteService
+	accessibleService xbasissvc_internal_permission.AccessibleService
+	bindingService    xbasissvc_external_permission.BindingService
+	groupService      xbasissvc_external_permission.UserGroupService
 }
 
 func (svc *syncService) GetRepo() *syncRepo {
@@ -31,8 +31,8 @@ func (svc *syncService) GetAppRepo() *applicationRepo {
 	return &applicationRepo{session: svc.session.Clone()}
 }
 
-func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		if len(in.UserId) > 0 && len(in.AppId) > 0 && len(auth.Token.Relation) > 10 {
 
@@ -58,8 +58,8 @@ func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *
 //这里的操作主要有两个
 //1.获取app的AllowNewUser设置项，设置用户在此app的默认权限
 //2.同步用户信息至app（SyncUserURL）
-func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		if len(in.GId) > 0 && len(in.AppId) > 0 {
 
@@ -73,7 +73,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 
 			next := true
 			switch appInfo.Type {
-			case gs_commons_constants.AppTypeRoute, gs_commons_constants.AppTypeSafe:
+			case constants.AppTypeRoute, constants.AppTypeSafe:
 				next = false
 			}
 
@@ -83,7 +83,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 
 				}
 
-				i, err := svc.inviteService.HasInvited(ctx, &gosionsvc_external_user.HasInvitedRequest{
+				i, err := svc.inviteService.HasInvited(ctx, &xbasissvc_external_user.HasInvitedRequest{
 					UserId: in.GId,
 					AppId:  in.AppId,
 				})
@@ -101,7 +101,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 				var bindGroupIds []string
 
 				if invited {
-					as, err := svc.inviteService.GetDetail(ctx, &gosionsvc_external_user.HasInvitedRequest{
+					as, err := svc.inviteService.GetDetail(ctx, &xbasissvc_external_user.HasInvitedRequest{
 						UserId: in.GId,
 						AppId:  in.AppId,
 					})
@@ -131,7 +131,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 
 				s1 := errstate.Success
 
-				resp := func(s2 *gs_commons_dto.State) {
+				resp := func(s2 *commons.State) {
 					if s1.Ok {
 						s1 = s2
 					}
@@ -141,7 +141,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 					defer wg.Done()
 					if len(roles) > 0 {
 						//binding
-						s, err := svc.bindingService.UserRole(ctx, &gosionsvc_external_permission.BindingRolesRequest{
+						s, err := svc.bindingService.UserRole(ctx, &xbasissvc_external_permission.BindingRolesRequest{
 							Id:    in.GId,
 							Roles: roles,
 							AppId: in.AppId,
@@ -160,7 +160,7 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 				go func() {
 					defer wg.Done()
 					if len(bindGroupIds) > 0 {
-						s, err := svc.groupService.AddUser(ctx, &gosionsvc_external_permission.AddUserRequest{
+						s, err := svc.groupService.AddUser(ctx, &xbasissvc_external_permission.AddUserRequest{
 							GroupIds: bindGroupIds,
 							UserId:   in.GId,
 							AppId:    in.AppId,
@@ -195,9 +195,9 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *gs_
 	})
 }
 
-func NewSyncService(session *mgo.Session, inviteService gosionsvc_external_user.InviteService,
-	accessibleService gosionsvc_internal_permission.AccessibleService,
-	bindingService gosionsvc_external_permission.BindingService,
-	groupService gosionsvc_external_permission.UserGroupService) inner.UserSyncHandler {
+func NewSyncService(session *mgo.Session, inviteService xbasissvc_external_user.InviteService,
+	accessibleService xbasissvc_internal_permission.AccessibleService,
+	bindingService xbasissvc_external_permission.BindingService,
+	groupService xbasissvc_external_permission.UserGroupService) inner.UserSyncHandler {
 	return &syncService{session: session, inviteService: inviteService, accessibleService: accessibleService, bindingService: bindingService, groupService: groupService}
 }

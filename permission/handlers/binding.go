@@ -4,36 +4,36 @@ import (
 	"context"
 	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/permission/pb"
-	"konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/analysis/client"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/permission/pb"
+	"konekko.me/xbasis/user/pb/inner"
 	"sync"
 )
 
 type bindingService struct {
 	*indexutils.Client
 	session          *mgo.Session
-	innerUserService gosionsvc_internal_user.UserService
+	innerUserService xbasissvc_internal_user.UserService
 	roleService      external.RoleService
 	log              analysisclient.LogClient
 }
 
 func (svc *bindingService) GetRepo() *bindingRepo {
-	return &bindingRepo{Client: svc.Client, session: svc.session.Clone(), id: gs_commons_generator.NewIDG()}
+	return &bindingRepo{Client: svc.Client, session: svc.session.Clone(), id: generator.NewIDG()}
 }
 
 func (svc *bindingService) GetRoleRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone()}
 }
 
-func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRolesRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRolesRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.Roles) > 0 {
 			//check roles
 			repo := svc.GetRepo()
@@ -41,7 +41,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 
 			headers := &analysisclient.LogHeaders{
 				TraceId:     auth.TraceId,
-				ServiceName: gs_commons_constants.PermissionService,
+				ServiceName: constants.PermissionService,
 				ModuleName:  "Binding",
 			}
 
@@ -49,7 +49,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 			defer roleRepo.Close()
 
 			s := errstate.Success
-			resp := func(s1 *gs_commons_dto.State) {
+			resp := func(s1 *commons.State) {
 				if s.Ok {
 					s = s1
 				}
@@ -123,8 +123,8 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 	})
 }
 
-func (svc *bindingService) FunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *bindingService) FunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.RoleId) > 0 {
 
 			repo := svc.GetRepo()
@@ -194,8 +194,8 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *external.Bindin
 	})
 }
 
-func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.BindingRoleRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.AppId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
 
@@ -237,8 +237,8 @@ func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.Bind
 	})
 }
 
-func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.BindingRoleRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.AppId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
 
@@ -281,6 +281,6 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.
 }
 
 func NewBindingService(client *indexutils.Client, session *mgo.Session,
-	innerUserService gosionsvc_internal_user.UserService, log analysisclient.LogClient) external.BindingHandler {
+	innerUserService xbasissvc_internal_user.UserService, log analysisclient.LogClient) external.BindingHandler {
 	return &bindingService{Client: client, session: session, innerUserService: innerUserService, log: log}
 }

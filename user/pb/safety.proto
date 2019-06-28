@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Safety {
 
-    rpc ForgetPassword (ForgetPasswordRequest) returns (gs.commons.dto.Status);
+    rpc ForgetPassword (ForgetPasswordRequest) returns (xbasis.commons.dto.Status);
 
 }
 

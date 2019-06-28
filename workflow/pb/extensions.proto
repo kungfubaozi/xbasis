@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gosionsvc.external.workflow;
+package xbasissvc.external.workflow;
 
 service Extensions {
 

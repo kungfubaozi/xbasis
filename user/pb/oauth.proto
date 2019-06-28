@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service OAuth {
 
     rpc Login (OAuthLoginRequest) returns (OAuthLoginResponse);
 
-    rpc BindOAuth (BindOAuthRequest) returns (gs.commons.dto.Status);
+    rpc BindOAuth (BindOAuthRequest) returns (xbasis.commons.dto.Status);
 
-    rpc UnbindOAuth (UnbindOAuthRequest) returns (gs.commons.dto.Status);
+    rpc UnbindOAuth (UnbindOAuthRequest) returns (xbasis.commons.dto.Status);
 }
 
 message BindOAuthRequest {

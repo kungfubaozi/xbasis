@@ -5,39 +5,40 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/application/pb/inner"
-	external "konekko.me/gosion/authentication/pb"
-	"konekko.me/gosion/authentication/pb/inner"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/connection/cmd/connectioncli"
-	"konekko.me/gosion/permission/pb/inner"
-	"konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/application/pb/inner"
+	external "konekko.me/xbasis/authentication/pb"
+	"konekko.me/xbasis/authentication/pb/inner"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
+	"konekko.me/xbasis/permission/pb/inner"
+	"konekko.me/xbasis/user/pb/inner"
 	"time"
 )
 
 type routeService struct {
-	innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService
-	innerUserSyncService          gosionsvc_internal_application.UserSyncService
-	innerTokenService             gosionsvc_internal_authentication.TokenService
-	innerUserService              gosionsvc_internal_user.UserService
-	innerAccessible               gosionsvc_internal_permission.AccessibleService
+	innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService
+	innerUserSyncService          xbasissvc_internal_application.UserSyncService
+	innerTokenService             xbasissvc_internal_authentication.TokenService
+	innerUserService              xbasissvc_internal_user.UserService
+	innerAccessible               xbasissvc_internal_permission.AccessibleService
 	connectioncli                 connectioncli.ConnectionClient
 	*indexutils.Client
 	pool *redis.Pool
+	id   xbasisgenerator.IDGenerator
 }
 
-func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(auth.Token.Relation) < 16 || len(in.ClientId) < 8 {
 			return nil
 		}
-		s, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+		s, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &xbasissvc_internal_application.GetAppClientStatusRequest{
 			ClientId: in.ClientId,
 		})
 		if err != nil {
@@ -48,7 +49,7 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 		}
 		//如果用户有权限访问可进入
 		if s.AppQuarantine {
-			s, err := svc.innerAccessible.HasGrant(ctx, &gosionsvc_internal_permission.HasGrantRequest{
+			s, err := svc.innerAccessible.HasGrant(ctx, &xbasissvc_internal_permission.HasGrantRequest{
 				UserId: auth.Token.UserId,
 				AppId:  s.AppId,
 			})
@@ -59,7 +60,7 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 				return nil
 			}
 		}
-		info, err := svc.innerUserService.GetUserInfoById(ctx, &gosionsvc_internal_user.GetUserInfoByIdRequest{
+		info, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
 			UserId: auth.Token.UserId,
 		})
 		if err != nil {
@@ -69,7 +70,7 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 			return info.State
 		}
 
-		s1, err := svc.innerUserSyncService.Update(ctx, &gosionsvc_internal_application.UserInfo{
+		s1, err := svc.innerUserSyncService.Update(ctx, &xbasissvc_internal_application.UserInfo{
 			Username: info.Username,
 			GId:      info.UserId,
 			RealName: info.RealName,
@@ -83,8 +84,8 @@ func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRe
 	})
 }
 
-func (svc *routeService) Logout(ctx context.Context, in *external.LogoutRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *routeService) Logout(ctx context.Context, in *external.LogoutRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
 
@@ -95,7 +96,7 @@ func (svc *routeService) Logout(ctx context.Context, in *external.LogoutRequest,
 			return nil
 		}
 
-		if claims.Token.Type != gs_commons_constants.RefreshToken {
+		if claims.Token.Type != constants.RefreshToken {
 			return errstate.ErrRefreshToken
 		}
 
@@ -111,7 +112,7 @@ func (svc *routeService) GetRepo() *tokenRepo {
 }
 
 func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshRequest, out *external.RefreshResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.RefreshToken) >= 100 {
 
 			configuration := serviceconfiguration.Get()
@@ -141,7 +142,7 @@ func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshReques
 					return errstate.ErrOperateBusy
 				}
 
-				id := gs_commons_generator.NewIDG()
+				id := svc.id
 
 				access := &simpleUserToken{
 					Id:       id.Get(),
@@ -149,7 +150,7 @@ func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshReques
 					AppId:    claims.Token.AppId,
 					ClientId: claims.Token.ClientId,
 					Relation: claims.Token.Relation,
-					Type:     gs_commons_constants.AccessToken,
+					Type:     constants.AccessToken,
 				}
 
 				token, err := encodeToken(configuration.TokenSecretKey, time.Minute*10, access)
@@ -193,18 +194,17 @@ func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshReques
 //just support root application web client
 //It passes on to the caller new accessToken and refreshToken!
 func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out *external.PushResponse) error {
-
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.RouteTo) == 0 {
 			return nil
 		}
 
 		//just main client can be route to other application client
-		if auth.AppType != gs_commons_constants.AppTypeRoute && auth.Token.AppType != gs_commons_constants.AppTypeRoute {
+		if auth.AppType != constants.AppTypeRoute && auth.Token.AppType != constants.AppTypeRoute {
 			return errstate.ErrRouteNotMainClient
 		}
 
-		app, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &gosionsvc_internal_application.GetAppClientStatusRequest{
+		app, err := svc.innerApplicationStatusService.GetAppClientStatus(ctx, &xbasissvc_internal_application.GetAppClientStatusRequest{
 			ClientId: in.RouteTo,
 			Redirect: in.Redirect,
 		})
@@ -216,17 +216,17 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 		if app.State.Ok {
 
 			//can't jump to the main application
-			if app.Type == gs_commons_constants.AppTypeRoute {
+			if app.Type == constants.AppTypeRoute {
 				return errstate.ErrRequest
 			}
 
-			if app.ClientEnabled != gs_commons_constants.Enabled {
+			if app.ClientEnabled != constants.Enabled {
 				return errstate.ErrClientClosed
 			}
 
 			//如果用户有权限访问可进入
 			if app.AppQuarantine {
-				s, err := svc.innerAccessible.HasGrant(ctx, &gosionsvc_internal_permission.HasGrantRequest{
+				s, err := svc.innerAccessible.HasGrant(ctx, &xbasissvc_internal_permission.HasGrantRequest{
 					UserId: auth.Token.UserId,
 					AppId:  app.AppId,
 				})
@@ -238,7 +238,7 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 				}
 			}
 
-			s, err := svc.innerUserSyncService.Check(ctx, &gosionsvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
+			s, err := svc.innerUserSyncService.Check(ctx, &xbasissvc_internal_application.CheckRequest{UserId: auth.User, AppId: app.AppId})
 			if err != nil {
 				return nil
 			}
@@ -276,10 +276,10 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 					}
 
 					//jump to app
-					token, err := svc.innerTokenService.Generate(ctx, &gosionsvc_internal_authentication.GenerateRequest{
+					token, err := svc.innerTokenService.Generate(ctx, &xbasissvc_internal_authentication.GenerateRequest{
 						RelationId: auth.Token.Relation,
 						Route:      true,
-						Auth: &gs_commons_dto.Authorize{
+						Auth: &commons.Authorize{
 							ClientId: in.RouteTo,
 							UserId:   auth.Token.UserId,
 							Ip:       auth.IP,
@@ -303,7 +303,7 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 					out.RefreshToken = token.RefreshToken
 
 					//当web端登录时，不传入accessToken，需要进行refresh，保证其refreshToken是有效的
-					if app.ClientPlatform != gs_commons_constants.PlatformOfWeb {
+					if app.ClientPlatform != constants.PlatformOfWeb {
 						out.AccessToken = token.AccessToken
 					} else {
 						if app.CanRedirect {
@@ -322,11 +322,11 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 	})
 }
 
-func NewRouteService(client *indexutils.Client, pool *redis.Pool, innerApplicationStatusService gosionsvc_internal_application.ApplicationStatusService,
-	innerUserSyncService gosionsvc_internal_application.UserSyncService,
-	innerTokenService gosionsvc_internal_authentication.TokenService,
-	connectioncli connectioncli.ConnectionClient, innerUserService gosionsvc_internal_user.UserService, innerAccessible gosionsvc_internal_permission.AccessibleService) external.RouterHandler {
+func NewRouteService(client *indexutils.Client, pool *redis.Pool, innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService,
+	innerUserSyncService xbasissvc_internal_application.UserSyncService,
+	innerTokenService xbasissvc_internal_authentication.TokenService,
+	connectioncli connectioncli.ConnectionClient, innerUserService xbasissvc_internal_user.UserService, innerAccessible xbasissvc_internal_permission.AccessibleService) external.RouterHandler {
 	return &routeService{Client: client, pool: pool, innerTokenService: innerTokenService,
-		innerUserSyncService: innerUserSyncService, innerUserService: innerUserService,
+		innerUserSyncService: innerUserSyncService, innerUserService: innerUserService, id: xbasisgenerator.NewIDG(),
 		innerApplicationStatusService: innerApplicationStatusService, connectioncli: connectioncli, innerAccessible: innerAccessible}
 }

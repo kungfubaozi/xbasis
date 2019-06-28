@@ -2,9 +2,9 @@ package safetyhanders
 
 import (
 	"context"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/dto"
-	external "konekko.me/gosion/safety/pb"
+	"konekko.me/xbasis/analysis/client"
+	commons "konekko.me/xbasis/commons/dto"
+	external "konekko.me/xbasis/safety/pb"
 )
 
 type userlockService struct {
@@ -12,11 +12,11 @@ type userlockService struct {
 }
 
 //暂时没有时间做
-func (svc *userlockService) Lock(context.Context, *external.UserLockRequest, *gs_commons_dto.Status) error {
+func (svc *userlockService) Lock(context.Context, *external.UserLockRequest, *commons.Status) error {
 	panic("implement me")
 }
 
-func (svc *userlockService) Unlock(context.Context, *external.UserUnlockRequest, *gs_commons_dto.Status) error {
+func (svc *userlockService) Unlock(context.Context, *external.UserUnlockRequest, *commons.Status) error {
 	panic("implement me")
 }
 

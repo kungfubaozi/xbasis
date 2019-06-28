@@ -1,29 +1,29 @@
 package authenticationsvc
 
 import (
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/application/client"
-	"konekko.me/gosion/authentication/client"
-	"konekko.me/gosion/authentication/handlers"
-	"konekko.me/gosion/authentication/pb"
-	"konekko.me/gosion/authentication/pb/inner"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/microservice"
-	"konekko.me/gosion/connection/cmd/connectioncli"
-	"konekko.me/gosion/permission/client"
-	"konekko.me/gosion/safety/client"
-	"konekko.me/gosion/user/client"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/application/client"
+	"konekko.me/xbasis/authentication/client"
+	"konekko.me/xbasis/authentication/handlers"
+	"konekko.me/xbasis/authentication/pb"
+	"konekko.me/xbasis/authentication/pb/inner"
+	"konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/dao"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/microservice"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
+	"konekko.me/xbasis/permission/client"
+	"konekko.me/xbasis/safety/client"
+	"konekko.me/xbasis/user/client"
 )
 
 func StartService() {
 
 	errc := make(chan error, 2)
 
-	pool, err := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	pool, err := xbasisdao.CreatePool("192.168.2.60:6379")
 	if err != nil {
 		panic(err)
 	}
@@ -43,26 +43,26 @@ func StartService() {
 	logger := analysisclient.NewLoggerClient()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
+		xbasisconfig.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.InternalAuthenticationService, true)
+		s := microservice.NewService(constants.InternalAuthenticationService, true)
 		s.Init()
 
-		gosionsvc_internal_authentication.RegisterAuthHandler(s.Server(),
+		xbasissvc_internal_authentication.RegisterAuthHandler(s.Server(),
 			authenticationhandlers.NewAuthService(pool, safetyclient.NewSecurityClient(s.Client()), conn, client,
 				applicationclient.NewStatusClient(s.Client()),
 				safetyclient.NewBlacklistClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), logger))
 
-		gosionsvc_internal_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn, logger))
+		xbasissvc_internal_authentication.RegisterTokenHandler(s.Server(), authenticationhandlers.NewTokenService(pool, conn, logger))
 
 		errc <- s.Run()
 
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.AuthenticationService, true)
+		s := microservice.NewService(constants.AuthenticationService, true)
 		s.Init()
 
 		gosionsvc_external_authentication.RegisterRouterHandler(s.Server(), authenticationhandlers.NewRouteService(client, pool, applicationclient.NewStatusClient(s.Client()),

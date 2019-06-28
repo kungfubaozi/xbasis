@@ -3,8 +3,8 @@ package models
 import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/workflow/types"
 )
 
 type Instance struct {

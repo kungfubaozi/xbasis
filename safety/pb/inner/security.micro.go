@@ -2,7 +2,7 @@
 // source: safety/pb/inner/security.proto
 
 /*
-Package gosionsvc_internal_safety is a generated protocol buffer package.
+Package xbasissvc_internal_safety is a generated protocol buffer package.
 
 It is generated from these files:
 	safety/pb/inner/security.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	GetRequest
 	GetResponse
 */
-package gosionsvc_internal_safety
+package xbasissvc_internal_safety
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -56,7 +56,7 @@ func NewSecurityService(name string, c client.Client) SecurityService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.safety"
+		name = "xbasissvc.internal.safety"
 	}
 	return &securityService{
 		c:    c,

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/safety/pb"
-	"konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/analysis/client"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/safety/pb"
+	"konekko.me/xbasis/user/pb/inner"
 	"time"
 )
 
@@ -18,7 +18,7 @@ type lockingService struct {
 	session     *mgo.Session
 	log         analysisclient.LogClient
 	pool        *redis.Pool
-	userService gosionsvc_internal_user.UserService
+	userService xbasissvc_internal_user.UserService
 }
 
 func (svc *lockingService) Search(context.Context, *external.SearchRequest, *external.SearchResponse) error {
@@ -29,13 +29,13 @@ func (svc *lockingService) GetRepo() *lockingRepo {
 	return &lockingRepo{session: svc.session.Clone(), conn: svc.pool.Get()}
 }
 
-func (svc *lockingService) Lock(ctx context.Context, in *external.LockRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *lockingService) Lock(ctx context.Context, in *external.LockRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		fmt.Println("lock user", in.UserId)
 		if len(in.UserId) < 9 {
 			return nil
 		}
-		s, err := svc.userService.IsExists(ctx, &gosionsvc_internal_user.ExistsRequest{
+		s, err := svc.userService.IsExists(ctx, &xbasissvc_internal_user.ExistsRequest{
 			UserId: in.UserId,
 		})
 		if err != nil {
@@ -76,8 +76,8 @@ func (svc *lockingService) Lock(ctx context.Context, in *external.LockRequest, o
 	})
 }
 
-func (svc *lockingService) Unlock(ctx context.Context, in *external.UnlockRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *lockingService) Unlock(ctx context.Context, in *external.UnlockRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.UserId) < 9 {
 			return nil
 		}

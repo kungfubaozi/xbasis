@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service UserInfo {
 
@@ -11,7 +11,7 @@ service UserInfo {
 }
 
 message GetInfoResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string username = 2;
     string groupName = 3;
     string icon = 4;

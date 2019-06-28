@@ -1,14 +1,14 @@
 package workflowhandlers
 
 import (
-	"konekko.me/gosion/workflow/modules"
-	"konekko.me/gosion/workflow/pb"
+	"konekko.me/xbasis/workflow/modules"
+	pb "konekko.me/xbasis/workflow/pb"
 )
 
 type historyService struct {
 	modules modules.Modules
 }
 
-func NewHistoryService() gosionsvc_external_workflow.HistoryHandler {
+func NewHistoryService() pb.HistoryHandler {
 	return &historyService{}
 }

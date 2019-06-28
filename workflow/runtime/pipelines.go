@@ -6,8 +6,8 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/workflow/modules"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/workflow/modules"
 	"runtime/debug"
 )
 

@@ -5,13 +5,13 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/encrypt"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/types"
 	"time"
 )
 
@@ -20,7 +20,7 @@ type form struct {
 	pool      *redis.Pool
 	client    *indexutils.Client
 	log       analysisclient.LogClient
-	id        gs_commons_generator.IDGenerator
+	id        generator.IDGenerator
 	secretKey string
 }
 

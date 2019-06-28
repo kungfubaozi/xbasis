@@ -1,4 +1,4 @@
-package gs_commons_transport
+package xbasistransport
 
 import (
 	"context"

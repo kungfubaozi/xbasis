@@ -1,20 +1,20 @@
 syntax = "proto3";
 
-package gosionsvc.external.application;
+package xbasissvc.external.application;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Settings {
 
-    rpc Update (UpdateRequest) returns (gs.commons.dto.Status);
+    rpc Update (UpdateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc EnabledClient (EnabledRequest) returns (gs.commons.dto.Status);
+    rpc EnabledClient (EnabledRequest) returns (xbasis.commons.dto.Status);
 
 }
 
 message UpdateRequest {
     string appId = 1;
-    gs.commons.dto.AppSettings setting = 2;
+    xbasis.commons.dto.AppSettings setting = 2;
 }
 
 message EnabledRequest {

@@ -4,7 +4,7 @@ import (
 	"github.com/juju/ratelimit"
 	"github.com/micro/go-grpc"
 	"github.com/micro/go-micro/server"
-	"konekko.me/gosion/commons/wrapper"
+	"konekko.me/xbasis/commons/wrapper"
 
 	//"github.com/micro/go-grpc"
 	"github.com/micro/go-micro"
@@ -30,7 +30,7 @@ func NewService(name string, init bool) micro.Service {
 
 	if init {
 		srv.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
-			return gs_commons_wrapper.AuthWrapper(srv.Client(), handlerFunc)
+			return xbasiswrapper.AuthWrapper(srv.Client(), handlerFunc)
 		}))
 
 	}

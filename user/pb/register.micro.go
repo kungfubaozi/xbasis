@@ -2,7 +2,7 @@
 // source: user/pb/register.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/register.proto
@@ -10,12 +10,12 @@ It is generated from these files:
 It has these top-level messages:
 	NewRequest
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +27,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Register service
 
 type RegisterService interface {
-	New(ctx context.Context, in *NewRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	New(ctx context.Context, in *NewRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type registerService struct {
@@ -56,7 +56,7 @@ func NewRegisterService(name string, c client.Client) RegisterService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &registerService{
 		c:    c,
@@ -64,9 +64,9 @@ func NewRegisterService(name string, c client.Client) RegisterService {
 	}
 }
 
-func (c *registerService) New(ctx context.Context, in *NewRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *registerService) New(ctx context.Context, in *NewRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Register.New", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +77,12 @@ func (c *registerService) New(ctx context.Context, in *NewRequest, opts ...clien
 // Server API for Register service
 
 type RegisterHandler interface {
-	New(context.Context, *NewRequest, *gs_commons_dto.Status) error
+	New(context.Context, *NewRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterRegisterHandler(s server.Server, hdlr RegisterHandler, opts ...server.HandlerOption) error {
 	type register interface {
-		New(ctx context.Context, in *NewRequest, out *gs_commons_dto.Status) error
+		New(ctx context.Context, in *NewRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Register struct {
 		register
@@ -95,6 +95,6 @@ type registerHandler struct {
 	RegisterHandler
 }
 
-func (h *registerHandler) New(ctx context.Context, in *NewRequest, out *gs_commons_dto.Status) error {
+func (h *registerHandler) New(ctx context.Context, in *NewRequest, out *xbasis_commons_dto.Status) error {
 	return h.RegisterHandler.New(ctx, in, out)
 }

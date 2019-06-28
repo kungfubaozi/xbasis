@@ -2,7 +2,7 @@
 // source: user/pb/update.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/update.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	UpdateRequest
 	UpdatePasswordRequest
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -28,7 +28,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,12 +44,12 @@ var _ server.Option
 // Client API for Update service
 
 type UpdateService interface {
-	Username(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	RealName(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Phone(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Email(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	UserIcon(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Password(ctx context.Context, in *UpdatePasswordRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Username(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	RealName(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Phone(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Email(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	UserIcon(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Password(ctx context.Context, in *UpdatePasswordRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type updateService struct {
@@ -62,7 +62,7 @@ func NewUpdateService(name string, c client.Client) UpdateService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &updateService{
 		c:    c,
@@ -70,9 +70,9 @@ func NewUpdateService(name string, c client.Client) UpdateService {
 	}
 }
 
-func (c *updateService) Username(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *updateService) Username(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Update.Username", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -80,9 +80,9 @@ func (c *updateService) Username(ctx context.Context, in *UpdateRequest, opts ..
 	return out, nil
 }
 
-func (c *updateService) RealName(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *updateService) RealName(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Update.RealName", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,9 +90,9 @@ func (c *updateService) RealName(ctx context.Context, in *UpdateRequest, opts ..
 	return out, nil
 }
 
-func (c *updateService) Phone(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *updateService) Phone(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Update.Phone", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -100,9 +100,9 @@ func (c *updateService) Phone(ctx context.Context, in *UpdateRequest, opts ...cl
 	return out, nil
 }
 
-func (c *updateService) Email(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *updateService) Email(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Update.Email", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -110,9 +110,9 @@ func (c *updateService) Email(ctx context.Context, in *UpdateRequest, opts ...cl
 	return out, nil
 }
 
-func (c *updateService) UserIcon(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *updateService) UserIcon(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Update.UserIcon", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -120,9 +120,9 @@ func (c *updateService) UserIcon(ctx context.Context, in *UpdateRequest, opts ..
 	return out, nil
 }
 
-func (c *updateService) Password(ctx context.Context, in *UpdatePasswordRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *updateService) Password(ctx context.Context, in *UpdatePasswordRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Update.Password", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -133,22 +133,22 @@ func (c *updateService) Password(ctx context.Context, in *UpdatePasswordRequest,
 // Server API for Update service
 
 type UpdateHandler interface {
-	Username(context.Context, *UpdateRequest, *gs_commons_dto.Status) error
-	RealName(context.Context, *UpdateRequest, *gs_commons_dto.Status) error
-	Phone(context.Context, *UpdateRequest, *gs_commons_dto.Status) error
-	Email(context.Context, *UpdateRequest, *gs_commons_dto.Status) error
-	UserIcon(context.Context, *UpdateRequest, *gs_commons_dto.Status) error
-	Password(context.Context, *UpdatePasswordRequest, *gs_commons_dto.Status) error
+	Username(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
+	RealName(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
+	Phone(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
+	Email(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
+	UserIcon(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
+	Password(context.Context, *UpdatePasswordRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterUpdateHandler(s server.Server, hdlr UpdateHandler, opts ...server.HandlerOption) error {
 	type update interface {
-		Username(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error
-		RealName(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error
-		Phone(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error
-		Email(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error
-		UserIcon(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error
-		Password(ctx context.Context, in *UpdatePasswordRequest, out *gs_commons_dto.Status) error
+		Username(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
+		RealName(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
+		Phone(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
+		Email(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
+		UserIcon(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
+		Password(ctx context.Context, in *UpdatePasswordRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Update struct {
 		update
@@ -161,26 +161,26 @@ type updateHandler struct {
 	UpdateHandler
 }
 
-func (h *updateHandler) Username(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error {
+func (h *updateHandler) Username(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error {
 	return h.UpdateHandler.Username(ctx, in, out)
 }
 
-func (h *updateHandler) RealName(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error {
+func (h *updateHandler) RealName(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error {
 	return h.UpdateHandler.RealName(ctx, in, out)
 }
 
-func (h *updateHandler) Phone(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error {
+func (h *updateHandler) Phone(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error {
 	return h.UpdateHandler.Phone(ctx, in, out)
 }
 
-func (h *updateHandler) Email(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error {
+func (h *updateHandler) Email(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error {
 	return h.UpdateHandler.Email(ctx, in, out)
 }
 
-func (h *updateHandler) UserIcon(ctx context.Context, in *UpdateRequest, out *gs_commons_dto.Status) error {
+func (h *updateHandler) UserIcon(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error {
 	return h.UpdateHandler.UserIcon(ctx, in, out)
 }
 
-func (h *updateHandler) Password(ctx context.Context, in *UpdatePasswordRequest, out *gs_commons_dto.Status) error {
+func (h *updateHandler) Password(ctx context.Context, in *UpdatePasswordRequest, out *xbasis_commons_dto.Status) error {
 	return h.UpdateHandler.Password(ctx, in, out)
 }

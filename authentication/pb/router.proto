@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package gosionsvc.external.authentication;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Router {
 
@@ -10,9 +10,9 @@ service Router {
 
     rpc Refresh (RefreshRequest) returns (RefreshResponse);
 
-    rpc Logout (LogoutRequest) returns (gs.commons.dto.Status);
+    rpc Logout (LogoutRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Authorize (AuthorizeRequest) returns (gs.commons.dto.Status);
+    rpc Authorize (AuthorizeRequest) returns (xbasis.commons.dto.Status);
 }
 
 message AuthorizeRequest {
@@ -28,7 +28,7 @@ message RefreshRequest {
 }
 
 message RefreshResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string accessToken = 2;
 }
 
@@ -38,7 +38,7 @@ message PushRequest {
 }
 
 message PushResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string accessToken = 2;
     string refreshToken = 3;
 }

@@ -2,15 +2,15 @@ package safetyclient
 
 import (
 	"github.com/micro/go-micro/client"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/safety/pb"
-	"konekko.me/gosion/safety/pb/inner"
+	"konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/safety/pb"
+	"konekko.me/xbasis/safety/pb/inner"
 )
 
-func NewSecurityClient(client client.Client) gosionsvc_internal_safety.SecurityService {
-	return gosionsvc_internal_safety.NewSecurityService(gs_commons_constants.InternalSafetyService, client)
+func NewSecurityClient(client client.Client) xbasissvc_internal_safety.SecurityService {
+	return xbasissvc_internal_safety.NewSecurityService(xbasisconstants.InternalSafetyService, client)
 }
 
-func NewBlacklistClient(client client.Client) gosionsvc_external_safety.BlacklistService {
-	return gosionsvc_external_safety.NewBlacklistService(gs_commons_constants.SafetyService, client)
+func NewBlacklistClient(client client.Client) xbasissvc_external_safety.BlacklistService {
+	return xbasissvc_external_safety.NewBlacklistService(xbasisconstants.SafetyService, client)
 }

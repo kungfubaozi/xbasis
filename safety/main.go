@@ -1,6 +1,6 @@
 package main
 
-import "konekko.me/gosion/safety/service"
+import "konekko.me/xbasis/safety/service"
 
 func main() {
 	safetyservice.StartService()

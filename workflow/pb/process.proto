@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.external.workflow;
+package xbasissvc.external.workflow;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Process {
 
@@ -38,7 +38,7 @@ message SearchProcessRequest {
 }
 
 message SearchProcessResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated SearchProcessItem data = 2;
 }
 
@@ -55,7 +55,7 @@ message DetailRequest {
 }
 
 message DetailResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string nodeDataArray = 2;
     string linkDataArray = 3;
     string desc = 4;
@@ -67,7 +67,7 @@ message GetImageRequest {
 }
 
 message GetImageResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string image = 2;
 }
 
@@ -79,7 +79,7 @@ message CreateRequest {
 }
 
 message CreateResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string processId = 2;
 }
 
@@ -88,7 +88,7 @@ message BuildRequest {
 }
 
 message BuildResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message DeleteRequest {
@@ -96,7 +96,7 @@ message DeleteRequest {
 }
 
 message DeleteResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message UpdateRequest {
@@ -110,7 +110,7 @@ message UpdateRequest {
 }
 
 message UpdateResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string processId = 2;
 }
 
@@ -119,7 +119,7 @@ message OpenRequest {
 }
 
 message OpenResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message LaunchRequest {
@@ -127,5 +127,5 @@ message LaunchRequest {
 }
 
 message LaunchResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }

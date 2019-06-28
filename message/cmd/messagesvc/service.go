@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/message"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/message"
 )
 
 func StartService() {
@@ -19,7 +19,7 @@ func StartService() {
 	}
 
 	ch, err := conn.Channel()
-	_, err = ch.QueueDeclare(gs_commons_constants.MessageChannel, true,
+	_, err = ch.QueueDeclare(constants.MessageChannel, true,
 		true, false, true, nil)
 	if err != nil {
 		panic(err)
@@ -27,7 +27,7 @@ func StartService() {
 
 	errc := make(chan error, 1)
 
-	messages, err := ch.Consume(gs_commons_constants.MessageChannel, "",
+	messages, err := ch.Consume(constants.MessageChannel, "",
 		false, false, false, false, nil)
 	if err != nil {
 		panic(err)

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Login {
 
@@ -23,7 +23,7 @@ message EntryRequest {
 }
 
 message EntryWithAccountResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string accessToken = 2;
     string refreshToken = 3;
 }
@@ -33,6 +33,6 @@ message EntryWithQRCodeRequest {
 }
 
 message EntryWithQRCodeResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string code = 2;
 }

@@ -3,17 +3,17 @@ package userhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/user/pb"
+	commons "konekko.me/xbasis/commons/dto"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/user/pb"
 )
 
 type safetyService struct {
 	session *mgo.Session
 }
 
-func (svc *safetyService) ForgetPassword(ctx context.Context, in *external.ForgetPasswordRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *safetyService) ForgetPassword(ctx context.Context, in *external.ForgetPasswordRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }

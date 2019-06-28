@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package gosionsvc.external.workflow;
+package xbasissvc.external.workflow;
 
 import "google/protobuf/any.proto";
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Instance {
 
@@ -35,7 +35,7 @@ message SearchInstanceRequest {
 }
 
 message SearchInstanceResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message SubmitRequest {
@@ -44,7 +44,7 @@ message SubmitRequest {
 }
 
 message SubmitResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message ContinueRequest {
@@ -52,7 +52,7 @@ message ContinueRequest {
 }
 
 message ContinueResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message RestartRequest {
@@ -60,7 +60,7 @@ message RestartRequest {
 }
 
 message RestartResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message StopRequest {
@@ -69,7 +69,7 @@ message StopRequest {
 }
 
 message StopResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message GetAllInstancesRequest {
@@ -80,7 +80,7 @@ message GetAllInstancesRequest {
 }
 
 message GetAllInstancesResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }
 
 message GetMyLaunchInstancesRequest {
@@ -91,5 +91,5 @@ message GetMyLaunchInstancesRequest {
 }
 
 message GetMyLaunchInstancesResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
 }

@@ -2,7 +2,7 @@
 // source: analysis/pb/logger.proto
 
 /*
-Package gosionsvc_external_analysis is a generated protocol buffer package.
+Package xbasissvc_external_analysis is a generated protocol buffer package.
 
 It is generated from these files:
 	analysis/pb/logger.proto
@@ -22,12 +22,12 @@ It has these top-level messages:
 	YAxisRequest
 	YAxisFactor
 */
-package gosionsvc_external_analysis
+package xbasissvc_external_analysis
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -71,7 +71,7 @@ func NewLoggerService(name string, c client.Client) LoggerService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.analysis"
+		name = "xbasissvc.external.analysis"
 	}
 	return &loggerService{
 		c:    c,

@@ -1,4 +1,4 @@
-package gs_commons_utils
+package xbasisutils
 
 import (
 	"fmt"

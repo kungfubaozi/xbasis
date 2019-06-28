@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.internal.authentication;
+package xbasissvc.internal.authentication;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Auth {
 
@@ -25,7 +25,7 @@ message VerifyResponse {
     string userId = 1;
     string clientId = 2;
     int64 clientPlatform = 3;
-    gs.commons.dto.State state = 4;
+    xbasis.commons.dto.State state = 4;
     string appId = 5;
     string relation = 6;
     int64 appType = 7;

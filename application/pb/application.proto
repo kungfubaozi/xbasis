@@ -1,17 +1,17 @@
 syntax = "proto3";
 
-package gosionsvc.external.application;
+package xbasissvc.external.application;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 //import "konekko.me/gosion/application/pb/settings.proto";
 
 service Application {
 
-    rpc Create (CreateRequest) returns (gs.commons.dto.Status);
+    rpc Create (CreateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Remove (RemoveRequest) returns (gs.commons.dto.Status);
+    rpc Remove (RemoveRequest) returns (xbasis.commons.dto.Status);
 
-    rpc ChangeName (ChangeNameRequest) returns (gs.commons.dto.Status);
+    rpc ChangeName (ChangeNameRequest) returns (xbasis.commons.dto.Status);
 
     rpc FindByAppId (FindRequest) returns (SimpleApplicationResponse);
 
@@ -19,7 +19,7 @@ service Application {
 
     rpc List (FindRequest) returns (ListResponse);
 
-    rpc Switch (SwitchRequest) returns (gs.commons.dto.Status);
+    rpc Switch (SwitchRequest) returns (xbasis.commons.dto.Status);
 
 }
 
@@ -33,12 +33,12 @@ message FindRequest {
 }
 
 message ListResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated AppInfo info = 2;
 }
 
 message SimpleApplicationResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     AppInfo info = 2;
 }
 
@@ -66,7 +66,7 @@ message AppInfo {
     int64 enabled = 4;
     int64 createAt = 5;
     repeated AppClientInfo clients = 6;
-    gs.commons.dto.AppSettings settings = 7;
+    xbasis.commons.dto.AppSettings settings = 7;
     string createUserId = 8;
     string type = 9;
 }

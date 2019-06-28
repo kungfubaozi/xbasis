@@ -2,7 +2,7 @@
 // source: application/pb/inner/status.proto
 
 /*
-Package gosionsvc_internal_application is a generated protocol buffer package.
+Package xbasissvc_internal_application is a generated protocol buffer package.
 
 It is generated from these files:
 	application/pb/inner/status.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	GetAppClientStatusRequest
 	GetAppClientStatusResponse
 */
-package gosionsvc_internal_application
+package xbasissvc_internal_application
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -56,7 +56,7 @@ func NewApplicationStatusService(name string, c client.Client) ApplicationStatus
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.application"
+		name = "xbasissvc.internal.application"
 	}
 	return &applicationStatusService{
 		c:    c,

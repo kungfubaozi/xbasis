@@ -1,4 +1,4 @@
-package gs_commons_generator
+package xbasisgenerator
 
 import (
 	"crypto/sha1"

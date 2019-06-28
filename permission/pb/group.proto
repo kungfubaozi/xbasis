@@ -1,25 +1,25 @@
 syntax = "proto3";
 
-package gosionsvc.external.permission;
+package xbasissvc.external.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 //组结构
 service UserGroup {
 
-    rpc LinkTo (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc LinkTo (SimpleGroup) returns (xbasis.commons.dto.Status);
 
-    rpc Unlink (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Unlink (SimpleGroup) returns (xbasis.commons.dto.Status);
 
-    rpc Add (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Add (SimpleGroup) returns (xbasis.commons.dto.Status);
 
-    rpc Remove (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Remove (SimpleGroup) returns (xbasis.commons.dto.Status);
 
-    rpc Rename (SimpleGroup) returns (gs.commons.dto.Status);
+    rpc Rename (SimpleGroup) returns (xbasis.commons.dto.Status);
 
-    rpc AddUser (AddUserRequest) returns (gs.commons.dto.Status);
+    rpc AddUser (AddUserRequest) returns (xbasis.commons.dto.Status);
 
-    rpc MoveUser (SimpleUserNode) returns (gs.commons.dto.Status);
+    rpc MoveUser (SimpleUserNode) returns (xbasis.commons.dto.Status);
 
     rpc GetGroupItems (GetGroupItemsRequest) returns (GetGroupItemsResponse);
 
@@ -32,7 +32,7 @@ message GetGroupItemsRequest {
 }
 
 message GetGroupItemsResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated GroupItem data = 2;
 }
 
@@ -49,7 +49,7 @@ message GroupItem {
 }
 
 message GetGroupItemDetailResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     DetailItem data = 2;
 }
 

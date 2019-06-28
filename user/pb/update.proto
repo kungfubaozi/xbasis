@@ -1,22 +1,22 @@
 syntax = "proto3";
 
-package gosionsvc.external.user;
+package xbasissvc.external.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Update {
 
-    rpc Username (UpdateRequest) returns (gs.commons.dto.Status);
+    rpc Username (UpdateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc RealName (UpdateRequest) returns (gs.commons.dto.Status);
+    rpc RealName (UpdateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Phone (UpdateRequest) returns (gs.commons.dto.Status);
+    rpc Phone (UpdateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Email (UpdateRequest) returns (gs.commons.dto.Status);
+    rpc Email (UpdateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc UserIcon (UpdateRequest) returns (gs.commons.dto.Status);
+    rpc UserIcon (UpdateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Password (UpdatePasswordRequest) returns (gs.commons.dto.Status);
+    rpc Password (UpdatePasswordRequest) returns (xbasis.commons.dto.Status);
 
 }
 

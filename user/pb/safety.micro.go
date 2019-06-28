@@ -2,7 +2,7 @@
 // source: user/pb/safety.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/safety.proto
@@ -10,12 +10,12 @@ It is generated from these files:
 It has these top-level messages:
 	ForgetPasswordRequest
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +27,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Safety service
 
 type SafetyService interface {
-	ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type safetyService struct {
@@ -56,7 +56,7 @@ func NewSafetyService(name string, c client.Client) SafetyService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &safetyService{
 		c:    c,
@@ -64,9 +64,9 @@ func NewSafetyService(name string, c client.Client) SafetyService {
 	}
 }
 
-func (c *safetyService) ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *safetyService) ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Safety.ForgetPassword", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +77,12 @@ func (c *safetyService) ForgetPassword(ctx context.Context, in *ForgetPasswordRe
 // Server API for Safety service
 
 type SafetyHandler interface {
-	ForgetPassword(context.Context, *ForgetPasswordRequest, *gs_commons_dto.Status) error
+	ForgetPassword(context.Context, *ForgetPasswordRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterSafetyHandler(s server.Server, hdlr SafetyHandler, opts ...server.HandlerOption) error {
 	type safety interface {
-		ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, out *gs_commons_dto.Status) error
+		ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Safety struct {
 		safety
@@ -95,6 +95,6 @@ type safetyHandler struct {
 	SafetyHandler
 }
 
-func (h *safetyHandler) ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, out *gs_commons_dto.Status) error {
+func (h *safetyHandler) ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, out *xbasis_commons_dto.Status) error {
 	return h.SafetyHandler.ForgetPassword(ctx, in, out)
 }

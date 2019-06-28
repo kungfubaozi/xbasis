@@ -1,4 +1,4 @@
-package gosionapis
+package xbasisapis
 
 const (
 	LoginWithAccount = "/user/login/withAccount"

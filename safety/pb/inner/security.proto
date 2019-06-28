@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.internal.safety;
+package xbasissvc.internal.safety;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Security {
 
@@ -15,6 +15,6 @@ message GetRequest {
 }
 
 message GetResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     int64 current = 2;
 }

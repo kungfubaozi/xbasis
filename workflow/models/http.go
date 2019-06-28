@@ -1,6 +1,6 @@
 package models
 
-import "konekko.me/gosion/workflow/types"
+import "konekko.me/xbasis/workflow/types"
 
 //异步任务
 //当执行异步任务时，会默认挂载一个event，当目标任务执行完成后发送一个对应的event通知，流程继续

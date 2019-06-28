@@ -1,11 +1,11 @@
-package gs_commons_wrapper
+package xbasiswrapper
 
 import (
 	"context"
 	"errors"
 	"github.com/micro/go-micro/metadata"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
 	"reflect"
 	"strconv"
 	"time"
@@ -48,7 +48,7 @@ type DurationAccessUser struct {
 	Auth bool
 }
 
-type WrapperEvent func(auth *WrapperUser) *gs_commons_dto.State
+type WrapperEvent func(auth *WrapperUser) *commons.State
 
 func GetData(md metadata.Metadata) *WrapperUser {
 	auth := &WrapperUser{}

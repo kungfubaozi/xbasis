@@ -4,22 +4,23 @@ import (
 	"context"
 	"fmt"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	external "konekko.me/gosion/application/pb"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
+	"konekko.me/xbasis/analysis/client"
+	external "konekko.me/xbasis/application/pb"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/encrypt"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
 	"time"
 )
 
 type applicationService struct {
 	session *mgo.Session
 	*indexutils.Client
+	id  generator.IDGenerator
 	log analysisclient.LogClient
 }
 
@@ -28,12 +29,12 @@ func (svc *applicationService) GetRepo() *applicationRepo {
 }
 
 //create new application if not exists(name)
-func (svc *applicationService) Create(ctx context.Context, in *external.CreateRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *applicationService) Create(ctx context.Context, in *external.CreateRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		headers := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
-			ServiceName: gs_commons_constants.ApplicationService,
+			ServiceName: constants.ApplicationService,
 			ModuleName:  "Application",
 		}
 
@@ -52,15 +53,15 @@ func (svc *applicationService) Create(ctx context.Context, in *external.CreateRe
 			return errstate.ErrApplicationRedirectUrl
 		}
 
-		id := gs_commons_generator.NewIDG()
+		id := svc.id
 
 		now := time.Now().UnixNano()
 
 		appId := id.Short()
 
-		enabled := gs_commons_constants.Closed
+		enabled := constants.Closed
 		if in.Open {
-			enabled = gs_commons_constants.Enabled
+			enabled = constants.Enabled
 		}
 
 		//生成加密字符
@@ -86,38 +87,38 @@ func (svc *applicationService) Create(ctx context.Context, in *external.CreateRe
 			Clients: []*appClient{
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatformOfAndroid,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatformOfAndroid,
+					Enabled:  constants.Closed,
 				},
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatformOfIOS,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatformOfIOS,
+					Enabled:  constants.Closed,
 				},
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatformOfWeb,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatformOfWeb,
+					Enabled:  constants.Closed,
 				},
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatformOfWindows,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatformOfWindows,
+					Enabled:  constants.Closed,
 				},
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatfromOfMacOS,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatfromOfMacOS,
+					Enabled:  constants.Closed,
 				},
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatformOfLinux,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatformOfLinux,
+					Enabled:  constants.Closed,
 				},
 				{
 					Id:       id.Short(),
-					Platform: gs_commons_constants.PlatformOfFuchsia,
-					Enabled:  gs_commons_constants.Closed,
+					Platform: constants.PlatformOfFuchsia,
+					Enabled:  constants.Closed,
 				},
 			},
 		}
@@ -136,20 +137,20 @@ func (svc *applicationService) Create(ctx context.Context, in *external.CreateRe
 	})
 }
 
-func (svc *applicationService) Remove(ctx context.Context, in *external.RemoveRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *applicationService) Remove(ctx context.Context, in *external.RemoveRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return errstate.Success
 	})
 }
 
-func (svc *applicationService) ChangeName(ctx context.Context, in *external.ChangeNameRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *applicationService) ChangeName(ctx context.Context, in *external.ChangeNameRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func (svc *applicationService) FindByAppId(ctx context.Context, in *external.FindRequest, out *external.SimpleApplicationResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -166,7 +167,7 @@ func (svc *applicationService) FindByAppId(ctx context.Context, in *external.Fin
 		out.Info = &external.AppInfo{
 			Name:  info.Name,
 			AppId: info.Id,
-			Settings: &gs_commons_dto.AppSettings{
+			Settings: &commons.AppSettings{
 				Enabled: info.Settings.Enabled,
 			},
 		}
@@ -194,7 +195,7 @@ func (svc *applicationService) FindByClientId(context.Context, *external.FindReq
 }
 
 func (svc *applicationService) List(ctx context.Context, in *external.FindRequest, out *external.ListResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -209,7 +210,7 @@ func (svc *applicationService) List(ctx context.Context, in *external.FindReques
 		for _, v := range list {
 			t := "user"
 			switch v.Type {
-			case gs_commons_constants.AppTypeManage, gs_commons_constants.AppTypeRoute, gs_commons_constants.AppTypeSafe, gs_commons_constants.AppTypeUser:
+			case constants.AppTypeManage, constants.AppTypeRoute, constants.AppTypeSafe, constants.AppTypeUser:
 				t = "sys"
 			}
 
@@ -232,10 +233,10 @@ func (svc *applicationService) List(ctx context.Context, in *external.FindReques
 	})
 }
 
-func (svc *applicationService) Switch(context.Context, *external.SwitchRequest, *gs_commons_dto.Status) error {
+func (svc *applicationService) Switch(context.Context, *external.SwitchRequest, *commons.Status) error {
 	panic("implement me")
 }
 
 func NewApplicationService(session *mgo.Session, client *indexutils.Client, log analysisclient.LogClient) external.ApplicationHandler {
-	return &applicationService{session: session, Client: client, log: log}
+	return &applicationService{session: session, Client: client, log: log, id: generator.NewIDG()}
 }

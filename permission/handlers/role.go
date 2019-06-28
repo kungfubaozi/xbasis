@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
-	external "konekko.me/gosion/permission/pb"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/wrapper"
+	external "konekko.me/xbasis/permission/pb"
 )
 
 type roleService struct {
@@ -26,14 +26,14 @@ func (svc *roleService) Search(context.Context, *external.SearchRequest, *extern
 
 //获取和角色关联的用户数量
 func (svc *roleService) EffectUserSize(ctx context.Context, in *external.EffectUserSizeRequest, out *external.EffectUserSizeResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 //修改为不分页
 func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRolesRequest, out *external.GetRoleResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) == 0 {
 			return nil
 		}
@@ -61,19 +61,19 @@ func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRole
 }
 
 func (svc *roleService) GetRole(ctx context.Context, in *external.GetRoleRequest, out *external.GetRoleResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func (svc *roleService) GetRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone(),
-		id: gs_commons_generator.NewIDG(), conn: svc.pool.Get(), Client: svc.Client}
+		id: generator.NewIDG(), conn: svc.pool.Get(), Client: svc.Client}
 }
 
 //add new role if not exists
-func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
 
@@ -96,15 +96,15 @@ func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *
 
 //remove role
 //需要删除所有关联的角色对象包括(gs-user-roles-relation)
-func (svc *roleService) Remove(ctx context.Context, in *external.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *roleService) Remove(ctx context.Context, in *external.RoleRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		return nil
 	})
 }
 
-func (svc *roleService) Rename(ctx context.Context, in *external.RoleRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *roleService) Rename(ctx context.Context, in *external.RoleRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }

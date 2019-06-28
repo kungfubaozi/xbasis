@@ -2,7 +2,7 @@
 // source: authentication/pb/inner/auth.proto
 
 /*
-Package gosionsvc_internal_authentication is a generated protocol buffer package.
+Package xbasissvc_internal_authentication is a generated protocol buffer package.
 
 It is generated from these files:
 	authentication/pb/inner/auth.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	VerifyRequest
 	VerifyResponse
 */
-package gosionsvc_internal_authentication
+package xbasissvc_internal_authentication
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "konekko.me/gosion/commons/dto"
+import _ "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -57,7 +57,7 @@ func NewAuthService(name string, c client.Client) AuthService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.authentication"
+		name = "xbasissvc.internal.authentication"
 	}
 	return &authService{
 		c:    c,

@@ -5,10 +5,10 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/connection"
-	"konekko.me/gosion/connection/cmd/connectioncli"
+	constants "konekko.me/xbasis/commons/constants"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/connection"
+	"konekko.me/xbasis/connection/cmd/connectioncli"
 	"net/http"
 )
 
@@ -30,7 +30,7 @@ func StartService() {
 	defer conn.Close()
 
 	err = ch.ExchangeDeclare(
-		gs_commons_constants.ConnectionFanoutChannel,
+		constants.ConnectionFanoutChannel,
 		"fanout",
 		true,
 		false,
@@ -59,7 +59,7 @@ func StartService() {
 	err = ch.QueueBind(
 		q.Name,
 		"",
-		gs_commons_constants.ConnectionFanoutChannel,
+		constants.ConnectionFanoutChannel,
 		false,
 		nil,
 	)
@@ -162,7 +162,7 @@ func ws(m *connection.ConnectManager, w http.ResponseWriter, r *http.Request) {
 	})
 
 	uc := &connection.UserClient{
-		Id:   gs_commons_generator.ID().Generate().String(),
+		Id:   generator.ID().Generate().String(),
 		Send: make(chan map[string]interface{}),
 		Conn: c,
 	}

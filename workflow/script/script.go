@@ -3,7 +3,7 @@ package script
 import (
 	"fmt"
 	"github.com/yuin/gopher-lua"
-	"konekko.me/gosion/workflow/flowerr"
+	"konekko.me/xbasis/workflow/flowerr"
 	"reflect"
 )
 

@@ -2,50 +2,50 @@ package workflowhandlers
 
 import (
 	"context"
-	"konekko.me/gosion/workflow/modules"
-	"konekko.me/gosion/workflow/pb"
+	"konekko.me/xbasis/workflow/modules"
+	pb "konekko.me/xbasis/workflow/pb"
 )
 
 type formService struct {
 	modules modules.Modules
 }
 
-func (svc *formService) CreatePlaceholder(context.Context, *gosionsvc_external_workflow.CreatePlaceholderRequest, *gosionsvc_external_workflow.CreatePlaceholderResponse) error {
+func (svc *formService) CreatePlaceholder(context.Context, *pb.CreatePlaceholderRequest, *pb.CreatePlaceholderResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) DeletePlaceholder(context.Context, *gosionsvc_external_workflow.DeletePlaceholderRequest, *gosionsvc_external_workflow.DeletePlaceholderResponse) error {
+func (svc *formService) DeletePlaceholder(context.Context, *pb.DeletePlaceholderRequest, *pb.DeletePlaceholderResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) UpdatePlaceholder(context.Context, *gosionsvc_external_workflow.UpdatePlaceholderRequest, *gosionsvc_external_workflow.UpdatePlaceholderResponse) error {
+func (svc *formService) UpdatePlaceholder(context.Context, *pb.UpdatePlaceholderRequest, *pb.UpdatePlaceholderResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) AddField(context.Context, *gosionsvc_external_workflow.AddFieldRequest, *gosionsvc_external_workflow.AddFieldResponse) error {
+func (svc *formService) AddField(context.Context, *pb.AddFieldRequest, *pb.AddFieldResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) RemoveField(context.Context, *gosionsvc_external_workflow.RemoveFieldRequest, *gosionsvc_external_workflow.RemoveFieldResponse) error {
+func (svc *formService) RemoveField(context.Context, *pb.RemoveFieldRequest, *pb.RemoveFieldResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) UpdateFieldProps(context.Context, *gosionsvc_external_workflow.UpdateFieldPropsRequest, *gosionsvc_external_workflow.UpdateFieldPropsResponse) error {
+func (svc *formService) UpdateFieldProps(context.Context, *pb.UpdateFieldPropsRequest, *pb.UpdateFieldPropsResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) GetAllTypeFields(context.Context, *gosionsvc_external_workflow.GetAllTypeFieldsRequest, *gosionsvc_external_workflow.GetAllTypeFieldsResponse) error {
+func (svc *formService) GetAllTypeFields(context.Context, *pb.GetAllTypeFieldsRequest, *pb.GetAllTypeFieldsResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) CheckFiledValue(context.Context, *gosionsvc_external_workflow.CheckFiledValueRequest, *gosionsvc_external_workflow.CheckFieldValueResponse) error {
+func (svc *formService) CheckFiledValue(context.Context, *pb.CheckFiledValueRequest, *pb.CheckFieldValueResponse) error {
 	panic("implement me")
 }
 
-func (svc *formService) Search(context.Context, *gosionsvc_external_workflow.SearchFormRequest, *gosionsvc_external_workflow.SearchFormResponse) error {
+func (svc *formService) Search(context.Context, *pb.SearchFormRequest, *pb.SearchFormResponse) error {
 	panic("implement me")
 }
 
-func NewFormService() gosionsvc_external_workflow.FormHandler {
+func NewFormService() pb.FormHandler {
 	return &formService{}
 }

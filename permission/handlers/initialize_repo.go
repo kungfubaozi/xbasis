@@ -9,11 +9,11 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"io/ioutil"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/hashcode"
+	xconfig "konekko.me/xbasis/commons/config"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/encrypt"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/hashcode"
 	"time"
 )
 
@@ -42,8 +42,8 @@ type functionData struct {
 
 type initializeRepo struct {
 	session *mgo.Session
-	config  *gs_commons_config.GosionInitializeConfig
-	id      gs_commons_generator.IDGenerator
+	config  *xconfig.GosionInitializeConfig
+	id      generator.IDGenerator
 	bulk    *elastic.BulkService
 	conn    *zk.Conn
 	// data
@@ -130,14 +130,14 @@ func (repo *initializeRepo) SaveAndClose() {
 			panic(err)
 		}
 		acl := zk.WorldACL(zk.PermAll)
-		_, err = repo.conn.Create(gs_commons_constants.ZKAutonomyRegister, b, 0, acl)
+		_, err = repo.conn.Create(constants.ZKAutonomyRegister, b, 0, acl)
 		if err != nil {
 			//panic(err)
 		}
 	}
 }
 
-var c *gs_commons_config.AutonomyRouteConfig
+var c *xconfig.AutonomyRouteConfig
 
 func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync bool) {
 	roleMap := make(map[string]string)
@@ -159,7 +159,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		if v == "User" && sync {
 			if c == nil {
-				c = &gs_commons_config.AutonomyRouteConfig{
+				c = &xconfig.AutonomyRouteConfig{
 					AppId:  appId,
 					RoleId: v,
 				}

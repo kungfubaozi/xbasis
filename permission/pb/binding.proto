@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package gosionsvc.external.permission;
+package xbasissvc.external.permission;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Binding {
 
-    rpc UserRole (BindingRolesRequest) returns (gs.commons.dto.Status);
+    rpc UserRole (BindingRolesRequest) returns (xbasis.commons.dto.Status);
 
-    rpc FunctionRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc FunctionRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
 
-    rpc UnbindUserRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc UnbindUserRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
 
-    rpc UnbindFunctionRole (BindingRoleRequest) returns (gs.commons.dto.Status);
+    rpc UnbindFunctionRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
 }
 
 message BindingRolesRequest {

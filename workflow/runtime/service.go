@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/workflow/distribute"
-	"konekko.me/gosion/workflow/modules"
-	"konekko.me/gosion/workflow/script"
+	"konekko.me/xbasis/analysis/client"
+	xconfig "konekko.me/xbasis/commons/config"
+	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/workflow/distribute"
+	"konekko.me/xbasis/workflow/modules"
+	"konekko.me/xbasis/workflow/script"
 )
 
 type Workflow struct {
@@ -73,7 +73,7 @@ func NewService(session *mgo.Session, pool *redis.Pool, client *indexutils.Clien
 
 func (w *Workflow) Run(zookeeperURL string) error {
 	fmt.Println("starting...")
-	id := gs_commons_generator.NewIDG()
+	id := generator.NewIDG()
 	m := w.modules
 	p := &processes{
 		session:  m.session.Clone(),
@@ -117,7 +117,7 @@ func (w *Workflow) Run(zookeeperURL string) error {
 	r := &runtime{
 		log:      m.log,
 		shutdown: m.shutdown,
-		conn:     gs_commons_config.NewConnect(zookeeperURL),
+		conn:     xconfig.NewConnect(zookeeperURL),
 	}
 
 	m.ui = u

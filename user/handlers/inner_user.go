@@ -3,11 +3,11 @@ package userhandlers
 import (
 	"context"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/wrapper"
-	inner "konekko.me/gosion/user/pb/inner"
+	"konekko.me/xbasis/analysis/client"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/wrapper"
+	inner "konekko.me/xbasis/user/pb/inner"
 )
 
 type innerUserService struct {
@@ -16,7 +16,7 @@ type innerUserService struct {
 }
 
 func (svc *innerUserService) GetUserInfoById(ctx context.Context, in *inner.GetUserInfoByIdRequest, out *inner.SimpleUserInfo) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.UserId) < 10 {
 			return nil
 		}
@@ -42,8 +42,8 @@ func (svc *innerUserService) GetRepo() *userRepo {
 	return &userRepo{session: svc.session.Clone()}
 }
 
-func (svc *innerUserService) IsExists(ctx context.Context, in *inner.ExistsRequest, out *gs_commons_dto.Status) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *innerUserService) IsExists(ctx context.Context, in *inner.ExistsRequest, out *commons.Status) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.UserId) < 9 {
 			return nil
 		}

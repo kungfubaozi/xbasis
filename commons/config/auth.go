@@ -1,4 +1,4 @@
-package gs_commons_config
+package xbasisconfig
 
 type GosionTokenConfiguration struct {
 	AndroidMaxOnlineCount int64

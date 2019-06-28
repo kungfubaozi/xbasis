@@ -3,12 +3,12 @@ package distribute
 import (
 	"context"
 	"fmt"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/workflow/flowerr"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/modules"
-	"konekko.me/gosion/workflow/script"
-	"konekko.me/gosion/workflow/types"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/workflow/flowerr"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/modules"
+	"konekko.me/xbasis/workflow/script"
+	"konekko.me/xbasis/workflow/types"
 )
 
 type flowscript struct {

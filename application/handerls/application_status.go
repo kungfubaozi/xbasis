@@ -3,13 +3,13 @@ package applicationhanderls
 import (
 	"context"
 	"github.com/garyburd/redigo/redis"
-	"konekko.me/gosion/analysis/client"
-	inner "konekko.me/gosion/application/pb/inner"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
+	"konekko.me/xbasis/analysis/client"
+	inner "konekko.me/xbasis/application/pb/inner"
+	constants "konekko.me/xbasis/commons/constants"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
 )
 
 type applicationStatusService struct {
@@ -21,7 +21,7 @@ type applicationStatusService struct {
 
 func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in *inner.GetAppClientStatusRequest,
 	out *inner.GetAppClientStatusResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.ClientId) == 0 {
 			return errstate.ErrRequest
 		}
@@ -38,7 +38,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 		for _, v := range a.Clients {
 			if v.Id == in.ClientId {
 
-				if v.Platform == gs_commons_constants.PlatformOfWeb {
+				if v.Platform == constants.PlatformOfWeb {
 					if in.Redirect == a.Settings.RedirectURL {
 						out.CanRedirect = true
 					}

@@ -3,8 +3,8 @@ package safetyhanders
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"konekko.me/gosion/commons/encrypt"
-	"konekko.me/gosion/commons/indexutils"
+	"konekko.me/xbasis/commons/encrypt"
+	"konekko.me/xbasis/commons/indexutils"
 	"time"
 )
 

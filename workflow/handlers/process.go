@@ -4,40 +4,40 @@ import (
 	"context"
 	"encoding/json"
 	"gopkg.in/mgo.v2"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/commons/date"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/generator"
-	"konekko.me/gosion/commons/wrapper"
-	"konekko.me/gosion/workflow/models"
-	"konekko.me/gosion/workflow/modules"
-	"konekko.me/gosion/workflow/pb"
+	"konekko.me/xbasis/analysis/client"
+	date "konekko.me/xbasis/commons/date"
+	commons "konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	generator "konekko.me/xbasis/commons/generator"
+	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/workflow/models"
+	"konekko.me/xbasis/workflow/modules"
+	pb "konekko.me/xbasis/workflow/pb"
 	"time"
 )
 
 type processService struct {
 	modules modules.Modules
-	id      gs_commons_generator.IDGenerator
+	id      generator.IDGenerator
 	session *mgo.Session
 	log     analysisclient.LogClient
 }
 
-func (svc *processService) Launch(context.Context, *gosionsvc_external_workflow.LaunchRequest, *gosionsvc_external_workflow.LaunchResponse) error {
+func (svc *processService) Launch(context.Context, *pb.LaunchRequest, *pb.LaunchResponse) error {
 	panic("implement me")
 }
 
-func (svc *processService) Build(context.Context, *gosionsvc_external_workflow.BuildRequest, *gosionsvc_external_workflow.BuildResponse) error {
+func (svc *processService) Build(context.Context, *pb.BuildRequest, *pb.BuildResponse) error {
 	panic("implement me")
 }
 
-func (svc *processService) Delete(ctx context.Context, in *gosionsvc_external_workflow.DeleteRequest, out *gosionsvc_external_workflow.DeleteResponse) error {
+func (svc *processService) Delete(ctx context.Context, in *pb.DeleteRequest, out *pb.DeleteResponse) error {
 	panic("implement me")
 }
 
 //update只是更新当前的流程设置，并不直接关系到具体流程
-func (svc *processService) Update(ctx context.Context, in *gosionsvc_external_workflow.UpdateRequest, out *gosionsvc_external_workflow.UpdateResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *processService) Update(ctx context.Context, in *pb.UpdateRequest, out *pb.UpdateResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 8 {
 			return errstate.ErrRequest
 		}
@@ -123,7 +123,7 @@ func (svc *processService) Update(ctx context.Context, in *gosionsvc_external_wo
 						"app_id":     array.AppId,
 						"name":       array.Name,
 						"desc":       array.Desc,
-						"update_at":  gs_commons_date.FormatDate(time.Now(), gs_commons_date.YYYY_MM_DD_HH_MM_SS),
+						"update_at":  date.FormatDate(time.Now(), date.YYYY_MM_DD_HH_MM_SS),
 					},
 				},
 			})
@@ -136,12 +136,12 @@ func (svc *processService) Update(ctx context.Context, in *gosionsvc_external_wo
 	})
 }
 
-func (svc *processService) Open(context.Context, *gosionsvc_external_workflow.OpenRequest, *gosionsvc_external_workflow.OpenResponse) error {
+func (svc *processService) Open(context.Context, *pb.OpenRequest, *pb.OpenResponse) error {
 	panic("implement me")
 }
 
-func (svc *processService) Detail(ctx context.Context, in *gosionsvc_external_workflow.DetailRequest, out *gosionsvc_external_workflow.DetailResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *processService) Detail(ctx context.Context, in *pb.DetailRequest, out *pb.DetailResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		f, err := svc.modules.Process().GetFlowDataArray(in.ProcessId)
 		if err != nil {
@@ -167,8 +167,8 @@ func (svc *processService) Detail(ctx context.Context, in *gosionsvc_external_wo
 	})
 }
 
-func (svc *processService) GetImage(ctx context.Context, in *gosionsvc_external_workflow.GetImageRequest, out *gosionsvc_external_workflow.GetImageResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *processService) GetImage(ctx context.Context, in *pb.GetImageRequest, out *pb.GetImageResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		a, err := svc.modules.Process().GetImage(in.ProcessId)
 		if err != nil {
@@ -181,17 +181,17 @@ func (svc *processService) GetImage(ctx context.Context, in *gosionsvc_external_
 	})
 }
 
-func (svc *processService) Search(ctx context.Context, in *gosionsvc_external_workflow.SearchProcessRequest, out *gosionsvc_external_workflow.SearchProcessResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+func (svc *processService) Search(ctx context.Context, in *pb.SearchProcessRequest, out *pb.SearchProcessResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		items, err := svc.modules.Process().Search(in.AppId, in.Name, in.Page, in.Size)
 		if err != nil {
 			return errstate.ErrRequest
 		}
 
-		var data []*gosionsvc_external_workflow.SearchProcessItem
+		var data []*pb.SearchProcessItem
 		for _, v := range items {
-			data = append(data, &gosionsvc_external_workflow.SearchProcessItem{
+			data = append(data, &pb.SearchProcessItem{
 				AppId:     v.AppId,
 				Name:      v.Name,
 				Desc:      v.Desc,
@@ -207,6 +207,6 @@ func (svc *processService) Search(ctx context.Context, in *gosionsvc_external_wo
 }
 
 func NewProcessService(modules modules.Modules,
-	id gs_commons_generator.IDGenerator, log analysisclient.LogClient) gosionsvc_external_workflow.ProcessHandler {
+	id generator.IDGenerator, log analysisclient.LogClient) pb.ProcessHandler {
 	return &processService{modules: modules, id: id, log: log}
 }

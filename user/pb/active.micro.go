@@ -2,7 +2,7 @@
 // source: user/pb/active.proto
 
 /*
-Package gosionsvc_external_user is a generated protocol buffer package.
+Package xbasissvc_external_user is a generated protocol buffer package.
 
 It is generated from these files:
 	user/pb/active.proto
@@ -10,12 +10,12 @@ It is generated from these files:
 It has these top-level messages:
 	ActiveRequest
 */
-package gosionsvc_external_user
+package xbasissvc_external_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -27,7 +27,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Active service
 
 type ActiveService interface {
-	User(ctx context.Context, in *ActiveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	User(ctx context.Context, in *ActiveRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type activeService struct {
@@ -56,7 +56,7 @@ func NewActiveService(name string, c client.Client) ActiveService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.user"
+		name = "xbasissvc.external.user"
 	}
 	return &activeService{
 		c:    c,
@@ -64,9 +64,9 @@ func NewActiveService(name string, c client.Client) ActiveService {
 	}
 }
 
-func (c *activeService) User(ctx context.Context, in *ActiveRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *activeService) User(ctx context.Context, in *ActiveRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Active.User", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +77,12 @@ func (c *activeService) User(ctx context.Context, in *ActiveRequest, opts ...cli
 // Server API for Active service
 
 type ActiveHandler interface {
-	User(context.Context, *ActiveRequest, *gs_commons_dto.Status) error
+	User(context.Context, *ActiveRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterActiveHandler(s server.Server, hdlr ActiveHandler, opts ...server.HandlerOption) error {
 	type active interface {
-		User(ctx context.Context, in *ActiveRequest, out *gs_commons_dto.Status) error
+		User(ctx context.Context, in *ActiveRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Active struct {
 		active
@@ -95,6 +95,6 @@ type activeHandler struct {
 	ActiveHandler
 }
 
-func (h *activeHandler) User(ctx context.Context, in *ActiveRequest, out *gs_commons_dto.Status) error {
+func (h *activeHandler) User(ctx context.Context, in *ActiveRequest, out *xbasis_commons_dto.Status) error {
 	return h.ActiveHandler.User(ctx, in, out)
 }

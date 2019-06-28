@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package gosionsvc.internal.user;
+package xbasissvc.internal.user;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Message {
 
-    rpc SendVerificationCode (SendRequest) returns (gs.commons.dto.Status);
+    rpc SendVerificationCode (SendRequest) returns (xbasis.commons.dto.Status);
 
 }
 

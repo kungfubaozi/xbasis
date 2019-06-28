@@ -1,6 +1,6 @@
 package models
 
-import "konekko.me/gosion/workflow/types"
+import "konekko.me/xbasis/workflow/types"
 
 //设置哪些人可以发起一个流程
 //在中间task处理时不会判断此权限，只会在发起时判断权限是否符合

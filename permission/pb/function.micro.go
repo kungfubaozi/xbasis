@@ -2,7 +2,7 @@
 // source: permission/pb/function.proto
 
 /*
-Package gosionsvc_external_permission is a generated protocol buffer package.
+Package xbasissvc_external_permission is a generated protocol buffer package.
 
 It is generated from these files:
 	permission/pb/function.proto
@@ -22,12 +22,12 @@ It has these top-level messages:
 	FunctionRequest
 	FunctionGroupRequest
 */
-package gosionsvc_external_permission
+package xbasissvc_external_permission
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -39,7 +39,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -55,12 +55,12 @@ var _ server.Option
 // Client API for Function service
 
 type FunctionService interface {
-	Add(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Rename(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Move(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	AddGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	MoveGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Add(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Rename(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Move(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	AddGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	MoveGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, opts ...client.CallOption) (*GetFunctionItemsResponse, error)
 	GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, opts ...client.CallOption) (*GetFunctionItemResponse, error)
 	Search(ctx context.Context, in *FunctionSearchRequest, opts ...client.CallOption) (*FunctionSearchResponse, error)
@@ -76,7 +76,7 @@ func NewFunctionService(name string, c client.Client) FunctionService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.external.permission"
+		name = "xbasissvc.external.permission"
 	}
 	return &functionService{
 		c:    c,
@@ -84,9 +84,9 @@ func NewFunctionService(name string, c client.Client) FunctionService {
 	}
 }
 
-func (c *functionService) Add(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *functionService) Add(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Function.Add", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -94,9 +94,9 @@ func (c *functionService) Add(ctx context.Context, in *FunctionRequest, opts ...
 	return out, nil
 }
 
-func (c *functionService) Rename(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *functionService) Rename(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Function.Rename", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -104,9 +104,9 @@ func (c *functionService) Rename(ctx context.Context, in *FunctionRequest, opts 
 	return out, nil
 }
 
-func (c *functionService) Move(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *functionService) Move(ctx context.Context, in *FunctionRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Function.Move", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -114,9 +114,9 @@ func (c *functionService) Move(ctx context.Context, in *FunctionRequest, opts ..
 	return out, nil
 }
 
-func (c *functionService) AddGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *functionService) AddGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Function.AddGroup", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -124,9 +124,9 @@ func (c *functionService) AddGroup(ctx context.Context, in *FunctionGroupRequest
 	return out, nil
 }
 
-func (c *functionService) MoveGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *functionService) MoveGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Function.MoveGroup", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -134,9 +134,9 @@ func (c *functionService) MoveGroup(ctx context.Context, in *FunctionGroupReques
 	return out, nil
 }
 
-func (c *functionService) RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *functionService) RenameGroup(ctx context.Context, in *FunctionGroupRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Function.RenameGroup", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -177,12 +177,12 @@ func (c *functionService) Search(ctx context.Context, in *FunctionSearchRequest,
 // Server API for Function service
 
 type FunctionHandler interface {
-	Add(context.Context, *FunctionRequest, *gs_commons_dto.Status) error
-	Rename(context.Context, *FunctionRequest, *gs_commons_dto.Status) error
-	Move(context.Context, *FunctionRequest, *gs_commons_dto.Status) error
-	AddGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
-	MoveGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
-	RenameGroup(context.Context, *FunctionGroupRequest, *gs_commons_dto.Status) error
+	Add(context.Context, *FunctionRequest, *xbasis_commons_dto.Status) error
+	Rename(context.Context, *FunctionRequest, *xbasis_commons_dto.Status) error
+	Move(context.Context, *FunctionRequest, *xbasis_commons_dto.Status) error
+	AddGroup(context.Context, *FunctionGroupRequest, *xbasis_commons_dto.Status) error
+	MoveGroup(context.Context, *FunctionGroupRequest, *xbasis_commons_dto.Status) error
+	RenameGroup(context.Context, *FunctionGroupRequest, *xbasis_commons_dto.Status) error
 	GetFunctionItems(context.Context, *GetFunctionItemsRequest, *GetFunctionItemsResponse) error
 	GetFunctionItemDetail(context.Context, *GetFunctionItemRequest, *GetFunctionItemResponse) error
 	Search(context.Context, *FunctionSearchRequest, *FunctionSearchResponse) error
@@ -190,12 +190,12 @@ type FunctionHandler interface {
 
 func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...server.HandlerOption) error {
 	type function interface {
-		Add(ctx context.Context, in *FunctionRequest, out *gs_commons_dto.Status) error
-		Rename(ctx context.Context, in *FunctionRequest, out *gs_commons_dto.Status) error
-		Move(ctx context.Context, in *FunctionRequest, out *gs_commons_dto.Status) error
-		AddGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
-		MoveGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
-		RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error
+		Add(ctx context.Context, in *FunctionRequest, out *xbasis_commons_dto.Status) error
+		Rename(ctx context.Context, in *FunctionRequest, out *xbasis_commons_dto.Status) error
+		Move(ctx context.Context, in *FunctionRequest, out *xbasis_commons_dto.Status) error
+		AddGroup(ctx context.Context, in *FunctionGroupRequest, out *xbasis_commons_dto.Status) error
+		MoveGroup(ctx context.Context, in *FunctionGroupRequest, out *xbasis_commons_dto.Status) error
+		RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *xbasis_commons_dto.Status) error
 		GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, out *GetFunctionItemsResponse) error
 		GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, out *GetFunctionItemResponse) error
 		Search(ctx context.Context, in *FunctionSearchRequest, out *FunctionSearchResponse) error
@@ -211,27 +211,27 @@ type functionHandler struct {
 	FunctionHandler
 }
 
-func (h *functionHandler) Add(ctx context.Context, in *FunctionRequest, out *gs_commons_dto.Status) error {
+func (h *functionHandler) Add(ctx context.Context, in *FunctionRequest, out *xbasis_commons_dto.Status) error {
 	return h.FunctionHandler.Add(ctx, in, out)
 }
 
-func (h *functionHandler) Rename(ctx context.Context, in *FunctionRequest, out *gs_commons_dto.Status) error {
+func (h *functionHandler) Rename(ctx context.Context, in *FunctionRequest, out *xbasis_commons_dto.Status) error {
 	return h.FunctionHandler.Rename(ctx, in, out)
 }
 
-func (h *functionHandler) Move(ctx context.Context, in *FunctionRequest, out *gs_commons_dto.Status) error {
+func (h *functionHandler) Move(ctx context.Context, in *FunctionRequest, out *xbasis_commons_dto.Status) error {
 	return h.FunctionHandler.Move(ctx, in, out)
 }
 
-func (h *functionHandler) AddGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error {
+func (h *functionHandler) AddGroup(ctx context.Context, in *FunctionGroupRequest, out *xbasis_commons_dto.Status) error {
 	return h.FunctionHandler.AddGroup(ctx, in, out)
 }
 
-func (h *functionHandler) MoveGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error {
+func (h *functionHandler) MoveGroup(ctx context.Context, in *FunctionGroupRequest, out *xbasis_commons_dto.Status) error {
 	return h.FunctionHandler.MoveGroup(ctx, in, out)
 }
 
-func (h *functionHandler) RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *gs_commons_dto.Status) error {
+func (h *functionHandler) RenameGroup(ctx context.Context, in *FunctionGroupRequest, out *xbasis_commons_dto.Status) error {
 	return h.FunctionHandler.RenameGroup(ctx, in, out)
 }
 

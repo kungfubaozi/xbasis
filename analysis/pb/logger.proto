@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gosionsvc.external.analysis;
+package xbasissvc.external.analysis;
 
-import "konekko.me/gosion/commons/dto/commons.proto";
+import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service Logger {
 
@@ -25,7 +25,7 @@ message UsageFunctionStatus {
 }
 
 message UsageFunctionResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     repeated UsageFunctionStatus status = 2;
 }
 
@@ -34,7 +34,7 @@ message TodayVisitRequest {
 }
 
 message TodayVisitResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     map<string, VisitInfo> data = 2;
 }
 
@@ -50,7 +50,7 @@ message PlatformVisitInfo {
 }
 
 message GetDataResponse {
-    gs.commons.dto.State state = 1;
+    xbasis.commons.dto.State state = 1;
     string data = 2;
 }
 

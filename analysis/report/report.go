@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/micro/go-micro/metadata"
-	"konekko.me/gosion/analysis/client"
-	"konekko.me/gosion/safety/pb"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/safety/pb"
 )
 
 type Report interface {
@@ -15,8 +15,8 @@ type Report interface {
 
 type report struct {
 	log              analysisclient.LogClient
-	lockingService   gosionsvc_external_safety.LockingService
-	blacklistService gosionsvc_external_safety.BlacklistService
+	lockingService   xbasissvc_external_safety.LockingService
+	blacklistService xbasissvc_external_safety.BlacklistService
 }
 
 func (svc *report) Action(v []byte) {
@@ -69,7 +69,7 @@ func (svc *report) passwordError(ctx context.Context, userId string, currentErro
 		lockTime = 12 * 60 * 60
 	}
 	if lockTime > 0 {
-		s, err := svc.lockingService.Lock(ctx, &gosionsvc_external_safety.LockRequest{
+		s, err := svc.lockingService.Lock(ctx, &xbasissvc_external_safety.LockRequest{
 			UserId: userId,
 			Time:   lockTime,
 		})

@@ -1,28 +1,28 @@
 package safetyservice
 
 import (
-	"konekko.me/gosion/commons/config"
-	"konekko.me/gosion/commons/config/call"
-	"konekko.me/gosion/commons/constants"
-	"konekko.me/gosion/commons/dao"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/microservice"
-	"konekko.me/gosion/safety/handers"
-	"konekko.me/gosion/safety/pb"
-	"konekko.me/gosion/safety/pb/inner"
+	xconfig "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/config/call"
+	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/dao"
+	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/microservice"
+	"konekko.me/xbasis/safety/handers"
+	"konekko.me/xbasis/safety/pb"
+	"konekko.me/xbasis/safety/pb/inner"
 )
 
 func StartService() {
 
 	errc := make(chan error, 2)
 
-	pool, err := gs_commons_dao.CreatePool("192.168.2.60:6379")
+	pool, err := xbasisdao.CreatePool("192.168.2.60:6379")
 	if err != nil {
 		panic(err)
 	}
 	defer pool.Close()
 
-	session, err := gs_commons_dao.CreateSession("192.168.2.60:27017")
+	session, err := xbasisdao.CreateSession("192.168.2.60:27017")
 	if err != nil {
 		panic(err)
 	}
@@ -34,26 +34,26 @@ func StartService() {
 	}
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.SafetyService, true)
+		s := microservice.NewService(constants.SafetyService, true)
 		s.Init()
 
-		gosionsvc_external_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, client))
+		xbasissvc_external_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, client))
 
-		gosionsvc_external_safety.RegisterLockingHandler(s.Server(), safetyhanders.NewLockingService())
+		xbasissvc_external_safety.RegisterLockingHandler(s.Server(), safetyhanders.NewLockingService())
 
-		gosionsvc_external_safety.RegisterUserlockHandler(s.Server(), safetyhanders.NewUserlockService())
+		xbasissvc_external_safety.RegisterUserlockHandler(s.Server(), safetyhanders.NewUserlockService())
 
 		errc <- s.Run()
 	}()
 
 	go func() {
-		gs_commons_config.WatchGosionConfig(serviceconfiguration.Configuration())
+		xconfig.WatchGosionConfig(serviceconfiguration.Configuration())
 	}()
 
 	go func() {
-		s := microservice.NewService(gs_commons_constants.InternalSafetyService, true)
+		s := microservice.NewService(constants.InternalSafetyService, true)
 		s.Init()
-		gosionsvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session, pool))
+		xbasissvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session, pool))
 
 		errc <- s.Run()
 	}()

@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
-	"konekko.me/gosion/analysis/client"
-	external "konekko.me/gosion/analysis/pb"
-	"konekko.me/gosion/commons/dto"
-	"konekko.me/gosion/commons/errstate"
-	"konekko.me/gosion/commons/indexutils"
-	"konekko.me/gosion/commons/wrapper"
+	"konekko.me/xbasis/analysis/client"
+	external "konekko.me/xbasis/analysis/pb"
+	"konekko.me/xbasis/commons/dto"
+	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/indexutils"
+	wrapper "konekko.me/xbasis/commons/wrapper"
 )
 
 type loggerService struct {
@@ -27,7 +27,7 @@ func (svc *loggerService) UsageFunction(context.Context, *external.UsageFunction
 }
 
 func (svc *loggerService) GetAxisData(ctx context.Context, in *external.GetDataRequest, out *external.GetDataResponse) error {
-	return gs_commons_wrapper.ContextToAuthorize(ctx, out, func(auth *gs_commons_wrapper.WrapperUser) *gs_commons_dto.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *xbasis_commons_dto.State {
 		if len(in.XAxis.Factors) == 0 || len(in.YAxis.Factors) == 0 {
 			return nil
 		}

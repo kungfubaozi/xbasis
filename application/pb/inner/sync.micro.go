@@ -2,7 +2,7 @@
 // source: application/pb/inner/sync.proto
 
 /*
-Package gosionsvc_internal_application is a generated protocol buffer package.
+Package xbasissvc_internal_application is a generated protocol buffer package.
 
 It is generated from these files:
 	application/pb/inner/sync.proto
@@ -11,12 +11,12 @@ It has these top-level messages:
 	CheckRequest
 	UserInfo
 */
-package gosionsvc_internal_application
+package xbasissvc_internal_application
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import gs_commons_dto "konekko.me/gosion/commons/dto"
+import xbasis_commons_dto "konekko.me/xbasis/commons/dto"
 
 import (
 	context "context"
@@ -28,7 +28,7 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = gs_commons_dto.Status{}
+var _ = xbasis_commons_dto.Status{}
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,8 +44,8 @@ var _ server.Option
 // Client API for UserSync service
 
 type UserSyncService interface {
-	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error)
-	Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error)
+	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type userSyncService struct {
@@ -58,7 +58,7 @@ func NewUserSyncService(name string, c client.Client) UserSyncService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "gosionsvc.internal.application"
+		name = "xbasissvc.internal.application"
 	}
 	return &userSyncService{
 		c:    c,
@@ -66,9 +66,9 @@ func NewUserSyncService(name string, c client.Client) UserSyncService {
 	}
 }
 
-func (c *userSyncService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userSyncService) Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserSync.Check", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,9 +76,9 @@ func (c *userSyncService) Check(ctx context.Context, in *CheckRequest, opts ...c
 	return out, nil
 }
 
-func (c *userSyncService) Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*gs_commons_dto.Status, error) {
+func (c *userSyncService) Update(ctx context.Context, in *UserInfo, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "UserSync.Update", in)
-	out := new(gs_commons_dto.Status)
+	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -89,14 +89,14 @@ func (c *userSyncService) Update(ctx context.Context, in *UserInfo, opts ...clie
 // Server API for UserSync service
 
 type UserSyncHandler interface {
-	Check(context.Context, *CheckRequest, *gs_commons_dto.Status) error
-	Update(context.Context, *UserInfo, *gs_commons_dto.Status) error
+	Check(context.Context, *CheckRequest, *xbasis_commons_dto.Status) error
+	Update(context.Context, *UserInfo, *xbasis_commons_dto.Status) error
 }
 
 func RegisterUserSyncHandler(s server.Server, hdlr UserSyncHandler, opts ...server.HandlerOption) error {
 	type userSync interface {
-		Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error
-		Update(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error
+		Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error
+		Update(ctx context.Context, in *UserInfo, out *xbasis_commons_dto.Status) error
 	}
 	type UserSync struct {
 		userSync
@@ -109,10 +109,10 @@ type userSyncHandler struct {
 	UserSyncHandler
 }
 
-func (h *userSyncHandler) Check(ctx context.Context, in *CheckRequest, out *gs_commons_dto.Status) error {
+func (h *userSyncHandler) Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error {
 	return h.UserSyncHandler.Check(ctx, in, out)
 }
 
-func (h *userSyncHandler) Update(ctx context.Context, in *UserInfo, out *gs_commons_dto.Status) error {
+func (h *userSyncHandler) Update(ctx context.Context, in *UserInfo, out *xbasis_commons_dto.Status) error {
 	return h.UserSyncHandler.Update(ctx, in, out)
 }
