@@ -47,13 +47,13 @@ type initializeRepo struct {
 	bulk    *elastic.BulkService
 	conn    *zk.Conn
 	// data
-	userRolesRelation []interface{}
-	userRoles         []interface{}
-	functions         []interface{}
-	functionGroups    []interface{}
-	structures        []interface{}
-	groupUsers        []*userGroupsRelation
-	groups            []interface{}
+	userRolesRelation map[int][]interface{}
+	userRoles         map[int][]interface{}
+	functions         map[int][]interface{}
+	functionGroups    map[int][]interface{}
+	functionRoles     map[int][]interface{}
+	groupUsers        map[int][]interface{}
+	groups            map[int][]interface{}
 	//callback
 }
 
@@ -89,7 +89,14 @@ func (repo *initializeRepo) AddUGRelation(appId string) {
 		CreateAt:    time.Now().UnixNano(),
 		UserId:      repo.config.UserId,
 	}
-	repo.groupUsers = append(repo.groupUsers, u)
+
+	if repo.groupUsers == nil {
+		repo.groupUsers = make(map[int][]interface{})
+	}
+
+	v1 := repo.groupUsers[hashcode.Equa(appId)]
+
+	repo.groupUsers[hashcode.Equa(appId)] = append(v1, u)
 }
 
 func (repo *initializeRepo) SaveAndClose() {
@@ -97,24 +104,38 @@ func (repo *initializeRepo) SaveAndClose() {
 	if repo.bulk != nil && repo.bulk.NumberOfActions() > 0 {
 		db := repo.session.DB(dbName)
 		if repo.userRolesRelation != nil && len(repo.userRolesRelation) > 0 {
-			check(db.C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Equa(repo.config.UserId))).Insert(repo.userRolesRelation...))
+			for k, v := range repo.userRolesRelation {
+				check(db.C(fmt.Sprintf("%s_%d", userRoleRelationCollection, k)).Insert(v...))
+			}
 		}
 
 		if len(repo.userRoles) > 0 {
-			check(db.C(roleCollection).Insert(repo.userRoles...))
+			for k, v := range repo.userRoles {
+				check(db.C(fmt.Sprintf("%s_%d", roleCollection, k)).Insert(v...))
+			}
+		}
+
+		if len(repo.functionRoles) > 0 {
+			for k, v := range repo.functionRoles {
+				check(db.C(fmt.Sprintf("%s_%d", functionRoleRelationCollection, k)).Insert(v...))
+			}
 		}
 
 		if len(repo.functions) > 0 {
-			check(db.C(functionCollection).Insert(repo.functions...))
+			for k, v := range repo.functions {
+				check(db.C(fmt.Sprintf("%s_%d", functionCollection, k)).Insert(v...))
+			}
 		}
 
 		if len(repo.functionGroups) > 0 {
-			check(db.C(functionGroupCollection).Insert(repo.functionGroups...))
+			for k, v := range repo.functionGroups {
+				check(db.C(fmt.Sprintf("%s_%d", functionGroupCollection, k)).Insert(v...))
+			}
 		}
 
 		if len(repo.groupUsers) > 0 {
-			for _, v := range repo.groupUsers {
-				check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Equa(v.AppId))).Insert(v))
+			for k, v := range repo.groupUsers {
+				check(db.C(fmt.Sprintf("%s_%d", groupUsersCollection, k)).Insert(v...))
 			}
 		}
 
@@ -147,7 +168,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		role := &role{
 			Name:         v,
-			Id:           repo.id.UUID(),
+			Id:           repo.id.Get(),
 			CreateAt:     time.Now().UnixNano(),
 			AppId:        appId,
 			CreateUserId: repo.config.UserId,
@@ -172,7 +193,13 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(roleIndex).Type("_doc").Doc(role))
 
-		repo.userRoles = append(repo.userRoles, role)
+		if repo.userRoles == nil {
+			repo.userRoles = make(map[int][]interface{})
+		}
+
+		v1 := repo.userRoles[hashcode.Equa(appId)]
+
+		repo.userRoles[hashcode.Equa(appId)] = append(v1, role)
 
 		roleMap[role.Name] = role.Id
 	}
@@ -186,16 +213,20 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			CreateAt: time.Now().UnixNano(),
 		}
 
-		repo.userRolesRelation = append(repo.userRolesRelation, u)
+		if repo.userRolesRelation == nil {
+			repo.userRolesRelation = make(map[int][]interface{})
+		}
 
-		//		repo.bulk.Add(elastic.NewBulkIndexRequest().Index("gs-user-roles-relation").Type("_doc").Doc(u))
+		v1 := repo.userRolesRelation[hashcode.Equa(repo.config.UserId)]
+
+		repo.userRolesRelation[hashcode.Equa(repo.config.UserId)] = append(v1, u)
 
 	}
 
 	for _, v := range config.Data {
 
 		g := &functionGroup{
-			Id:           repo.id.UUID(),
+			Id:           repo.id.Get(),
 			Name:         v.GroupName,
 			CreateAt:     time.Now().UnixNano(),
 			AppId:        appId,
@@ -204,7 +235,13 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		prefix := v.Prefix
 
-		repo.functionGroups = append(repo.functionGroups, g)
+		if repo.functionGroups == nil {
+			repo.functionGroups = make(map[int][]interface{})
+		}
+
+		v1 := repo.functionGroups[hashcode.Equa(appId)]
+
+		repo.functionGroups[hashcode.Equa(appId)] = append(v1, g)
 
 		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionGroupRelationIndex).Type("_doc").Doc(g))
 
@@ -217,36 +254,39 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				BindGroupId:  g.Id,
 				CreateAt:     time.Now().UnixNano(),
 				CreateUserId: repo.config.UserId,
-				Id:           repo.id.UUID(),
+				Id:           repo.id.Get(),
 				Share:        v.Share,
 			}
 
 			if v.Roles != nil && len(v.Roles) > 0 {
 				var nr []string
+
 				for _, r := range v.Roles {
 					id := roleMap[r]
 					nr = append(nr, id)
-					for _, v := range adminRoles {
-						if id == v {
-							dr := &directrelation{
-								Function:   true,
-								User:       true,
-								UserId:     repo.config.UserId,
-								FunctionId: f.Id,
-								RoleId:     v,
-								Enabled:    true,
-							}
-
-							id := encrypt.Md5(dr.FunctionId + dr.UserId)
-
-							repo.bulk.Add(elastic.NewBulkIndexRequest().Index(fmt.Sprintf("xbs-urf-relations.%d", hashcode.Equa(repo.config.UserId))).Id(id).Type("_doc").Doc(dr))
-						}
-					}
 				}
-				f.Roles = nr
+				if repo.functionRoles == nil {
+					repo.functionRoles = make(map[int][]interface{})
+				}
+				v := repo.functionRoles[hashcode.Equa(f.Id)]
+
+				fr := &functionRolesRelation{
+					FunctionId: f.Id,
+					CreateAt:   time.Now().UnixNano(),
+					Roles:      nr,
+					AppId:      appId,
+				}
+
+				repo.functionRoles[hashcode.Equa(f.Id)] = append(v, fr)
 			}
 
-			repo.functions = append(repo.functions, f)
+			if repo.functions == nil {
+				repo.functions = make(map[int][]interface{})
+			}
+
+			v := repo.functions[hashcode.Equa(f.AppId)]
+
+			repo.functions[hashcode.Equa(f.AppId)] = append(v, f)
 
 			sf := &simplifiedFunction{
 				Id:            f.Id,
@@ -254,7 +294,6 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				Share:         f.Share,
 				AppId:         appId,
 				ValTokenTimes: f.ValTokenTimes,
-				Roles:         f.Roles,
 				Name:          f.Name,
 				Path:          encrypt.SHA1(f.Api),
 			}

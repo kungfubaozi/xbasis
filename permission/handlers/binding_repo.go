@@ -19,17 +19,17 @@ func (repo *bindingRepo) Close() {
 	repo.session.Close()
 }
 
-func (repo *bindingRepo) functionCollection() *mgo.Collection {
-	return repo.session.DB(dbName).C(functionCollection)
+func (repo *bindingRepo) functionCollection(functionId string) *mgo.Collection {
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", functionRoleRelationCollection, hashcode.Equa(functionId)))
 }
 
 func (repo *bindingRepo) userRelationCollection(userId string) *mgo.Collection {
 	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userRoleRelationCollection, hashcode.Equa(userId)))
 }
 
-func (repo *bindingRepo) FindFunctionById(id string) (*function, error) {
-	f := &function{}
-	err := repo.functionCollection().Find(bson.M{"_id": id}).One(f)
+func (repo *bindingRepo) FindRelationFunctionById(id, appId string) (*functionRolesRelation, error) {
+	f := &functionRolesRelation{}
+	err := repo.functionCollection(id).Find(bson.M{"function_id": id, "app_id": appId}).One(f)
 	return f, err
 }
 
@@ -39,16 +39,16 @@ func (repo *bindingRepo) FindRelationUserById(userId, appId string) (*userRolesR
 	return f, err
 }
 
-func (repo *bindingRepo) UpdateFunctionRole(id, role string) error {
-	return repo.functionCollection().Update(bson.M{"_id": id}, bson.M{"$push": bson.M{"roles": role}})
+func (repo *bindingRepo) UpdateFunctionRole(id, appId string, roles []string) error {
+	return repo.functionCollection(id).Update(bson.M{"function_id": id, "app_id": appId}, bson.M{"$pushAll": bson.M{"roles": roles}})
 }
 
 func (repo *bindingRepo) UpdateUserRole(id, appId string, role []string) error {
 	return repo.userRelationCollection(id).Update(bson.M{"user_id": id, "app_id": appId}, bson.M{"$pushAll": bson.M{"roles": role}})
 }
 
-func (repo *bindingRepo) RemoveRoleFromFunctions(id, role string) error {
-	return repo.functionCollection().Update(bson.M{"_id": id}, bson.M{"$pull": bson.M{"roles": role}})
+func (repo *bindingRepo) RemoveRoleFromFunctions(id, appId string, role string) error {
+	return repo.functionCollection(id).Update(bson.M{"function_id": id, "app_id": appId}, bson.M{"$pull": bson.M{"roles": role}})
 }
 
 func (repo *bindingRepo) RemoveRoleFromUserRelation(userId, role string) error {

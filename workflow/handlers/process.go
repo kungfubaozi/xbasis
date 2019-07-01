@@ -31,12 +31,12 @@ func (svc *processService) Build(context.Context, *pb.BuildRequest, *pb.BuildRes
 	panic("implement me")
 }
 
-func (svc *processService) Delete(ctx context.Context, in *pb.DeleteRequest, out *pb.DeleteResponse) error {
+func (svc *processService) Delete(ctx context.Context, in *pb.DeleteProcessRequest, out *pb.DeleteProcessResponse) error {
 	panic("implement me")
 }
 
 //update只是更新当前的流程设置，并不直接关系到具体流程
-func (svc *processService) Update(ctx context.Context, in *pb.UpdateRequest, out *pb.UpdateResponse) error {
+func (svc *processService) Update(ctx context.Context, in *pb.UpdateProcessRequest, out *pb.UpdateProcessResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 8 {
 			return errstate.ErrRequest
@@ -140,7 +140,7 @@ func (svc *processService) Open(context.Context, *pb.OpenRequest, *pb.OpenRespon
 	panic("implement me")
 }
 
-func (svc *processService) Detail(ctx context.Context, in *pb.DetailRequest, out *pb.DetailResponse) error {
+func (svc *processService) Detail(ctx context.Context, in *pb.DetailProcessRequest, out *pb.DetailProcessResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		f, err := svc.modules.Process().GetFlowDataArray(in.ProcessId)

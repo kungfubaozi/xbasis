@@ -107,67 +107,6 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 			Share:         f.Share,
 		}
 
-		if len(f.Roles) > 0 {
-			rrepo := svc.GetRoleRepo()
-			defer rrepo.Close()
-			size := len(f.Roles)
-			var wg sync.WaitGroup
-			var err error
-
-			setRole := func(r *role) {
-				function.Roles = append(function.Roles, &external.FunctionBindRole{
-					Name: r.Name,
-					Id:   r.Id,
-				})
-			}
-
-			resp := func(e error) {
-				if err == nil {
-					err = e
-				}
-			}
-
-			findRole := func(v string) {
-				role, err := rrepo.FindRoleById(v)
-				if err != nil {
-					resp(err)
-					return
-				}
-				setRole(role)
-			}
-
-			if size > 2 {
-				wg.Add(2)
-				s := size / 2
-				go func() {
-					defer wg.Done()
-					a := f.Roles[:s]
-					for _, v := range a {
-						findRole(v)
-					}
-				}()
-				go func() {
-					defer wg.Done()
-					a := f.Roles[s:]
-					for _, v := range a {
-						findRole(v)
-					}
-				}()
-			} else {
-				wg.Add(len(f.Roles))
-				for _, v := range f.Roles {
-					go func() {
-						defer wg.Done()
-						findRole(v)
-					}()
-				}
-			}
-			wg.Wait()
-			if err != nil {
-				return nil
-			}
-		}
-
 		isAuthEnabled := func(t int64) bool {
 			for _, v := range f.AuthTypes {
 				if v == t {
@@ -332,7 +271,7 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 		}
 
 		//find group exists
-		if !repo.FindGroupExists(in.BindGroupId) {
+		if !repo.FindGroupExists(in.BindGroupId, in.AppId) {
 			return errstate.ErrFunctionBindGroupId
 		}
 
@@ -356,7 +295,7 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 		if err != nil && err == mgo.ErrNotFound {
 
 			f := &function{
-				Id:           svc.id.String(),
+				Id:           svc.id.Get(),
 				Name:         in.Name,
 				Type:         in.Type,
 				CreateUserId: auth.Token.UserId,

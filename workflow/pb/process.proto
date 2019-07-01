@@ -13,16 +13,16 @@ service Process {
     rpc Build (BuildRequest) returns (BuildResponse);
 
     //删除
-    rpc Delete (DeleteRequest) returns (DeleteResponse);
+    rpc Delete (DeleteProcessRequest) returns (DeleteProcessResponse);
 
     //更新
-    rpc Update (UpdateRequest) returns (UpdateResponse);
+    rpc Update (UpdateProcessRequest) returns (UpdateProcessResponse);
 
     //开启生产
     rpc Open (OpenRequest) returns (OpenResponse);
 
     //详情
-    rpc Detail (DetailRequest) returns (DetailResponse);
+    rpc Detail (DetailProcessRequest) returns (DetailProcessResponse);
 
     //获取流程图
     rpc GetImage (GetImageRequest) returns (GetImageResponse);
@@ -50,11 +50,11 @@ message SearchProcessItem {
     string desc = 6;
 }
 
-message DetailRequest {
+message DetailProcessRequest {
     string processId = 1;
 }
 
-message DetailResponse {
+message DetailProcessResponse {
     xbasis.commons.dto.State state = 1;
     string nodeDataArray = 2;
     string linkDataArray = 3;
@@ -91,15 +91,15 @@ message BuildResponse {
     xbasis.commons.dto.State state = 1;
 }
 
-message DeleteRequest {
+message DeleteProcessRequest {
     string processId = 1;
 }
 
-message DeleteResponse {
+message DeleteProcessResponse {
     xbasis.commons.dto.State state = 1;
 }
 
-message UpdateRequest {
+message UpdateProcessRequest {
     string processId = 1;
     string name = 2;
     string desc = 3;
@@ -109,7 +109,7 @@ message UpdateRequest {
     string image = 7;
 }
 
-message UpdateResponse {
+message UpdateProcessResponse {
     xbasis.commons.dto.State state = 1;
     string processId = 2;
 }

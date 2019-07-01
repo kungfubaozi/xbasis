@@ -90,7 +90,7 @@ func main() {
 		Email:         email,
 		SecretKey:     secretKey,
 		UserAppId:     id.Short(),
-		UserAppRoleId: id.UUID(),
+		UserAppRoleId: id.String(),
 		RouteAppId:    id.Short(),
 		SafeAppId:     id.Short(),
 		AdminAppId:    id.Short(),

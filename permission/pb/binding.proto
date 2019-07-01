@@ -8,7 +8,7 @@ service Binding {
 
     rpc UserRole (BindingRolesRequest) returns (xbasis.commons.dto.Status);
 
-    rpc FunctionRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
+    rpc FunctionRole (BindingRolesRequest) returns (xbasis.commons.dto.Status);
 
     rpc UnbindUserRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
 

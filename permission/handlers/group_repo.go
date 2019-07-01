@@ -16,7 +16,7 @@ type groupRepo struct {
 
 func (repo *groupRepo) FindByName(appId, name string) (*userGroup, error) {
 	var ug userGroup
-	err := repo.collection().Find(bson.M{"name": name, "app_id": appId}).One(&ug)
+	err := repo.collection(appId).Find(bson.M{"name": name, "app_id": appId}).One(&ug)
 	return &ug, err
 }
 
@@ -29,11 +29,11 @@ func (repo *groupRepo) Save(appId, userId, name, bindGroupId string) (string, er
 		AppId:        appId,
 		Id:           repo.id.Get(),
 	}
-	return ug.Id, repo.collection().Insert(ug)
+	return ug.Id, repo.collection(appId).Insert(ug)
 }
 
-func (repo *groupRepo) collection() *mgo.Collection {
-	return repo.session.DB(dbName).C(groupCollection)
+func (repo *groupRepo) collection(appId string) *mgo.Collection {
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", groupCollection, hashcode.Equa(appId)))
 }
 
 func (repo *groupRepo) groupUsersCollection(appId string) *mgo.Collection {
@@ -46,7 +46,7 @@ func (repo *groupRepo) Close() {
 
 func (repo *groupRepo) FindGroupItems(appId, id string) ([]*userGroup, error) {
 	var groups []*userGroup
-	err := repo.collection().Find(bson.M{"app_id": appId, "bind_group_id": id}).All(&groups)
+	err := repo.collection(appId).Find(bson.M{"app_id": appId, "bind_group_id": id}).All(&groups)
 	return groups, err
 }
 

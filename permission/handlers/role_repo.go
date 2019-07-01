@@ -1,10 +1,12 @@
 package permissionhandlers
 
 import (
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/hashcode"
 	"konekko.me/xbasis/commons/indexutils"
 	"konekko.me/xbasis/permission/utils"
 	"sync"
@@ -20,7 +22,7 @@ type roleRepo struct {
 
 func (repo *roleRepo) FindByName(appId, name string) (*role, error) {
 	var r role
-	err := repo.collection().Find(bson.M{"name": name, "app_id": appId}).One(&r)
+	err := repo.collection(appId).Find(bson.M{"name": name, "app_id": appId}).One(&r)
 	return &r, err
 }
 
@@ -59,7 +61,7 @@ func (repo *roleRepo) Remove(appId, roleId string) error {
 
 	go func() {
 		defer wg.Done()
-		resp(repo.collection().Remove(bson.M{"_id": roleId}))
+		resp(repo.collection(appId).Remove(bson.M{"_id": roleId}))
 	}()
 
 	wg.Wait()
@@ -76,7 +78,7 @@ func (repo *roleRepo) Save(name, appId, userId string) error {
 		AppId:        appId,
 		CreateUserId: userId,
 	}
-	err := repo.collection().Insert(r)
+	err := repo.collection(appId).Insert(r)
 	if err != nil {
 		return err
 	}
@@ -84,20 +86,20 @@ func (repo *roleRepo) Save(name, appId, userId string) error {
 	return err
 }
 
-func (repo *roleRepo) FindRoleById(roleId string) (*role, error) {
+func (repo *roleRepo) FindRoleById(roleId, appId string) (*role, error) {
 	var role *role
-	err := repo.collection().Find(bson.M{"_id": roleId}).One(&role)
+	err := repo.collection(appId).Find(bson.M{"_id": roleId}).One(&role)
 	return role, err
 }
 
 func (repo *roleRepo) FindRolesByAppId(appId string, page, size int64) ([]*role, error) {
 	var roles []*role
-	err := repo.collection().Find(bson.M{"app_id": appId}).All(&roles)
+	err := repo.collection(appId).Find(bson.M{"app_id": appId}).All(&roles)
 	return roles, err
 }
 
-func (repo *roleRepo) collection() *mgo.Collection {
-	return repo.session.DB(dbName).C(roleCollection)
+func (repo *roleRepo) collection(appId string) *mgo.Collection {
+	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", roleCollection, hashcode.Equa(appId)))
 }
 
 func (repo *roleRepo) Close() {

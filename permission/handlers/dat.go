@@ -104,7 +104,7 @@ func (svc *durationAccessService) Send(ctx context.Context, in *external.SendReq
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		api, err := repo.FindApiByPrimaryId(credential.FuncId)
+		api, err := repo.FindApiByPrimaryId(credential.FuncId, credential.AppId)
 		if err != nil {
 			fmt.Println("s2", err)
 			return errstate.ErrRequest
@@ -261,7 +261,7 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		api, err := repo.FindApiByPrimaryId(credential.FuncId)
+		api, err := repo.FindApiByPrimaryId(credential.FuncId, credential.AppId)
 		if err != nil {
 			return errstate.ErrRequest
 		}

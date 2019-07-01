@@ -18,7 +18,7 @@ func ID() *snowflake.Node {
 type IDGenerator interface {
 	Get() string
 
-	UUID() string
+	//UUID() string
 
 	String() string
 

@@ -10,7 +10,7 @@ import (
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
 	regx "konekko.me/xbasis/commons/regx"
-	"konekko.me/xbasis/commons/wrapper"
+	wrapper "konekko.me/xbasis/commons/wrapper"
 	external "konekko.me/xbasis/user/pb"
 	"konekko.me/xbasis/user/pb/inner"
 	"time"
@@ -24,7 +24,7 @@ type inviteService struct {
 }
 
 func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		if len(in.UserId) > 10 && len(in.AppId) > 8 && in.State > 0 {
 			repo := svc.GetRepo()
@@ -41,7 +41,7 @@ func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateReq
 }
 
 func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvitedRequest, out *external.GetDetailResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		if len(in.UserId) < 10 {
 			return nil
@@ -82,13 +82,14 @@ func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvited
 }
 
 func (svc *inviteService) Search(ctx context.Context, in *external.InviteSearchRequest, out *external.InviteSearchResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
 		return nil
 	})
 }
 
 func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvitedRequest, out *external.HasInvitedResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		key := ""
 		var value interface{}
@@ -135,7 +136,7 @@ func (svc *inviteService) GetRepo() *inviteRepo {
 如果被邀请用户已经注册
 */
 func (svc *inviteService) User(ctx context.Context, in *external.InviteUserRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		configuration := serviceconfiguration.Get()
 
 		header := &analysisclient.LogHeaders{
@@ -242,7 +243,7 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 Append是在邀请用户或已经注册用户中添加邀请信息，不同与User接口
 */
 func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.UserId) < 10 || in.Item == nil {
 			return nil
 		}

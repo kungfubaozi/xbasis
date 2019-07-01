@@ -15,12 +15,23 @@ const (
 
 	userRoleRelationCollection = "user_roles_relation"
 
+	functionRoleRelationCollection = "function_roles_relation"
+
 	functionIndex = "xbs-functions"
 
 	functionGroupRelationIndex = "xbs-function-groups"
 
 	roleIndex = "xbs-roles"
 )
+
+type accessibale struct {
+	UserId     string `bson:"user_id" json:"user_id"`
+	FunctionId string `bson:"function_id" json:"function_id"`
+	AppId      string `bson:"app_id" json:"app_id"`
+	RoleId     string `bson:"role_id" json:"role_id"`
+	Recheck    bool   `json:"recheck"`
+	Access     bool   `json:"access"`
+}
 
 //直接联系(用在es上)
 type directrelation struct {
@@ -38,6 +49,7 @@ type durationAccessCredential struct {
 	FuncId       string
 	Timestamp    int64
 	FromAuth     bool
+	AppId        string
 }
 
 type durationAccessToken struct {
@@ -69,6 +81,13 @@ type userRolesRelation struct {
 	UserId   string   `bson:"user_id" json:"user_id"`
 	Roles    []string `bson:"roles" json:"roles"`
 	AppId    string   `bson:"app_id" json:"app_id"`
+}
+
+type functionRolesRelation struct {
+	CreateAt   int64    `bson:"create_at" json:"create_at"`
+	FunctionId string   `bson:"function_id" json:"function_id"`
+	Roles      []string `bson:"roles" json:"roles"`
+	AppId      string   `bson:"app_id" json:"app_id"`
 }
 
 type userGroupsRelation struct {
@@ -120,21 +139,19 @@ type function struct {
 	AppId        string  `bson:"app_id" json:"app_id"`
 	AuthTypes    []int64 `bson:"auth_types" json:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenTimes  int64    `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
-	GrantPlatforms []int64  `bson:"grant_platforms" json:"grant_platforms"`
-	Roles          []string `json:"roles" bson:"roles"`
+	ValTokenTimes  int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
+	GrantPlatforms []int64 `bson:"grant_platforms" json:"grant_platforms"`
 	//representation validation does not require judging the application to which it belongs, and each application can share this function (roles need to be set to null)
 	Share bool `bson:"share" json:"share"`
 }
 
 type simplifiedFunction struct {
-	Id             string   `json:"id"`
-	AuthTypes      []int64  `json:"auth_types"`
-	ValTokenTimes  int64    `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
-	GrantPlatforms []int64  `json:"grant_platforms"`
-	Roles          []string `json:"roles" bson:"roles"`
-	Share          bool     `bson:"share" json:"share"`
-	AppId          string   `bson:"app_id" json:"app_id"`
-	Path           string   `bson:"path" json:"path"`
-	Name           string   `bson:"name" json:"name"`
+	Id             string  `json:"id"`
+	AuthTypes      []int64 `json:"auth_types"`
+	ValTokenTimes  int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
+	GrantPlatforms []int64 `json:"grant_platforms"`
+	Share          bool    `bson:"share" json:"share"`
+	AppId          string  `bson:"app_id" json:"app_id"`
+	Path           string  `bson:"path" json:"path"`
+	Name           string  `bson:"name" json:"name"`
 }

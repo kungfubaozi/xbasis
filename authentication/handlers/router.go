@@ -210,6 +210,7 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 		})
 
 		if err != nil {
+
 			return nil
 		}
 
@@ -230,6 +231,7 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 					UserId: auth.Token.UserId,
 					AppId:  app.AppId,
 				})
+
 				if err != nil {
 					return nil
 				}
@@ -250,68 +252,69 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 			//push op
 			if len(app.AppId) > 0 {
 
+				fmt.Println("ok")
+
 				//Todo 等待优化
 				// check permission
 
-				fmt.Println("function", auth.FunctionId, "userId", auth.Token.UserId)
+				//fmt.Println("function", auth.FunctionId, "userId", auth.Token.UserId)
+				//
+				//c, err := svc.Client.Count("xbs-function-authorize.*", map[string]interface{}{"functionId": auth.FunctionId, "userId": auth.Token.UserId})
+				//if err != nil {
+				//	return nil
+				//}
+				//
+				//if c == 0 {
+				//	return errstate.ErrUserAppPermission
+				//} else if c >= 1 {
+				//process
 
-				c, err := svc.Client.Count("xbs-urf-relations.*", map[string]interface{}{"functionId": auth.FunctionId, "userId": auth.Token.UserId})
+				//must same platform
+				if auth.Token.ClientPlatform != app.ClientPlatform && app.ClientPlatform != auth.Platform {
+					return errstate.ErrRoutePlatform
+				}
+
+				//Not the same application
+				if app.AppId == auth.Token.AppId {
+					return errstate.ErrRouteSameApplication
+				}
+
+				//jump to app
+				token, err := svc.innerTokenService.Generate(ctx, &xbasissvc_internal_authentication.GenerateRequest{
+					RelationId: auth.Token.Relation,
+					Route:      true,
+					Auth: &commons.Authorize{
+						ClientId: in.RouteTo,
+						UserId:   auth.Token.UserId,
+						Ip:       auth.IP,
+						Device:   auth.UserDevice,
+						Platform: app.ClientPlatform,
+						AppId:    app.AppId,
+					},
+				})
+
 				if err != nil {
-					return nil
+					return errstate.ErrRequest
 				}
 
-				if c == 0 {
-					return errstate.ErrUserAppPermission
-				} else if c >= 1 {
-					//process
-
-					//must same platform
-					if auth.Token.ClientPlatform != app.ClientPlatform && app.ClientPlatform != auth.Platform {
-						return errstate.ErrRoutePlatform
-					}
-
-					//Not the same application
-					if app.AppId == auth.Token.AppId {
-						return errstate.ErrRouteSameApplication
-					}
-
-					//jump to app
-					token, err := svc.innerTokenService.Generate(ctx, &xbasissvc_internal_authentication.GenerateRequest{
-						RelationId: auth.Token.Relation,
-						Route:      true,
-						Auth: &commons.Authorize{
-							ClientId: in.RouteTo,
-							UserId:   auth.Token.UserId,
-							Ip:       auth.IP,
-							Device:   auth.UserDevice,
-							Platform: app.ClientPlatform,
-							AppId:    app.AppId,
-						},
-					})
-
-					if err != nil {
-						return errstate.ErrRequest
-					}
-
-					if !token.State.Ok {
-						fmt.Println("token", token.State)
-						return token.State
-					}
-
-					out.RefreshToken = token.RefreshToken
-
-					//当web端登录时，不传入accessToken，需要进行refresh，保证其refreshToken是有效的
-					if app.ClientPlatform != constants.PlatformOfWeb {
-						out.AccessToken = token.AccessToken
-					} else {
-						if app.CanRedirect {
-
-						}
-					}
-
-					return errstate.Success
-
+				if !token.State.Ok {
+					return token.State
 				}
+
+				out.RefreshToken = token.RefreshToken
+
+				//当web端登录时，不传入accessToken，需要进行refresh，保证其refreshToken是有效的
+				if app.ClientPlatform != constants.PlatformOfWeb {
+					out.AccessToken = token.AccessToken
+				} else {
+					if app.CanRedirect {
+
+					}
+				}
+
+				return errstate.Success
+
+				//}
 			}
 
 		}

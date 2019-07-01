@@ -7,5 +7,5 @@ func Get(data string) int {
 }
 
 func Equa(data string) int {
-	return int(crc32.ChecksumIEEE([]byte(data))) % 6
+	return int(crc32.ChecksumIEEE([]byte(data))) % 10
 }

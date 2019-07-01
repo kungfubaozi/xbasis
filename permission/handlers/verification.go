@@ -337,6 +337,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 									FromClientId: rh.fromClientId,
 									RefClientId:  rh.refClientId,
 									FuncId:       f.Id,
+									AppId:        f.AppId,
 									Timestamp:    time.Now().UnixNano(),
 								}
 

@@ -7,12 +7,12 @@ import (
 	commons "konekko.me/xbasis/commons/dto"
 	generator "konekko.me/xbasis/commons/generator"
 	wrapper "konekko.me/xbasis/commons/wrapper"
-	"konekko.me/xbasis/workflow/modules"
+	workflow "konekko.me/xbasis/workflow/modules"
 	pb "konekko.me/xbasis/workflow/pb"
 )
 
 type formService struct {
-	modules modules.Modules
+	modules workflow.Modules
 	id      generator.IDGenerator
 	session *mgo.Session
 	log     analysisclient.LogClient
@@ -20,6 +20,17 @@ type formService struct {
 
 func (svc *formService) Update(ctx context.Context, in *pb.UpdateRequest, out *pb.UpdateResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+		formId := in.Id
+		if len(in.Id) == 0 {
+			formId = svc.id.Get()
+		}
+
+		//json
+		var d []map[string]interface{}
+		for _, v := range in.Fields {
+
+		}
+
 		return nil
 	})
 }
@@ -54,7 +65,7 @@ func (svc *formService) Detail(ctx context.Context, in *pb.DetailRequest, out *p
 	})
 }
 
-func NewFormService(modules modules.Modules,
+func NewFormService(modules workflow.Modules,
 	id generator.IDGenerator, log analysisclient.LogClient) pb.FormHandler {
 	return &formService{modules: modules, id: id, log: log}
 }

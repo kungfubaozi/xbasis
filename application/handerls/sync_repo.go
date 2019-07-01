@@ -18,7 +18,7 @@ func (repo *syncRepo) Synced(userId, appId, relation string) (bool, error) {
 	if err != nil {
 		return false, nil
 	}
-	return n == 1, nil
+	return n >= 1, nil
 }
 
 func (repo *syncRepo) Sync(userId, appId, relation string) error {

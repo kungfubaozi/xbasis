@@ -11,18 +11,18 @@ It has these top-level messages:
 	SearchProcessRequest
 	SearchProcessResponse
 	SearchProcessItem
-	DetailRequest
-	DetailResponse
+	DetailProcessRequest
+	DetailProcessResponse
 	GetImageRequest
 	GetImageResponse
 	CreateRequest
 	CreateResponse
 	BuildRequest
 	BuildResponse
-	DeleteRequest
-	DeleteResponse
-	UpdateRequest
-	UpdateResponse
+	DeleteProcessRequest
+	DeleteProcessResponse
+	UpdateProcessRequest
+	UpdateProcessResponse
 	OpenRequest
 	OpenResponse
 	LaunchRequest
@@ -65,13 +65,13 @@ type ProcessService interface {
 	// 构建
 	Build(ctx context.Context, in *BuildRequest, opts ...client.CallOption) (*BuildResponse, error)
 	// 删除
-	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
+	Delete(ctx context.Context, in *DeleteProcessRequest, opts ...client.CallOption) (*DeleteProcessResponse, error)
 	// 更新
-	Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	Update(ctx context.Context, in *UpdateProcessRequest, opts ...client.CallOption) (*UpdateProcessResponse, error)
 	// 开启生产
 	Open(ctx context.Context, in *OpenRequest, opts ...client.CallOption) (*OpenResponse, error)
 	// 详情
-	Detail(ctx context.Context, in *DetailRequest, opts ...client.CallOption) (*DetailResponse, error)
+	Detail(ctx context.Context, in *DetailProcessRequest, opts ...client.CallOption) (*DetailProcessResponse, error)
 	// 获取流程图
 	GetImage(ctx context.Context, in *GetImageRequest, opts ...client.CallOption) (*GetImageResponse, error)
 	Search(ctx context.Context, in *SearchProcessRequest, opts ...client.CallOption) (*SearchProcessResponse, error)
@@ -115,9 +115,9 @@ func (c *processService) Build(ctx context.Context, in *BuildRequest, opts ...cl
 	return out, nil
 }
 
-func (c *processService) Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error) {
+func (c *processService) Delete(ctx context.Context, in *DeleteProcessRequest, opts ...client.CallOption) (*DeleteProcessResponse, error) {
 	req := c.c.NewRequest(c.name, "Process.Delete", in)
-	out := new(DeleteResponse)
+	out := new(DeleteProcessResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -125,9 +125,9 @@ func (c *processService) Delete(ctx context.Context, in *DeleteRequest, opts ...
 	return out, nil
 }
 
-func (c *processService) Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+func (c *processService) Update(ctx context.Context, in *UpdateProcessRequest, opts ...client.CallOption) (*UpdateProcessResponse, error) {
 	req := c.c.NewRequest(c.name, "Process.Update", in)
-	out := new(UpdateResponse)
+	out := new(UpdateProcessResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -145,9 +145,9 @@ func (c *processService) Open(ctx context.Context, in *OpenRequest, opts ...clie
 	return out, nil
 }
 
-func (c *processService) Detail(ctx context.Context, in *DetailRequest, opts ...client.CallOption) (*DetailResponse, error) {
+func (c *processService) Detail(ctx context.Context, in *DetailProcessRequest, opts ...client.CallOption) (*DetailProcessResponse, error) {
 	req := c.c.NewRequest(c.name, "Process.Detail", in)
-	out := new(DetailResponse)
+	out := new(DetailProcessResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -183,13 +183,13 @@ type ProcessHandler interface {
 	// 构建
 	Build(context.Context, *BuildRequest, *BuildResponse) error
 	// 删除
-	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
+	Delete(context.Context, *DeleteProcessRequest, *DeleteProcessResponse) error
 	// 更新
-	Update(context.Context, *UpdateRequest, *UpdateResponse) error
+	Update(context.Context, *UpdateProcessRequest, *UpdateProcessResponse) error
 	// 开启生产
 	Open(context.Context, *OpenRequest, *OpenResponse) error
 	// 详情
-	Detail(context.Context, *DetailRequest, *DetailResponse) error
+	Detail(context.Context, *DetailProcessRequest, *DetailProcessResponse) error
 	// 获取流程图
 	GetImage(context.Context, *GetImageRequest, *GetImageResponse) error
 	Search(context.Context, *SearchProcessRequest, *SearchProcessResponse) error
@@ -199,10 +199,10 @@ func RegisterProcessHandler(s server.Server, hdlr ProcessHandler, opts ...server
 	type process interface {
 		Launch(ctx context.Context, in *LaunchRequest, out *LaunchResponse) error
 		Build(ctx context.Context, in *BuildRequest, out *BuildResponse) error
-		Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error
-		Update(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		Delete(ctx context.Context, in *DeleteProcessRequest, out *DeleteProcessResponse) error
+		Update(ctx context.Context, in *UpdateProcessRequest, out *UpdateProcessResponse) error
 		Open(ctx context.Context, in *OpenRequest, out *OpenResponse) error
-		Detail(ctx context.Context, in *DetailRequest, out *DetailResponse) error
+		Detail(ctx context.Context, in *DetailProcessRequest, out *DetailProcessResponse) error
 		GetImage(ctx context.Context, in *GetImageRequest, out *GetImageResponse) error
 		Search(ctx context.Context, in *SearchProcessRequest, out *SearchProcessResponse) error
 	}
@@ -225,11 +225,11 @@ func (h *processHandler) Build(ctx context.Context, in *BuildRequest, out *Build
 	return h.ProcessHandler.Build(ctx, in, out)
 }
 
-func (h *processHandler) Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error {
+func (h *processHandler) Delete(ctx context.Context, in *DeleteProcessRequest, out *DeleteProcessResponse) error {
 	return h.ProcessHandler.Delete(ctx, in, out)
 }
 
-func (h *processHandler) Update(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+func (h *processHandler) Update(ctx context.Context, in *UpdateProcessRequest, out *UpdateProcessResponse) error {
 	return h.ProcessHandler.Update(ctx, in, out)
 }
 
@@ -237,7 +237,7 @@ func (h *processHandler) Open(ctx context.Context, in *OpenRequest, out *OpenRes
 	return h.ProcessHandler.Open(ctx, in, out)
 }
 
-func (h *processHandler) Detail(ctx context.Context, in *DetailRequest, out *DetailResponse) error {
+func (h *processHandler) Detail(ctx context.Context, in *DetailProcessRequest, out *DetailProcessResponse) error {
 	return h.ProcessHandler.Detail(ctx, in, out)
 }
 

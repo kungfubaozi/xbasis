@@ -6,12 +6,12 @@ import (
 	"konekko.me/xbasis/commons/hashcode"
 )
 
-func getURFIndex(fix string) string {
+func getFunctionAuthorizeIndex(fix string) string {
 	f := "*"
 	if fix != "*" {
 		fix = fmt.Sprintf("%d", hashcode.Equa(fix))
 	}
-	return fmt.Sprintf("xbs-urf-relations.%s", f)
+	return fmt.Sprintf("xbs-function-authorize.%s", f)
 }
 
 func mgoignore(err error) bool {

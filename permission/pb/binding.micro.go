@@ -45,7 +45,7 @@ var _ server.Option
 
 type BindingService interface {
 	UserRole(ctx context.Context, in *BindingRolesRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
-	FunctionRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	FunctionRole(ctx context.Context, in *BindingRolesRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	UnbindUserRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	UnbindFunctionRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
@@ -78,7 +78,7 @@ func (c *bindingService) UserRole(ctx context.Context, in *BindingRolesRequest, 
 	return out, nil
 }
 
-func (c *bindingService) FunctionRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
+func (c *bindingService) FunctionRole(ctx context.Context, in *BindingRolesRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
 	req := c.c.NewRequest(c.name, "Binding.FunctionRole", in)
 	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
@@ -112,7 +112,7 @@ func (c *bindingService) UnbindFunctionRole(ctx context.Context, in *BindingRole
 
 type BindingHandler interface {
 	UserRole(context.Context, *BindingRolesRequest, *xbasis_commons_dto.Status) error
-	FunctionRole(context.Context, *BindingRoleRequest, *xbasis_commons_dto.Status) error
+	FunctionRole(context.Context, *BindingRolesRequest, *xbasis_commons_dto.Status) error
 	UnbindUserRole(context.Context, *BindingRoleRequest, *xbasis_commons_dto.Status) error
 	UnbindFunctionRole(context.Context, *BindingRoleRequest, *xbasis_commons_dto.Status) error
 }
@@ -120,7 +120,7 @@ type BindingHandler interface {
 func RegisterBindingHandler(s server.Server, hdlr BindingHandler, opts ...server.HandlerOption) error {
 	type binding interface {
 		UserRole(ctx context.Context, in *BindingRolesRequest, out *xbasis_commons_dto.Status) error
-		FunctionRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error
+		FunctionRole(ctx context.Context, in *BindingRolesRequest, out *xbasis_commons_dto.Status) error
 		UnbindUserRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error
 		UnbindFunctionRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error
 	}
@@ -139,7 +139,7 @@ func (h *bindingHandler) UserRole(ctx context.Context, in *BindingRolesRequest, 
 	return h.BindingHandler.UserRole(ctx, in, out)
 }
 
-func (h *bindingHandler) FunctionRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error {
+func (h *bindingHandler) FunctionRole(ctx context.Context, in *BindingRolesRequest, out *xbasis_commons_dto.Status) error {
 	return h.BindingHandler.FunctionRole(ctx, in, out)
 }
 
