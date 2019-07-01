@@ -53,7 +53,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 
 		id := svc.id
 
-		if len(in.RelationId) <= 30 {
+		if len(in.RelationId) <= 20 {
 
 			in.RelationId = id.Get()
 		}
@@ -114,7 +114,7 @@ func (svc *tokenService) Generate(ctx context.Context, in *inner.GenerateRequest
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
 				Action:  loggeractions.VisitApplication,
-				Message: "generate token to access application-client",
+				Message: "generate token",
 				Fields: &analysisclient.LogFields{
 					"userId":   access.UserId,
 					"clientId": access.ClientId,

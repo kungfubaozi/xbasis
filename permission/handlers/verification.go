@@ -568,7 +568,7 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 
 				svc._log.WithFields(logrus.Fields{
 					"taking": fmt.Sprintf("%dms", (time.Now().UnixNano()-start)/1e6),
-				}).Info("Time consuming")
+				}).Info("time consuming")
 
 				return errstate.Success
 			}

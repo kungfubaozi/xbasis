@@ -3,6 +3,7 @@ package authenticationhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/xbasis/application/pb/inner"
@@ -144,6 +145,8 @@ func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshReques
 
 				id := svc.id
 
+				spew.Dump(claims.Token)
+
 				access := &simpleUserToken{
 					Id:       id.Get(),
 					UserId:   claims.Token.UserId,
@@ -284,12 +287,13 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 					RelationId: auth.Token.Relation,
 					Route:      true,
 					Auth: &commons.Authorize{
-						ClientId: in.RouteTo,
-						UserId:   auth.Token.UserId,
-						Ip:       auth.IP,
-						Device:   auth.UserDevice,
-						Platform: app.ClientPlatform,
-						AppId:    app.AppId,
+						ClientId:  in.RouteTo,
+						UserId:    auth.Token.UserId,
+						Ip:        auth.IP,
+						Device:    auth.UserDevice,
+						Platform:  app.ClientPlatform,
+						UserAgent: auth.UserAgent,
+						AppId:     app.AppId,
 					},
 				})
 
