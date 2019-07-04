@@ -61,7 +61,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 }
 
 func (svc *applicationStatusService) GetRepo() *applicationRepo {
-	return &applicationRepo{Client: svc.Client}
+	return getApplicationRepo(nil, svc.Client)
 }
 
 func NewApplicationStatusService(client *indexutils.Client, pool *redis.Pool, log analysisclient.LogClient) inner.ApplicationStatusHandler {

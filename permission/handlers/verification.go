@@ -55,7 +55,7 @@ func (svc *verificationService) GetRepo() *functionRepo {
 	return &functionRepo{session: svc.session.Clone(), Client: svc.Client}
 }
 
-var whiteApiList = []string{"/authentication/router/refresh", "/authentication/router/logout"}
+var whiteApiList = []string{"/authentication/router/refresh", "/authentication/router/logout", "/apps/settings/getSetting"}
 
 //application verify
 //ip, userDevice blacklist verify

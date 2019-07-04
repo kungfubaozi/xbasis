@@ -20,12 +20,13 @@ import (
 type applicationService struct {
 	session *mgo.Session
 	*indexutils.Client
-	id  generator.IDGenerator
-	log analysisclient.LogClient
+	id   generator.IDGenerator
+	log  analysisclient.LogClient
+	repo *applicationRepo
 }
 
 func (svc *applicationService) GetRepo() *applicationRepo {
-	return &applicationRepo{session: svc.session.Clone(), Client: svc.Client}
+	return getApplicationRepo(svc.session.Clone(), svc.Client)
 }
 
 //create new application if not exists(name)

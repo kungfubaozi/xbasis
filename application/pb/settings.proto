@@ -10,11 +10,55 @@ service Settings {
 
     rpc EnabledClient (EnabledRequest) returns (xbasis.commons.dto.Status);
 
+    rpc GetSetting (GetSettingRequest) returns (GetSettingResponse);
+
+}
+
+message GetSettingRequest {
+    string appId = 1;
+}
+
+message GetSettingResponse {
+    xbasis.commons.dto.State state = 1;
+    string appName = 2;
+    int64 createAt = 3;
+    string createUsername = 4;
+    string appId = 5;
+    repeated ClientSetting clients = 6;
+    NewUserSetting newUserSetting = 7;
+    AppSetting appSetting = 8;
+}
+
+message AppSetting {
+    bool enabled = 1;
+    bool quarantine = 2;
+    string syncURL = 3;
+    string redirectURL = 4;
+}
+
+message NewUserSetting {
+    repeated NewUserDefaultGroup groups = 1;
+    repeated NewUserDefaultRole roles = 2;
+}
+
+message NewUserDefaultGroup {
+    string name = 1;
+    string id = 2;
+}
+
+message NewUserDefaultRole {
+    string name = 1;
+    string id = 2;
+}
+
+message ClientSetting {
+    bool enabled = 1;
+    string clientId = 2;
+    string name = 3;
 }
 
 message UpdateRequest {
     string appId = 1;
-    xbasis.commons.dto.AppSettings setting = 2;
 }
 
 message EnabledRequest {

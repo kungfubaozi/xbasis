@@ -216,19 +216,8 @@
           ]
         },
         {
-          "api": "/userGroup/linkTo",
-          "name": "LinkToUserGroup",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/userGroup/unlink",
-          "name": "UnlinkUserGroup",
+          "api": "/userGroup/getGroupContentSize",
+          "name": "GetGroupContentSize",
           "roles": [
             "Administrator",
             "AppManage"
@@ -558,6 +547,36 @@
           "auth_type": [
             5632,
             352
+          ]
+        },
+        {
+          "api": "/settings/getSetting",
+          "name": "GetSetting",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/settings/enabledClient",
+          "name": "EnabledClient",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/settings/update",
+          "name": "UpdateSetting",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
           ]
         }
       ]

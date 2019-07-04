@@ -80,6 +80,27 @@ const (
 	PlatformOfFuchsia = 13 << 17
 )
 
+func GetPlatformName(v int64) string {
+	switch v {
+	case PlatformOfIOS:
+		return "iOS"
+	case PlatformOfWeb:
+		return "Web"
+	case PlatformOfAndroid:
+		return "Android"
+	case PlatformOfLinux:
+		return "Linux"
+	case PlatformOfFuchsia:
+		return "Fuchsia"
+	case PlatformOfWindows:
+		return "Windows"
+	case PlatfromOfMacOS:
+		return "MacOS"
+	default:
+		return ""
+	}
+}
+
 const (
 	AppTypeRoute int64 = 9 << 3
 

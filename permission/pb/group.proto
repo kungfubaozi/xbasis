@@ -7,10 +7,6 @@ import "konekko.me/xbasis/commons/dto/commons.proto";
 //组结构
 service UserGroup {
 
-    rpc LinkTo (SimpleGroup) returns (xbasis.commons.dto.Status);
-
-    rpc Unlink (SimpleGroup) returns (xbasis.commons.dto.Status);
-
     rpc Add (SimpleGroup) returns (xbasis.commons.dto.Status);
 
     rpc Remove (SimpleGroup) returns (xbasis.commons.dto.Status);
@@ -24,11 +20,27 @@ service UserGroup {
     rpc GetGroupItems (GetGroupItemsRequest) returns (GetGroupItemsResponse);
 
     rpc GetGroupItemDetail (GetGroupItemDetailRequest) returns (GetGroupItemDetailResponse);
+
+    rpc GetGroupContentSize (GetGroupContentSizeRequest) returns (GetGroupContentSizeResponse);
+
+
+}
+
+message GetGroupContentSizeRequest {
+    string appId = 1;
+    string id = 2;
+}
+
+message GetGroupContentSizeResponse {
+    xbasis.commons.dto.State state = 1;
+    int64 users = 2;
+    int64 groups = 3;
 }
 
 message GetGroupItemsRequest {
     string id = 1;
     string appId = 2;
+    bool includeUser = 3;
 }
 
 message GetGroupItemsResponse {

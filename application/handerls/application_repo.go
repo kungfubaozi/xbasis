@@ -2,6 +2,8 @@ package applicationhanderls
 
 import (
 	"errors"
+	"github.com/coocood/freecache"
+	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/xbasis/commons/indexutils"
@@ -10,6 +12,28 @@ import (
 type applicationRepo struct {
 	session *mgo.Session
 	*indexutils.Client
+	cache   *freecache.Cache
+	clients map[string]string
+}
+
+var r *applicationRepo
+
+func getApplicationRepo(session *mgo.Session, client *indexutils.Client) *applicationRepo {
+
+	if r != nil {
+		r.session = session
+		r.Client = client
+		return r
+	}
+
+	r = &applicationRepo{
+		cache:   freecache.NewCache(10 * 1024 * 1024),
+		clients: make(map[string]string),
+		session: session,
+		Client:  client,
+	}
+
+	return r
 }
 
 func (repo *applicationRepo) FindAll() ([]*appInfo, error) {
@@ -57,18 +81,57 @@ func (repo *applicationRepo) Add(info *appInfo) error {
 	}
 	if len(id) > 0 {
 		info.SID = id
+		err = repo.appendToCache(info)
+		if err != nil {
+			return err
+		}
 		return repo.collection().Insert(info)
 	}
 	return indexutils.ErrNotFound
 }
 
 func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
-	return repo.findAppInfo("clients.id", clientId)
+	appId := repo.clients[clientId]
+	var info *appInfo
+	if len(appId) != 0 {
+		d, err := repo.cache.Get([]byte(appId))
+		if err == nil {
+			err = msgpack.Unmarshal(d, &info)
+			return info, err
+		}
+	}
+	i, err := repo.findAppInfo("clients.id", clientId)
+	if err != nil {
+		return nil, err
+	}
+	err = repo.appendToCache(i)
+	return i, err
+}
+
+func (repo *applicationRepo) appendToCache(info *appInfo) error {
+	b, err := msgpack.Marshal(info)
+	if err != nil {
+		return err
+	}
+	err = repo.cache.Set([]byte(info.Id), b, 0)
+	if err != nil {
+		return err
+	}
+	for _, v := range info.Clients {
+		repo.clients[v.Id] = info.Id
+	}
+	return nil
 }
 
 func (repo *applicationRepo) GetApplication(appId string) (*appInfo, error) {
 	var appInfo *appInfo
 	err := repo.collection().Find(bson.M{"_id": appId}).One(&appInfo)
+	if err == nil && appInfo != nil {
+		err = repo.appendToCache(appInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return appInfo, err
 }
 

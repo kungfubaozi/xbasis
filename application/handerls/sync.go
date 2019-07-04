@@ -28,7 +28,7 @@ func (svc *syncService) GetRepo() *syncRepo {
 }
 
 func (svc *syncService) GetAppRepo() *applicationRepo {
-	return &applicationRepo{session: svc.session.Clone()}
+	return getApplicationRepo(svc.session.Clone(), nil)
 }
 
 func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *commons.Status) error {

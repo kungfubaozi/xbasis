@@ -8,6 +8,8 @@ It is generated from these files:
 	permission/pb/group.proto
 
 It has these top-level messages:
+	GetGroupContentSizeRequest
+	GetGroupContentSizeResponse
 	GetGroupItemsRequest
 	GetGroupItemsResponse
 	GetGroupItemDetailRequest
@@ -52,8 +54,6 @@ var _ server.Option
 // Client API for UserGroup service
 
 type UserGroupService interface {
-	LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
-	Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
@@ -61,6 +61,7 @@ type UserGroupService interface {
 	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error)
 	GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, opts ...client.CallOption) (*GetGroupItemDetailResponse, error)
+	GetGroupContentSize(ctx context.Context, in *GetGroupContentSizeRequest, opts ...client.CallOption) (*GetGroupContentSizeResponse, error)
 }
 
 type userGroupService struct {
@@ -79,26 +80,6 @@ func NewUserGroupService(name string, c client.Client) UserGroupService {
 		c:    c,
 		name: name,
 	}
-}
-
-func (c *userGroupService) LinkTo(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "UserGroup.LinkTo", in)
-	out := new(xbasis_commons_dto.Status)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userGroupService) Unlink(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "UserGroup.Unlink", in)
-	out := new(xbasis_commons_dto.Status)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *userGroupService) Add(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
@@ -171,11 +152,19 @@ func (c *userGroupService) GetGroupItemDetail(ctx context.Context, in *GetGroupI
 	return out, nil
 }
 
+func (c *userGroupService) GetGroupContentSize(ctx context.Context, in *GetGroupContentSizeRequest, opts ...client.CallOption) (*GetGroupContentSizeResponse, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.GetGroupContentSize", in)
+	out := new(GetGroupContentSizeResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserGroup service
 
 type UserGroupHandler interface {
-	LinkTo(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
-	Unlink(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
 	Add(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
 	Remove(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
 	Rename(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
@@ -183,12 +172,11 @@ type UserGroupHandler interface {
 	MoveUser(context.Context, *SimpleUserNode, *xbasis_commons_dto.Status) error
 	GetGroupItems(context.Context, *GetGroupItemsRequest, *GetGroupItemsResponse) error
 	GetGroupItemDetail(context.Context, *GetGroupItemDetailRequest, *GetGroupItemDetailResponse) error
+	GetGroupContentSize(context.Context, *GetGroupContentSizeRequest, *GetGroupContentSizeResponse) error
 }
 
 func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...server.HandlerOption) error {
 	type userGroup interface {
-		LinkTo(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
-		Unlink(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
 		Add(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
 		Remove(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
 		Rename(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
@@ -196,6 +184,7 @@ func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...se
 		MoveUser(ctx context.Context, in *SimpleUserNode, out *xbasis_commons_dto.Status) error
 		GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error
 		GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error
+		GetGroupContentSize(ctx context.Context, in *GetGroupContentSizeRequest, out *GetGroupContentSizeResponse) error
 	}
 	type UserGroup struct {
 		userGroup
@@ -206,14 +195,6 @@ func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...se
 
 type userGroupHandler struct {
 	UserGroupHandler
-}
-
-func (h *userGroupHandler) LinkTo(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
-	return h.UserGroupHandler.LinkTo(ctx, in, out)
-}
-
-func (h *userGroupHandler) Unlink(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
-	return h.UserGroupHandler.Unlink(ctx, in, out)
 }
 
 func (h *userGroupHandler) Add(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error {
@@ -242,4 +223,8 @@ func (h *userGroupHandler) GetGroupItems(ctx context.Context, in *GetGroupItemsR
 
 func (h *userGroupHandler) GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error {
 	return h.UserGroupHandler.GetGroupItemDetail(ctx, in, out)
+}
+
+func (h *userGroupHandler) GetGroupContentSize(ctx context.Context, in *GetGroupContentSizeRequest, out *GetGroupContentSizeResponse) error {
+	return h.UserGroupHandler.GetGroupContentSize(ctx, in, out)
 }

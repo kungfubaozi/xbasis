@@ -3,7 +3,6 @@ package authenticationhandlers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/xbasis/application/pb/inner"
@@ -144,8 +143,6 @@ func (svc *routeService) Refresh(ctx context.Context, in *external.RefreshReques
 				}
 
 				id := svc.id
-
-				spew.Dump(claims.Token)
 
 				access := &simpleUserToken{
 					Id:       id.Get(),

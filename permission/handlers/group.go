@@ -8,7 +8,7 @@ import (
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
-	"konekko.me/xbasis/commons/wrapper"
+	wrapper "konekko.me/xbasis/commons/wrapper"
 	external "konekko.me/xbasis/permission/pb"
 	"konekko.me/xbasis/user/pb/inner"
 	"sync"
@@ -22,8 +22,62 @@ type groupService struct {
 	log              analysisclient.LogClient
 }
 
+func (svc *groupService) GetGroupContentSize(ctx context.Context, in *external.GetGroupContentSizeRequest, out *external.GetGroupContentSizeResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+		if len(in.Id) == 0 {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+		var efg int64 = 0
+		var efu int64 = 0
+		s := errstate.Success
+		resp := func(s1 *commons.State) {
+			if s.Ok {
+				s = s1
+			}
+		}
+
+		go func() {
+			defer wg.Done()
+			c, err := repo.FindGroupItems(in.AppId, in.Id)
+			if err != nil {
+				resp(errstate.ErrRequest)
+				return
+			}
+			efg = int64(len(c))
+		}()
+
+		go func() {
+			defer wg.Done()
+			c, err := repo.FindGroupUsers(in.AppId, in.Id)
+			if err != nil {
+				resp(errstate.ErrRequest)
+				return
+			}
+			efu = int64(len(c))
+		}()
+
+		wg.Wait()
+
+		if !s.Ok {
+			return s
+		}
+
+		out.Users = efu
+		out.Groups = efg
+
+		return errstate.Success
+	})
+
+}
+
 func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGroupItemsRequest, out *external.GetGroupItemsResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 6 {
 			return nil
 		}
@@ -32,7 +86,7 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 		defer repo.Close()
 
 		if len(in.Id) == 0 {
-			in.Id = ""
+			in.Id = "-"
 		}
 
 		var groupItems []*external.GroupItem
@@ -50,44 +104,73 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 			})
 		}
 
-		users, err := repo.FindGroupUsers(in.AppId, in.Id)
-		if !mgoignore(err) {
-			return nil
-		}
+		if in.IncludeUser {
 
-		var wg sync.WaitGroup
-		if len(users) > 0 {
-			s := errstate.Success
-			resp := func(s1 *commons.State) {
-				if s.Ok {
-					s = s1
-				}
+			users, err := repo.FindGroupUsers(in.AppId, in.Id)
+			if !mgoignore(err) {
+				return nil
 			}
 
-			getUserInfo := func(userId string) (string, bool) {
-				s, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
-					UserId: userId,
-				})
-				if err != nil {
-					resp(errstate.ErrRequest)
-					return "", false
+			var wg sync.WaitGroup
+			if len(users) > 0 {
+				s := errstate.Success
+				resp := func(s1 *commons.State) {
+					if s.Ok {
+						s = s1
+					}
 				}
-				if !s.State.Ok {
-					resp(s.State)
-					return "", false
+
+				getUserInfo := func(userId string) (string, bool) {
+					s, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
+						UserId: userId,
+					})
+					if err != nil {
+						resp(errstate.ErrRequest)
+						return "", false
+					}
+					if !s.State.Ok {
+						resp(s.State)
+						return "", false
+					}
+					resp(errstate.Success)
+					return s.Username, true
 				}
-				resp(errstate.Success)
-				return s.Username, true
-			}
 
-			if len(users) >= 2 {
-				wg.Add(2)
-				a := len(users) / 2
+				if len(users) >= 2 {
+					wg.Add(2)
+					a := len(users) / 2
 
-				go func() {
-					defer wg.Done()
-					a := users[:a]
-					for _, v := range a {
+					go func() {
+						defer wg.Done()
+						a := users[:a]
+						for _, v := range a {
+							n, s := getUserInfo(v.UserId)
+							if s {
+								groupItems = append(groupItems, &external.GroupItem{
+									Id:   v.UserId,
+									User: true,
+									Name: n,
+								})
+							}
+						}
+					}()
+
+					go func() {
+						defer wg.Done()
+						a := users[:a]
+						for _, v := range a {
+							n, s := getUserInfo(v.UserId)
+							if s {
+								groupItems = append(groupItems, &external.GroupItem{
+									Id:   v.UserId,
+									User: true,
+									Name: n,
+								})
+							}
+						}
+					}()
+				} else {
+					for _, v := range users {
 						n, s := getUserInfo(v.UserId)
 						if s {
 							groupItems = append(groupItems, &external.GroupItem{
@@ -97,38 +180,12 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 							})
 						}
 					}
-				}()
-
-				go func() {
-					defer wg.Done()
-					a := users[:a]
-					for _, v := range a {
-						n, s := getUserInfo(v.UserId)
-						if s {
-							groupItems = append(groupItems, &external.GroupItem{
-								Id:   v.UserId,
-								User: true,
-								Name: n,
-							})
-						}
-					}
-				}()
-			} else {
-				for _, v := range users {
-					n, s := getUserInfo(v.UserId)
-					if s {
-						groupItems = append(groupItems, &external.GroupItem{
-							Id:   v.UserId,
-							User: true,
-							Name: n,
-						})
-					}
 				}
-			}
-			wg.Wait()
+				wg.Wait()
 
-			if !s.Ok {
-				return s
+				if !s.Ok {
+					return s
+				}
 			}
 		}
 
@@ -139,7 +196,7 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 }
 
 func (svc *groupService) GetGroupItemDetail(ctx context.Context, in *external.GetGroupItemDetailRequest, out *external.GetGroupItemDetailResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 8 {
 			return nil
 		}
@@ -166,13 +223,17 @@ func (svc *groupService) GetRepo() *groupRepo {
 }
 
 func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
 		_, err := repo.FindByName(in.AppId, in.Name)
 		if err != nil && err == mgo.ErrNotFound {
+
+			if len(in.BindGroupId) == 0 {
+				in.BindGroupId = "-"
+			}
 
 			id, err := repo.Save(in.AppId, auth.User, in.Name, in.BindGroupId)
 
@@ -193,28 +254,16 @@ func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out 
 	})
 }
 
-//You can link to other application groups, or to this application group.
-func (svc *groupService) LinkTo(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
-		return nil
-	})
-}
-
-func (svc *groupService) Unlink(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
-		return nil
-	})
-}
-
+//重命名组
 func (svc *groupService) Rename(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
 		return nil
 	})
 }
 
-//User cannot be in the same group under the same application
 func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.AppId) < 5 && len(in.UserId) < 16 && len(in.GroupIds) == 0 {
 			return nil
 		}
@@ -278,15 +327,28 @@ func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserReques
 	})
 }
 
+//移动用户
 func (svc *groupService) MoveUser(ctx context.Context, in *external.SimpleUserNode, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		if len(in.AppId) == 0 || len(in.UserId) == 0 {
+			return nil
+		}
+
+		if len(in.GroupId) == 0 {
+			in.GroupId = "-"
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
 		return nil
 	})
 }
 
-//If there are users under the current group, they cannot be deleted
+//删除组
 func (svc *groupService) Remove(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }

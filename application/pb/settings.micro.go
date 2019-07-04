@@ -8,6 +8,13 @@ It is generated from these files:
 	application/pb/settings.proto
 
 It has these top-level messages:
+	GetSettingRequest
+	GetSettingResponse
+	AppSetting
+	NewUserSetting
+	NewUserDefaultGroup
+	NewUserDefaultRole
+	ClientSetting
 	UpdateRequest
 	EnabledRequest
 	GetRequest
@@ -47,6 +54,7 @@ var _ server.Option
 type SettingsService interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	EnabledClient(ctx context.Context, in *EnabledRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	GetSetting(ctx context.Context, in *GetSettingRequest, opts ...client.CallOption) (*GetSettingResponse, error)
 }
 
 type settingsService struct {
@@ -87,17 +95,29 @@ func (c *settingsService) EnabledClient(ctx context.Context, in *EnabledRequest,
 	return out, nil
 }
 
+func (c *settingsService) GetSetting(ctx context.Context, in *GetSettingRequest, opts ...client.CallOption) (*GetSettingResponse, error) {
+	req := c.c.NewRequest(c.name, "Settings.GetSetting", in)
+	out := new(GetSettingResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Settings service
 
 type SettingsHandler interface {
 	Update(context.Context, *UpdateRequest, *xbasis_commons_dto.Status) error
 	EnabledClient(context.Context, *EnabledRequest, *xbasis_commons_dto.Status) error
+	GetSetting(context.Context, *GetSettingRequest, *GetSettingResponse) error
 }
 
 func RegisterSettingsHandler(s server.Server, hdlr SettingsHandler, opts ...server.HandlerOption) error {
 	type settings interface {
 		Update(ctx context.Context, in *UpdateRequest, out *xbasis_commons_dto.Status) error
 		EnabledClient(ctx context.Context, in *EnabledRequest, out *xbasis_commons_dto.Status) error
+		GetSetting(ctx context.Context, in *GetSettingRequest, out *GetSettingResponse) error
 	}
 	type Settings struct {
 		settings
@@ -116,4 +136,8 @@ func (h *settingsHandler) Update(ctx context.Context, in *UpdateRequest, out *xb
 
 func (h *settingsHandler) EnabledClient(ctx context.Context, in *EnabledRequest, out *xbasis_commons_dto.Status) error {
 	return h.SettingsHandler.EnabledClient(ctx, in, out)
+}
+
+func (h *settingsHandler) GetSetting(ctx context.Context, in *GetSettingRequest, out *GetSettingResponse) error {
+	return h.SettingsHandler.GetSetting(ctx, in, out)
 }
