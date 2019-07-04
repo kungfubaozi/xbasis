@@ -44,14 +44,13 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 					}
 				}
 
-				out.State = errstate.Success
 				out.ClientPlatform = v.Platform
 				out.ClientEnabled = v.Enabled
 				out.AppId = a.Id
 				out.AppQuarantine = a.Settings.Quarantine
 				out.SecretKey = a.SecretKey
 				out.Type = a.Type
-				return nil
+				return errstate.Success
 			}
 		}
 
@@ -61,7 +60,7 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 }
 
 func (svc *applicationStatusService) GetRepo() *applicationRepo {
-	return getApplicationRepo(nil, svc.Client)
+	return getApplicationRepo(nil, svc.Client, svc.pool.Get())
 }
 
 func NewApplicationStatusService(client *indexutils.Client, pool *redis.Pool, log analysisclient.LogClient) inner.ApplicationStatusHandler {

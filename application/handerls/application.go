@@ -3,6 +3,7 @@ package applicationhanderls
 import (
 	"context"
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
 	external "konekko.me/xbasis/application/pb"
@@ -23,10 +24,11 @@ type applicationService struct {
 	id   generator.IDGenerator
 	log  analysisclient.LogClient
 	repo *applicationRepo
+	pool *redis.Pool
 }
 
 func (svc *applicationService) GetRepo() *applicationRepo {
-	return getApplicationRepo(svc.session.Clone(), svc.Client)
+	return getApplicationRepo(svc.session.Clone(), svc.Client, svc.pool.Get())
 }
 
 //create new application if not exists(name)
@@ -238,6 +240,6 @@ func (svc *applicationService) Switch(context.Context, *external.SwitchRequest, 
 	panic("implement me")
 }
 
-func NewApplicationService(session *mgo.Session, client *indexutils.Client, log analysisclient.LogClient) external.ApplicationHandler {
-	return &applicationService{session: session, Client: client, log: log, id: generator.NewIDG()}
+func NewApplicationService(session *mgo.Session, client *indexutils.Client, log analysisclient.LogClient, pool *redis.Pool) external.ApplicationHandler {
+	return &applicationService{session: session, Client: client, log: log, id: generator.NewIDG(), pool: pool}
 }

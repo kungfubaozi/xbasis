@@ -3,6 +3,7 @@ package applicationhanderls
 import (
 	"context"
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	inner "konekko.me/xbasis/application/pb/inner"
 	constants "konekko.me/xbasis/commons/constants"
@@ -21,6 +22,7 @@ type syncService struct {
 	accessibleService xbasissvc_internal_permission.AccessibleService
 	bindingService    xbasissvc_external_permission.BindingService
 	groupService      xbasissvc_external_permission.UserGroupService
+	pool              *redis.Pool
 }
 
 func (svc *syncService) GetRepo() *syncRepo {
@@ -28,7 +30,7 @@ func (svc *syncService) GetRepo() *syncRepo {
 }
 
 func (svc *syncService) GetAppRepo() *applicationRepo {
-	return getApplicationRepo(svc.session.Clone(), nil)
+	return getApplicationRepo(svc.session.Clone(), nil, svc.pool.Get())
 }
 
 func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *commons.Status) error {
@@ -198,6 +200,6 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *com
 func NewSyncService(session *mgo.Session, inviteService xbasissvc_external_user.InviteService,
 	accessibleService xbasissvc_internal_permission.AccessibleService,
 	bindingService xbasissvc_external_permission.BindingService,
-	groupService xbasissvc_external_permission.UserGroupService) inner.UserSyncHandler {
-	return &syncService{session: session, inviteService: inviteService, accessibleService: accessibleService, bindingService: bindingService, groupService: groupService}
+	groupService xbasissvc_external_permission.UserGroupService, pool *redis.Pool) inner.UserSyncHandler {
+	return &syncService{session: session, inviteService: inviteService, accessibleService: accessibleService, bindingService: bindingService, groupService: groupService, pool: pool}
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/constants"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
@@ -82,6 +83,12 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 			return nil
 		}
 
+		header := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ModuleName:  "GetGroupItems",
+			ServiceName: xbasisconstants.PermissionService,
+		}
+
 		repo := svc.GetRepo()
 		defer repo.Close()
 
@@ -93,6 +100,11 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 
 		groups, err := repo.FindGroupItems(in.AppId, in.Id)
 		if !mgoignore(err) {
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: header,
+				Action:  "FindGroupItemsMgoIgnore",
+				Message: "mgo not found",
+			})
 			return nil
 		}
 

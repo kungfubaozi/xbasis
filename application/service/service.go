@@ -55,7 +55,7 @@ func StartService() {
 
 		xbasissvc_internal_application.RegisterUserSyncHandler(s.Server(),
 			applicationhanderls.NewSyncService(session, userclient.NewInviteClient(s.Client()), permissioncli.NewAccessibleClient(s.Client()), permissioncli.NewBindingClient(s.Client()),
-				permissioncli.NewGroupClient(s.Client())))
+				permissioncli.NewGroupClient(s.Client()), pool))
 
 		errc <- s.Run()
 	}()
@@ -64,7 +64,7 @@ func StartService() {
 		s := microservice.NewService(constants.ApplicationService, true)
 		s.Init()
 
-		xbasissvc_external_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger))
+		xbasissvc_external_application.RegisterApplicationHandler(s.Server(), applicationhanderls.NewApplicationService(session, c, logger, pool))
 
 		xbasissvc_external_application.RegisterSettingsHandler(s.Server(), applicationhanderls.NewSettingsService(session, c))
 

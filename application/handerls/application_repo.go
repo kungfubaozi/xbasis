@@ -2,32 +2,35 @@ package applicationhanderls
 
 import (
 	"errors"
-	"github.com/coocood/freecache"
+	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/xbasis/commons/indexutils"
+	"time"
 )
 
 type applicationRepo struct {
 	session *mgo.Session
 	*indexutils.Client
-	cache   *freecache.Cache
+	conn    redis.Conn
 	clients map[string]string
 }
 
 var r *applicationRepo
 
-func getApplicationRepo(session *mgo.Session, client *indexutils.Client) *applicationRepo {
+func getApplicationRepo(session *mgo.Session, client *indexutils.Client, conn redis.Conn) *applicationRepo {
 
 	if r != nil {
 		r.session = session
 		r.Client = client
+		r.conn = conn
 		return r
 	}
 
 	r = &applicationRepo{
-		cache:   freecache.NewCache(10 * 1024 * 1024),
+		conn:    conn,
 		clients: make(map[string]string),
 		session: session,
 		Client:  client,
@@ -94,9 +97,11 @@ func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
 	appId := repo.clients[clientId]
 	var info *appInfo
 	if len(appId) != 0 {
-		d, err := repo.cache.Get([]byte(appId))
+		t := time.Now().UnixNano()
+		d, err := redis.Bytes(repo.conn.Do("get", appId))
 		if err == nil {
 			err = msgpack.Unmarshal(d, &info)
+			fmt.Println("ti", (time.Now().UnixNano()-t)/1e6)
 			return info, err
 		}
 	}
@@ -113,7 +118,7 @@ func (repo *applicationRepo) appendToCache(info *appInfo) error {
 	if err != nil {
 		return err
 	}
-	err = repo.cache.Set([]byte(info.Id), b, 0)
+	_, err = repo.conn.Do("set", info.Id, b)
 	if err != nil {
 		return err
 	}
