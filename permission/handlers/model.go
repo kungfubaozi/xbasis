@@ -43,7 +43,7 @@ type directrelation struct {
 	Enabled    bool   `bson:"enabled" json:"enabled"`
 }
 
-type durationAccessCredential struct {
+type DurationAccessCredential struct {
 	FromClientId string
 	RefClientId  string
 	FuncId       string
@@ -52,7 +52,7 @@ type durationAccessCredential struct {
 	AppId        string
 }
 
-type durationAccessToken struct {
+type DurationAccessToken struct {
 	ClientId string
 	FuncId   string
 	User     string
@@ -145,7 +145,7 @@ type function struct {
 	Share bool `bson:"share" json:"share"`
 }
 
-type simplifiedFunction struct {
+type SimplifiedFunction struct {
 	Id             string  `json:"id"`
 	AuthTypes      []int64 `json:"auth_types"`
 	ValTokenTimes  int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1

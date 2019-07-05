@@ -74,7 +74,7 @@ func StartService() {
 
 		xbasissvc_external_user.RegisterUserInfoHandler(s.Server(), userhandlers.NewUserInfoService(session, logger))
 
-		xbasissvc_external_user.RegisterUserHandler(s.Server(), userhandlers.NewUserService(session, client))
+		xbasissvc_external_user.RegisterUserHandler(s.Server(), userhandlers.NewUserService(client))
 
 		xbasissvc_external_user.RegisterOAuthHandler(s.Server(), userhandlers.NewOAuthService(session, client, logger))
 

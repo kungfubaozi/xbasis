@@ -5,7 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
-	"konekko.me/xbasis/commons/constants"
+	constants "konekko.me/xbasis/commons/constants"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
@@ -21,6 +21,10 @@ type groupService struct {
 	session          *mgo.Session
 	innerUserService xbasissvc_internal_user.UserService
 	log              analysisclient.LogClient
+}
+
+func (svc *groupService) Search(context.Context, *external.SearchAppUserRequest, *external.SearchAppUserResponse) error {
+	panic("implement me")
 }
 
 func (svc *groupService) GetGroupContentSize(ctx context.Context, in *external.GetGroupContentSizeRequest, out *external.GetGroupContentSizeResponse) error {
@@ -86,14 +90,14 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 		header := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
 			ModuleName:  "GetGroupItems",
-			ServiceName: xbasisconstants.PermissionService,
+			ServiceName: constants.PermissionService,
 		}
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
 		if len(in.Id) == 0 {
-			in.Id = "-"
+			in.Id = constants.AppMainStructureGroup
 		}
 
 		var groupItems []*external.GroupItem
@@ -244,7 +248,7 @@ func (svc *groupService) Add(ctx context.Context, in *external.SimpleGroup, out 
 		if err != nil && err == mgo.ErrNotFound {
 
 			if len(in.BindGroupId) == 0 {
-				in.BindGroupId = "-"
+				in.BindGroupId = constants.AppMainStructureGroup
 			}
 
 			id, err := repo.Save(in.AppId, auth.User, in.Name, in.BindGroupId)
@@ -339,20 +343,22 @@ func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserReques
 	})
 }
 
-//移动用户
-func (svc *groupService) MoveUser(ctx context.Context, in *external.SimpleUserNode, out *commons.Status) error {
+//移动用户或组
+func (svc *groupService) Move(ctx context.Context, in *external.MoveRequest, out *commons.Status) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
-		if len(in.AppId) == 0 || len(in.UserId) == 0 {
+		if len(in.AppId) == 0 || len(in.Id) == 0 || len(in.Groups) == 0 {
 			return nil
-		}
-
-		if len(in.GroupId) == 0 {
-			in.GroupId = "-"
 		}
 
 		repo := svc.GetRepo()
 		defer repo.Close()
+
+		for _, v := range in.Groups {
+			if v != constants.AppMainStructureGroup {
+
+			}
+		}
 
 		return nil
 	})

@@ -15,15 +15,31 @@ service UserGroup {
 
     rpc AddUser (AddUserRequest) returns (xbasis.commons.dto.Status);
 
-    rpc MoveUser (SimpleUserNode) returns (xbasis.commons.dto.Status);
+    rpc Move (MoveRequest) returns (xbasis.commons.dto.Status);
 
     rpc GetGroupItems (GetGroupItemsRequest) returns (GetGroupItemsResponse);
+
+    rpc Search (SearchAppUserRequest) returns (SearchAppUserResponse);
 
     rpc GetGroupItemDetail (GetGroupItemDetailRequest) returns (GetGroupItemDetailResponse);
 
     rpc GetGroupContentSize (GetGroupContentSizeRequest) returns (GetGroupContentSizeResponse);
 
+}
 
+message SearchAppUserRequest {
+
+}
+
+message SearchAppUserResponse {
+
+}
+
+message MoveRequest {
+    repeated string groups = 1;
+    string id = 2;
+    bool user = 3;
+    string appId = 4;
 }
 
 message GetGroupContentSizeRequest {

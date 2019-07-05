@@ -28,4 +28,8 @@ message SimpleUserData {
     string email = 3;
     string realName = 4;
     string userId = 5;
+    string icon = 6;
+    int64 state = 7;
+    string account = 8;
+    bool invite = 9;
 }

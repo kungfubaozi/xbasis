@@ -8,6 +8,9 @@ It is generated from these files:
 	permission/pb/group.proto
 
 It has these top-level messages:
+	SearchAppUserRequest
+	SearchAppUserResponse
+	MoveRequest
 	GetGroupContentSizeRequest
 	GetGroupContentSizeResponse
 	GetGroupItemsRequest
@@ -58,8 +61,9 @@ type UserGroupService interface {
 	Remove(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	Rename(ctx context.Context, in *SimpleGroup, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
-	MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	Move(ctx context.Context, in *MoveRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error)
+	Search(ctx context.Context, in *SearchAppUserRequest, opts ...client.CallOption) (*SearchAppUserResponse, error)
 	GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, opts ...client.CallOption) (*GetGroupItemDetailResponse, error)
 	GetGroupContentSize(ctx context.Context, in *GetGroupContentSizeRequest, opts ...client.CallOption) (*GetGroupContentSizeResponse, error)
 }
@@ -122,8 +126,8 @@ func (c *userGroupService) AddUser(ctx context.Context, in *AddUserRequest, opts
 	return out, nil
 }
 
-func (c *userGroupService) MoveUser(ctx context.Context, in *SimpleUserNode, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "UserGroup.MoveUser", in)
+func (c *userGroupService) Move(ctx context.Context, in *MoveRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.Move", in)
 	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -135,6 +139,16 @@ func (c *userGroupService) MoveUser(ctx context.Context, in *SimpleUserNode, opt
 func (c *userGroupService) GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, opts ...client.CallOption) (*GetGroupItemsResponse, error) {
 	req := c.c.NewRequest(c.name, "UserGroup.GetGroupItems", in)
 	out := new(GetGroupItemsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userGroupService) Search(ctx context.Context, in *SearchAppUserRequest, opts ...client.CallOption) (*SearchAppUserResponse, error) {
+	req := c.c.NewRequest(c.name, "UserGroup.Search", in)
+	out := new(SearchAppUserResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -169,8 +183,9 @@ type UserGroupHandler interface {
 	Remove(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
 	Rename(context.Context, *SimpleGroup, *xbasis_commons_dto.Status) error
 	AddUser(context.Context, *AddUserRequest, *xbasis_commons_dto.Status) error
-	MoveUser(context.Context, *SimpleUserNode, *xbasis_commons_dto.Status) error
+	Move(context.Context, *MoveRequest, *xbasis_commons_dto.Status) error
 	GetGroupItems(context.Context, *GetGroupItemsRequest, *GetGroupItemsResponse) error
+	Search(context.Context, *SearchAppUserRequest, *SearchAppUserResponse) error
 	GetGroupItemDetail(context.Context, *GetGroupItemDetailRequest, *GetGroupItemDetailResponse) error
 	GetGroupContentSize(context.Context, *GetGroupContentSizeRequest, *GetGroupContentSizeResponse) error
 }
@@ -181,8 +196,9 @@ func RegisterUserGroupHandler(s server.Server, hdlr UserGroupHandler, opts ...se
 		Remove(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
 		Rename(ctx context.Context, in *SimpleGroup, out *xbasis_commons_dto.Status) error
 		AddUser(ctx context.Context, in *AddUserRequest, out *xbasis_commons_dto.Status) error
-		MoveUser(ctx context.Context, in *SimpleUserNode, out *xbasis_commons_dto.Status) error
+		Move(ctx context.Context, in *MoveRequest, out *xbasis_commons_dto.Status) error
 		GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error
+		Search(ctx context.Context, in *SearchAppUserRequest, out *SearchAppUserResponse) error
 		GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error
 		GetGroupContentSize(ctx context.Context, in *GetGroupContentSizeRequest, out *GetGroupContentSizeResponse) error
 	}
@@ -213,12 +229,16 @@ func (h *userGroupHandler) AddUser(ctx context.Context, in *AddUserRequest, out 
 	return h.UserGroupHandler.AddUser(ctx, in, out)
 }
 
-func (h *userGroupHandler) MoveUser(ctx context.Context, in *SimpleUserNode, out *xbasis_commons_dto.Status) error {
-	return h.UserGroupHandler.MoveUser(ctx, in, out)
+func (h *userGroupHandler) Move(ctx context.Context, in *MoveRequest, out *xbasis_commons_dto.Status) error {
+	return h.UserGroupHandler.Move(ctx, in, out)
 }
 
 func (h *userGroupHandler) GetGroupItems(ctx context.Context, in *GetGroupItemsRequest, out *GetGroupItemsResponse) error {
 	return h.UserGroupHandler.GetGroupItems(ctx, in, out)
+}
+
+func (h *userGroupHandler) Search(ctx context.Context, in *SearchAppUserRequest, out *SearchAppUserResponse) error {
+	return h.UserGroupHandler.Search(ctx, in, out)
 }
 
 func (h *userGroupHandler) GetGroupItemDetail(ctx context.Context, in *GetGroupItemDetailRequest, out *GetGroupItemDetailResponse) error {

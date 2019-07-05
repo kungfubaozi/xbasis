@@ -3,7 +3,9 @@ package permissionhandlers
 import (
 	"context"
 	"encoding/json"
+	"github.com/garyburd/redigo/redis"
 	"github.com/olivere/elastic"
+	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
 	"konekko.me/xbasis/commons/constants"
@@ -19,6 +21,100 @@ type accessibleService struct {
 	*indexutils.Client
 	log     analysisclient.LogClient
 	session *mgo.Session
+	pool    *redis.Pool
+}
+
+func (svc *accessibleService) GetDat(ctx context.Context, in *inner.GetDatRequest, out *inner.GetDatResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		conn := svc.pool.Get()
+
+		b, err := redis.Bytes(conn.Do("hget", "dat."+in.FuncId, in.Key))
+		if err != nil {
+			return nil
+		}
+
+		dat := &DurationAccessToken{}
+
+		err = msgpack.Unmarshal(b, &dat)
+		if err != nil {
+			return errstate.ErrSystem
+		}
+
+		out.Data = &inner.FunctionDat{
+			MaxTimes: dat.MaxTimes,
+			Times:    dat.Times,
+			From:     dat.From,
+			FuncId:   dat.FuncId,
+			Auth:     dat.Auth,
+			ClientId: dat.ClientId,
+			User:     dat.User,
+		}
+
+		return errstate.Success
+	})
+}
+
+func (svc *accessibleService) DatReduce(ctx context.Context, in *inner.FunctionDat, out *inner.DatReduceResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		conn := svc.pool.Get()
+
+		dat := &DurationAccessToken{
+			MaxTimes: in.MaxTimes,
+			Times:    in.Times,
+			From:     in.From,
+			FuncId:   in.FuncId,
+			Auth:     in.Auth,
+			ClientId: in.ClientId,
+			User:     in.User,
+		}
+
+		if dat.MaxTimes >= dat.Times {
+			in.Times = in.Times + 1
+			b, err := msgpack.Marshal(dat)
+			if err != nil {
+				return errstate.ErrSystem
+			}
+			_, err = conn.Do("hset", "dat."+dat.FuncId, in.Cv, b)
+			if err != nil {
+				return errstate.ErrSystem
+			}
+		} else {
+			//delete access token
+			conn.Do("del", "dat."+dat.FuncId, in.Cv)
+			return errstate.ErrDurationAccessExpired
+		}
+
+		return errstate.Success
+	})
+}
+
+func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApiRequest, out *inner.LookupApiResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		repo := svc.GetFunctionRepo()
+		defer repo.Close()
+
+		f, err := repo.SimplifiedLookupApi(in.AppId, in.Path)
+		if err != nil {
+			return nil
+		}
+
+		out.AppId = f.AppId
+		out.Path = f.Path
+		out.Id = f.Id
+		out.Name = f.Name
+		out.ValTokenTimes = f.ValTokenTimes
+		out.Share = f.Share
+		out.GrantPlatforms = f.GrantPlatforms
+
+		return errstate.Success
+	})
+}
+
+func (svc *accessibleService) GetFunctionRepo() *functionRepo {
+	return &functionRepo{Client: svc.Client}
 }
 
 func (svc *accessibleService) GetRepo() *bindingRepo {

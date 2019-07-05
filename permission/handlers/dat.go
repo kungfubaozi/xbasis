@@ -266,7 +266,7 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 			return errstate.ErrRequest
 		}
 
-		dat := &durationAccessToken{
+		dat := &DurationAccessToken{
 			ClientId: da.ClientId,
 			FuncId:   da.FuncId,
 			User:     da.User,
@@ -292,10 +292,10 @@ func (svc *durationAccessService) Verify(ctx context.Context, in *external.Verif
 	})
 }
 
-func (svc *durationAccessService) getCredential(credential string) (*durationAccessCredential, *commons.State) {
+func (svc *durationAccessService) getCredential(credential string) (*DurationAccessCredential, *commons.State) {
 	configuration := serviceconfiguration.Get()
 
-	var c *durationAccessCredential
+	var c *DurationAccessCredential
 	b, err := encrypt.AESDecrypt(credential, []byte(configuration.CurrencySecretKey))
 
 	if err != nil {

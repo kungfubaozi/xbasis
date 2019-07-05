@@ -9,6 +9,54 @@ service Accessible {
     rpc Check (CheckRequest) returns (xbasis.commons.dto.Status);
 
     rpc HasGrant (HasGrantRequest) returns (xbasis.commons.dto.Status);
+
+    rpc LookupApi (LookupApiRequest) returns (LookupApiResponse);
+
+    rpc GetDat (GetDatRequest) returns (GetDatResponse);
+
+    rpc DatReduce (FunctionDat) returns (DatReduceResponse);
+}
+
+message FunctionDat {
+    string clientId = 1;
+    string funcId = 2;
+    string user = 3;
+    int64 times = 4;
+    int64 maxTimes = 5;
+    bool auth = 6;
+    string from = 7;
+    string cv = 8;
+}
+
+message DatReduceResponse {
+    xbasis.commons.dto.State state = 1;
+}
+
+message GetDatResponse {
+    xbasis.commons.dto.State state = 1;
+    FunctionDat data = 2;
+}
+
+message GetDatRequest {
+    string funcId = 1;
+    string key = 2;
+}
+
+message LookupApiRequest {
+    string appId = 1;
+    string path = 2;
+}
+
+message LookupApiResponse {
+    xbasis.commons.dto.State state = 1;
+    string id = 2;
+    repeated int64 authTypes = 3;
+    int64 valTokenTimes = 4;
+    repeated int64 grantPlatforms = 5;
+    bool share = 6;
+    string appId = 7;
+    string path = 8;
+    string name = 9;
 }
 
 message HasGrantRequest {

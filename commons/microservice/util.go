@@ -32,7 +32,6 @@ func NewService(name string, init bool) micro.Service {
 		srv.Init(micro.WrapHandler(func(handlerFunc server.HandlerFunc) server.HandlerFunc {
 			return xbasiswrapper.AuthWrapper(srv.Client(), handlerFunc)
 		}))
-
 	}
 
 	return srv

@@ -260,8 +260,8 @@
           ]
         },
         {
-          "api": "/userGroup/moveUser",
-          "name": "MoveUserFromGroup",
+          "api": "/userGroup/move",
+          "name": "MoveUserOrGroup",
           "roles": [
             "Administrator",
             "AppManage"

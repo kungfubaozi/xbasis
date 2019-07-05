@@ -2,6 +2,7 @@ package xbasisconstants
 
 const (
 	PermissionService     = "xbasis.external.permission"
+	GatewayService        = "xbasis.external.gateway"
 	AnalysisService       = "xbasis.external.analysis"
 	MessageService        = "xbasis.external.message"
 	ConnectionService     = "xbasis.external.connection"
@@ -146,4 +147,9 @@ const (
 const (
 	ContractTypeOfPhone = 5 << 2
 	ContractTypeOfEmail = 5 << 3
+)
+
+const (
+	AppUserGroup          = "$app"
+	AppMainStructureGroup = "$org"
 )

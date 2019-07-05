@@ -8,6 +8,12 @@ It is generated from these files:
 	permission/pb/inner/accessible.proto
 
 It has these top-level messages:
+	FunctionDat
+	DatReduceResponse
+	GetDatResponse
+	GetDatRequest
+	LookupApiRequest
+	LookupApiResponse
 	HasGrantRequest
 	CheckRequest
 */
@@ -46,6 +52,9 @@ var _ server.Option
 type AccessibleService interface {
 	Check(ctx context.Context, in *CheckRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	HasGrant(ctx context.Context, in *HasGrantRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	LookupApi(ctx context.Context, in *LookupApiRequest, opts ...client.CallOption) (*LookupApiResponse, error)
+	GetDat(ctx context.Context, in *GetDatRequest, opts ...client.CallOption) (*GetDatResponse, error)
+	DatReduce(ctx context.Context, in *FunctionDat, opts ...client.CallOption) (*DatReduceResponse, error)
 }
 
 type accessibleService struct {
@@ -86,17 +95,53 @@ func (c *accessibleService) HasGrant(ctx context.Context, in *HasGrantRequest, o
 	return out, nil
 }
 
+func (c *accessibleService) LookupApi(ctx context.Context, in *LookupApiRequest, opts ...client.CallOption) (*LookupApiResponse, error) {
+	req := c.c.NewRequest(c.name, "Accessible.LookupApi", in)
+	out := new(LookupApiResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accessibleService) GetDat(ctx context.Context, in *GetDatRequest, opts ...client.CallOption) (*GetDatResponse, error) {
+	req := c.c.NewRequest(c.name, "Accessible.GetDat", in)
+	out := new(GetDatResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accessibleService) DatReduce(ctx context.Context, in *FunctionDat, opts ...client.CallOption) (*DatReduceResponse, error) {
+	req := c.c.NewRequest(c.name, "Accessible.DatReduce", in)
+	out := new(DatReduceResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Accessible service
 
 type AccessibleHandler interface {
 	Check(context.Context, *CheckRequest, *xbasis_commons_dto.Status) error
 	HasGrant(context.Context, *HasGrantRequest, *xbasis_commons_dto.Status) error
+	LookupApi(context.Context, *LookupApiRequest, *LookupApiResponse) error
+	GetDat(context.Context, *GetDatRequest, *GetDatResponse) error
+	DatReduce(context.Context, *FunctionDat, *DatReduceResponse) error
 }
 
 func RegisterAccessibleHandler(s server.Server, hdlr AccessibleHandler, opts ...server.HandlerOption) error {
 	type accessible interface {
 		Check(ctx context.Context, in *CheckRequest, out *xbasis_commons_dto.Status) error
 		HasGrant(ctx context.Context, in *HasGrantRequest, out *xbasis_commons_dto.Status) error
+		LookupApi(ctx context.Context, in *LookupApiRequest, out *LookupApiResponse) error
+		GetDat(ctx context.Context, in *GetDatRequest, out *GetDatResponse) error
+		DatReduce(ctx context.Context, in *FunctionDat, out *DatReduceResponse) error
 	}
 	type Accessible struct {
 		accessible
@@ -115,4 +160,16 @@ func (h *accessibleHandler) Check(ctx context.Context, in *CheckRequest, out *xb
 
 func (h *accessibleHandler) HasGrant(ctx context.Context, in *HasGrantRequest, out *xbasis_commons_dto.Status) error {
 	return h.AccessibleHandler.HasGrant(ctx, in, out)
+}
+
+func (h *accessibleHandler) LookupApi(ctx context.Context, in *LookupApiRequest, out *LookupApiResponse) error {
+	return h.AccessibleHandler.LookupApi(ctx, in, out)
+}
+
+func (h *accessibleHandler) GetDat(ctx context.Context, in *GetDatRequest, out *GetDatResponse) error {
+	return h.AccessibleHandler.GetDat(ctx, in, out)
+}
+
+func (h *accessibleHandler) DatReduce(ctx context.Context, in *FunctionDat, out *DatReduceResponse) error {
+	return h.AccessibleHandler.DatReduce(ctx, in, out)
 }

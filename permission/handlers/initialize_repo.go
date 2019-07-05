@@ -81,14 +81,7 @@ func (repo *initializeRepo) AddUserApp() {
 	repo.AddUGRelation(repo.config.UserAppId)
 }
 
-//-是root
 func (repo *initializeRepo) AddUGRelation(appId string) {
-	u := &userGroupsRelation{
-		AppId:       appId,
-		BindGroupId: []string{"-"},
-		CreateAt:    time.Now().UnixNano(),
-		UserId:      repo.config.UserId,
-	}
 
 	if repo.groupUsers == nil {
 		repo.groupUsers = make(map[int][]interface{})
@@ -96,7 +89,19 @@ func (repo *initializeRepo) AddUGRelation(appId string) {
 
 	v1 := repo.groupUsers[hashcode.Equa(appId)]
 
-	repo.groupUsers[hashcode.Equa(appId)] = append(v1, u)
+	repo.groupUsers[hashcode.Equa(appId)] = append(v1, &userGroupsRelation{
+		AppId:       appId,
+		BindGroupId: []string{constants.AppMainStructureGroup},
+		CreateAt:    time.Now().UnixNano(),
+		UserId:      repo.config.UserId,
+	})
+
+	repo.groupUsers[hashcode.Equa(appId)] = append(v1, &userGroupsRelation{
+		AppId:       appId,
+		BindGroupId: []string{constants.AppUserGroup},
+		CreateAt:    time.Now().UnixNano(),
+		UserId:      repo.config.UserId,
+	})
 }
 
 func (repo *initializeRepo) SaveAndClose() {
@@ -288,7 +293,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 			repo.functions[hashcode.Equa(f.AppId)] = append(v, f)
 
-			sf := &simplifiedFunction{
+			sf := &SimplifiedFunction{
 				Id:            f.Id,
 				AuthTypes:     f.AuthTypes,
 				Share:         f.Share,
