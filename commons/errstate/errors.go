@@ -63,4 +63,5 @@ var (
 	ErrUserNeedSetUsername           = &commons.State{Ok: false, Code: 20057, Message: "err need username"}
 	ErrInvalidServiceNode            = &commons.State{Ok: false, Code: 20058, Message: "err No valid node was found"}          //未发现可用的服务节点
 	ErrInvalidApplicationServiceName = &commons.State{Ok: false, Code: 20059, Message: "err invalid application service name"} //应用服务名称未设置
+	ErrServiceRequestTimeout         = &commons.State{Ok: false, Code: 20059, Message: "err service request timeout"}          //请求超时
 )

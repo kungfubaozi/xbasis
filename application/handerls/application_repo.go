@@ -2,13 +2,11 @@ package applicationhanderls
 
 import (
 	"errors"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/xbasis/commons/indexutils"
-	"time"
 )
 
 type applicationRepo struct {
@@ -97,11 +95,9 @@ func (repo *applicationRepo) FindByClientId(clientId string) (*appInfo, error) {
 	appId := repo.clients[clientId]
 	var info *appInfo
 	if len(appId) != 0 {
-		t := time.Now().UnixNano()
 		d, err := redis.Bytes(repo.conn.Do("get", appId))
 		if err == nil {
 			err = msgpack.Unmarshal(d, &info)
-			fmt.Println("ti", (time.Now().UnixNano()-t)/1e6)
 			return info, err
 		}
 	}
