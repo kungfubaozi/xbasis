@@ -1,16 +1,18 @@
-package main
+package xbasisgateway
 
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-micro/registry/consul"
 	"konekko.me/xbasis/commons/errstate"
 	"math/rand"
 )
 
-var apps map[string][]string
-var watchs []string
+var cr = consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
+	registry.Secure(false))
 
-var cr registry.Registry
+var apps = make(map[string][]string)
+var watchs []string
 
 func (r *request) address() bool {
 

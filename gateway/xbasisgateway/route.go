@@ -1,4 +1,4 @@
-package main
+package xbasisgateway
 
 import (
 	"context"
@@ -65,8 +65,8 @@ func (r *request) route(req *http.Request) {
 
 	if !configure[r.serviceName] {
 		hystrix.ConfigureCommand(r.serviceName, hystrix.CommandConfig{
-			Timeout:                5000,
-			MaxConcurrentRequests:  500,
+			Timeout:                8000,
+			MaxConcurrentRequests:  800,
 			RequestVolumeThreshold: 3,
 			ErrorPercentThreshold:  25,
 			SleepWindow:            1000,
