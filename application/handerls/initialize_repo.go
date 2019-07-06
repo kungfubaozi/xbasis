@@ -25,9 +25,10 @@ func (repo *initializeRepo) AddUserApp() {
 	app := repo.getApp(repo.config.UserAppId, "User", constants.AppTypeUser)
 	app.Settings.AllowNewUsers = &allowNewUsersToEnter{
 		DefaultRole:  []string{repo.config.UserAppRoleId},
-		DefaultGroup: "register",
+		DefaultGroup: constants.AppUserGroup,
 		Enabled:      true,
 	}
+	repo.AppServiceName(app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
@@ -36,7 +37,8 @@ func (repo *initializeRepo) AddUserApp() {
 func (repo *initializeRepo) AddManageApp() {
 	app := repo.getApp(repo.config.AdminAppId, "Admin", constants.AppTypeManage)
 	app.Settings.Quarantine = true
-	app.Settings.RedirectURL = "http://localhost:9527"
+	app.Settings.RedirectURL = "http://192.168.80.67:9527"
+	repo.AppServiceName(app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
@@ -44,6 +46,11 @@ func (repo *initializeRepo) AddManageApp() {
 //route项目是用户默认项目，不需要同步，也不用隔离
 func (repo *initializeRepo) AddRouteApp() {
 	app := repo.getApp(repo.config.RouteAppId, "Router", constants.AppTypeRoute)
+	app.Settings.AllowNewUsers = &allowNewUsersToEnter{
+		DefaultGroup: constants.AppUserGroup,
+		Enabled:      true,
+	}
+	repo.AppServiceName(app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
 }
@@ -51,8 +58,17 @@ func (repo *initializeRepo) AddRouteApp() {
 //安全项目，不要同步数据，也不用隔离
 func (repo *initializeRepo) AddSafeApp() {
 	app := repo.getApp(repo.config.SafeAppId, "Safety", constants.AppTypeSafe)
+	app.Settings.AllowNewUsers = &allowNewUsersToEnter{
+		DefaultGroup: constants.AppUserGroup,
+		Enabled:      true,
+	}
+	repo.AppServiceName(app)
 	repo.bulk.Add(elastic.NewBulkIndexRequest().Index(applicationIndex).Type("_doc").Doc(app))
 	repo.apps = append(repo.apps, app)
+}
+
+func (repo *initializeRepo) AppServiceName(info *appInfo) {
+	info.Settings.ServiceName = "go.micro.api"
 }
 
 func (repo *initializeRepo) SaveAndClose() {

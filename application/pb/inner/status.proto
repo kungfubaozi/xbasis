@@ -24,4 +24,5 @@ message GetAppClientStatusResponse {
     int64 type = 6;
     bool canRedirect = 7;
     string secretKey = 8;
+    string serviceName = 9;
 }

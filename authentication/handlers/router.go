@@ -3,6 +3,7 @@ package authenticationhandlers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/xbasis/application/pb/inner"
@@ -210,7 +211,6 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 		})
 
 		if err != nil {
-
 			return nil
 		}
 
@@ -227,6 +227,9 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 
 			//如果用户有权限访问可进入
 			if app.AppQuarantine {
+
+				spew.Dump(auth.Token)
+
 				s, err := svc.innerAccessible.HasGrant(ctx, &xbasissvc_internal_permission.HasGrantRequest{
 					UserId: auth.Token.UserId,
 					AppId:  app.AppId,

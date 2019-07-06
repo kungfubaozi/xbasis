@@ -7,6 +7,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro/metadata"
+	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-micro/registry/consul"
 	"github.com/vmihailenco/msgpack"
 	"io/ioutil"
 	"konekko.me/xbasis/analysis/client"
@@ -29,26 +31,29 @@ import (
 	"konekko.me/xbasis/permission/pb/inner"
 	"konekko.me/xbasis/safety/client"
 	"konekko.me/xbasis/safety/pb"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
 )
 
 type request struct {
-	c        *gin.Context
-	services *services
-	toAppId  string
-	headers  map[string]string
-	path     string
-	startAt  int64
-	ctx      context.Context
-	dat      *xbasissvc_internal_permission.FunctionDat
-	userId   string
-	rh       *requestHeaders
-	auth     bool
-	funcId   string
-	cv       string
-	host     string
+	c           *gin.Context
+	services    *services
+	toAppId     string
+	headers     map[string]string
+	path        string
+	startAt     int64
+	ctx         context.Context
+	dat         *xbasissvc_internal_permission.FunctionDat
+	userId      string
+	rh          *requestHeaders
+	auth        bool
+	funcId      string
+	cv          string
+	host        string
+	serviceName string
+	secure      bool
 }
 
 type services struct {
@@ -73,7 +78,7 @@ type requestHeaders struct {
 	fromClientId  string
 }
 
-var apps map[string]string
+var apps map[string][]string
 
 var whiteApiList = []string{"/authentication/router/refresh",
 	"/authentication/router/logout", "/apps/settings/getSetting", "/permission/userGroup/move"}
@@ -92,6 +97,9 @@ func main() {
 
 	svc := microservice.NewService(constants.GatewayService, false)
 
+	cr := consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
+		registry.Secure(false))
+
 	s := &services{
 		verification:                  permissioncli.NewVerificationClient(svc.Client()),
 		accessibleService:             permissioncli.NewAccessibleClient(svc.Client()),
@@ -103,10 +111,8 @@ func main() {
 		_log:                          logrus.New(),
 	}
 
-	apps = map[string]string{
-		"51334e445530": "http://192.168.80.67:8080", //router
-		"4d324f574e6d": "http://192.168.80.67:8080", //admin
-	}
+	apps = make(map[string][]string)
+	var watchs []string
 
 	g.Any("/*action", func(c *gin.Context) {
 
@@ -131,9 +137,68 @@ func main() {
 			return
 		}
 
-		if !checkRequestPath(r) {
+		if len(r.serviceName) == 0 {
+			json(r, errstate.ErrInvalidApplicationServiceName)
 			return
 		}
+
+		addresses := apps[r.serviceName]
+		if addresses == nil {
+
+			//get service
+			s, err := cr.GetService(r.serviceName)
+			if err != nil {
+				r.services._log.WithFields(logrus.Fields{
+					"serviceName": r.serviceName,
+					"err":         err.Error(),
+				}).Error("get service name")
+				json(r, errstate.ErrSystem)
+				return
+			}
+
+			for _, v := range s {
+				r.nodes(v.Name, v.Nodes)
+			}
+
+			w := true
+			for _, v := range watchs {
+				if v == r.serviceName {
+					w = false
+					break
+				}
+			}
+
+			//start watch
+			if w {
+				watchs = append(watchs, r.serviceName)
+				r.services._log.WithFields(logrus.Fields{
+					"service": r.serviceName,
+				}).Warn("start watch")
+				go func(name string) {
+					w, err := cr.Watch(registry.WatchService(name))
+					if err != nil {
+						panic(err)
+					}
+
+					for {
+						n, err := w.Next()
+						if err != nil {
+							panic(err)
+						}
+						r.nodes(n.Service.Name, n.Service.Nodes)
+					}
+				}(r.serviceName)
+			}
+
+			addresses = apps[r.serviceName]
+			if addresses == nil || len(addresses) == 0 {
+				json(r, errstate.ErrInvalidServiceNode)
+				return
+			}
+
+		}
+
+		r.path = addresses[rand.Intn(len(addresses))]
 
 		switch c.Request.Method {
 		case "GET":
@@ -180,8 +245,20 @@ func main() {
 	fmt.Println("gateway service", <-errc)
 }
 
-func abort(r *request, code int) {
-	r.c.AbortWithStatus(code)
+func (r *request) nodes(name string, nodes []*registry.Node) {
+	d := apps[name]
+	if d == nil {
+		apps[name] = []string{}
+	}
+	var addrs []string
+	for _, v := range nodes {
+		address := v.Address
+		port := v.Metadata["xBasisRequestPort"]
+		addrs = append(addrs, address+port)
+	}
+
+	apps[name] = addrs
+
 }
 
 func json(r *request, state *xbasis_commons_dto.State) {
@@ -192,17 +269,6 @@ func buildHeader(request *http.Request, r *request) {
 	for k, v := range r.headers {
 		request.Header.Set(k, v)
 	}
-}
-
-func checkRequestPath(r *request) bool {
-	//path := r.c.Request.URL.Path
-	url := apps[r.toAppId]
-	if len(url) <= 10 {
-		json(r, errstate.ErrRequest)
-		return false
-	}
-	r.path = url
-	return true
 }
 
 func checkRequestBasicInfo(r *request) bool {
@@ -374,6 +440,7 @@ func checkRequestBasicInfo(r *request) bool {
 			}
 		}
 		if f == nil {
+
 			f1, err := r.services.accessibleService.LookupApi(ctx, &xbasissvc_internal_permission.LookupApiRequest{
 				AppId: appResp.AppId,
 				Path:  encrypt.SHA1(rh.path),
@@ -665,6 +732,7 @@ func checkRequestBasicInfo(r *request) bool {
 		r.funcId = f.Id
 		r.auth = auth
 		r.cv = cv
+		r.serviceName = appResp.ServiceName
 
 	}
 
@@ -677,6 +745,7 @@ func do(r *request, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 
 	r.services._log.WithFields(logrus.Fields{
+		"service": r.serviceName,
 		"routeTo": r.path,
 	}).Info("request redirect")
 
@@ -743,7 +812,11 @@ func get(r *request) {
 
 func post(r *request) {
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s%s", r.path, r.c.Request.RequestURI), r.c.Request.Body)
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s%s", r.path, r.c.Request.RequestURI), r.c.Request.Body)
+	if err != nil {
+		json(r, errstate.ErrRequest)
+		return
+	}
 
 	req.Form = r.c.Request.Form
 	req.MultipartForm = r.c.Request.MultipartForm

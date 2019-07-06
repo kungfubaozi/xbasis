@@ -3,6 +3,7 @@ package permissionhandlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/olivere/elastic"
 	"github.com/vmihailenco/msgpack"
@@ -105,6 +106,7 @@ func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApi
 		out.Path = f.Path
 		out.Id = f.Id
 		out.Name = f.Name
+		out.AuthTypes = f.AuthTypes
 		out.ValTokenTimes = f.ValTokenTimes
 		out.Share = f.Share
 		out.GrantPlatforms = f.GrantPlatforms
@@ -129,6 +131,7 @@ func (svc *accessibleService) HasGrant(ctx context.Context, in *inner.HasGrantRe
 
 		r, err := repo.FindRelationUserById(in.UserId, in.AppId)
 		if err != nil {
+			fmt.Println("err", err)
 			return nil
 		}
 

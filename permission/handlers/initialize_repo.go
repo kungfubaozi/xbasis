@@ -87,16 +87,14 @@ func (repo *initializeRepo) AddUGRelation(appId string) {
 		repo.groupUsers = make(map[int][]interface{})
 	}
 
-	v1 := repo.groupUsers[hashcode.Equa(appId)]
-
-	repo.groupUsers[hashcode.Equa(appId)] = append(v1, &userGroupsRelation{
+	repo.groupUsers[hashcode.Equa(appId)] = append(repo.groupUsers[hashcode.Equa(appId)], &userGroupsRelation{
 		AppId:       appId,
 		BindGroupId: []string{constants.AppMainStructureGroup},
 		CreateAt:    time.Now().UnixNano(),
 		UserId:      repo.config.UserId,
 	})
 
-	repo.groupUsers[hashcode.Equa(appId)] = append(v1, &userGroupsRelation{
+	repo.groupUsers[hashcode.Equa(appId)] = append(repo.groupUsers[hashcode.Equa(appId)], &userGroupsRelation{
 		AppId:       appId,
 		BindGroupId: []string{constants.AppUserGroup},
 		CreateAt:    time.Now().UnixNano(),
