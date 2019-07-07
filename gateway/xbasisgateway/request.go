@@ -57,7 +57,6 @@ func (r *request) buildHeader(request *http.Request) {
 		request.Header.Set(k, v)
 	}
 }
-
 func (r *request) json(state *xbasis_commons_dto.State) {
 	r.c.JSON(200, xbasis_commons_dto.Status{State: state})
 }

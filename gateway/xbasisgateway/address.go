@@ -11,13 +11,21 @@ import (
 var cr = consul.NewRegistry(registry.Addrs("192.168.80.67:8500"),
 	registry.Secure(false))
 
-var apps = make(map[string][]string)
+var apps = make(map[string]*appService)
 var watchs []string
+
+type appService struct {
+	watch       registry.Watcher
+	serviceName string
+	appId       string
+	addresses   []string
+	stop        chan bool
+}
 
 func (r *request) address() bool {
 
-	addresses := apps[r.serviceName]
-	if addresses == nil {
+	svc := apps[r.toAppId]
+	if svc == nil {
 
 		//get service
 		s, err := cr.GetService(r.serviceName)
@@ -31,12 +39,12 @@ func (r *request) address() bool {
 		}
 
 		for _, v := range s {
-			r.nodes(v.Name, v.Nodes)
+			r.nodes(v)
 		}
 
 		w := true
 		for _, v := range watchs {
-			if v == r.serviceName {
+			if v == r.toAppId {
 				w = false
 				break
 			}
@@ -48,46 +56,67 @@ func (r *request) address() bool {
 			r.services._log.WithFields(logrus.Fields{
 				"service": r.serviceName,
 			}).Warn("start watch")
-			go func(name string) {
-				w, err := cr.Watch(registry.WatchService(name))
-				if err != nil {
-					panic(err)
-				}
-
+			w, err := cr.Watch(registry.WatchService(r.serviceName))
+			if err != nil {
+				panic(err)
+			}
+			if apps[r.toAppId].watch == nil {
+				apps[r.toAppId].watch = w
+			}
+			go func() {
 				for {
-					n, err := w.Next()
-					if err != nil {
-						panic(err)
+					select {
+					case <-svc.stop:
+						return
+					default:
+						n, err := w.Next()
+						if err != nil {
+							panic(err)
+						}
+						r.nodes(n.Service)
 					}
-					r.nodes(n.Service.Name, n.Service.Nodes)
 				}
-			}(r.serviceName)
+			}()
+
 		}
 
-		addresses = apps[r.serviceName]
-		if addresses == nil || len(addresses) == 0 {
+		svc = apps[r.toAppId]
+		if svc == nil || len(svc.addresses) == 0 {
 			r.json(errstate.ErrInvalidServiceNode)
 			return false
 		}
 
+	} else {
+		if svc.serviceName != r.serviceName {
+			//cancel watch and re-watch
+			svc.stop <- true
+			delete(apps, r.toAppId)
+			return r.address()
+		}
 	}
 
-	r.path = addresses[rand.Intn(len(addresses))]
+	r.path = svc.addresses[rand.Intn(len(svc.addresses))]
 	return true
 }
 
-func (r *request) nodes(name string, nodes []*registry.Node) {
-	d := apps[name]
+func (r *request) nodes(service *registry.Service) {
+	d := apps[r.toAppId]
 	if d == nil {
-		apps[name] = []string{}
+		apps[r.toAppId] = &appService{
+			serviceName: r.serviceName,
+			appId:       r.toAppId,
+			stop:        make(chan bool),
+		}
 	}
 	var addrs []string
-	for _, v := range nodes {
+	if r.serviceName != service.Name {
+		return
+	}
+	for _, v := range service.Nodes {
 		address := v.Address
 		port := v.Metadata["xBasisRequestPort"]
 		addrs = append(addrs, address+port)
 	}
 
-	apps[name] = addrs
-
+	apps[r.toAppId].addresses = addrs
 }

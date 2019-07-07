@@ -18,7 +18,7 @@ var c *http.Client
 var connectTimeout = 5 * time.Second
 var readWriteTimeout = 100 * time.Millisecond
 var configure = make(map[string]bool)
-var limiters = make(map[string]*rate.Limiter)
+var limiter *rate.Limiter
 
 func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
 	return func(netw, addr string) (net.Conn, error) {
@@ -33,10 +33,8 @@ func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, ad
 
 func (r *request) route(req *http.Request) {
 
-	limiter := limiters[r.serviceName]
 	if limiter == nil {
 		limiter = rate.NewLimiter(rate.Every(time.Duration(5)*time.Millisecond), 1)
-		limiters[r.serviceName] = limiter
 	}
 
 	if err := limiter.Wait(context.Background()); err != nil {
