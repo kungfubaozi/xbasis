@@ -7,7 +7,7 @@ import (
 )
 
 func (r *request) call(method string) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s%s", r.path, r.c.Request.RequestURI), r.c.Request.Body)
+	req, err := http.NewRequest(method, fmt.Sprintf("http://%s%s", r.path, r.c.Request.RequestURI), r.c.Request.Body)
 	if err != nil {
 		r.json(errstate.ErrRequest)
 		return

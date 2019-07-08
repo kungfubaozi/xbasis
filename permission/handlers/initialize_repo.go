@@ -59,7 +59,7 @@ type initializeRepo struct {
 
 func (repo *initializeRepo) AddManageApp() {
 	config := repo.readFile("admin.json")
-	repo.generate(repo.config.AdminAppId, config, false)
+	repo.generate(repo.config.AdminAppId, config, true)
 	repo.AddUGRelation(repo.config.AdminAppId)
 }
 
@@ -71,13 +71,13 @@ func (repo *initializeRepo) AddRouteApp() {
 
 func (repo *initializeRepo) AddSafeApp() {
 	config := repo.readFile("safe.json")
-	repo.generate(repo.config.SafeAppId, config, false)
+	repo.generate(repo.config.SafeAppId, config, true)
 	repo.AddUGRelation(repo.config.SafeAppId)
 }
 
 func (repo *initializeRepo) AddUserApp() {
 	config := repo.readFile("user.json")
-	repo.generate(repo.config.UserAppId, config, false)
+	repo.generate(repo.config.UserAppId, config, true)
 	repo.AddUGRelation(repo.config.UserAppId)
 }
 
@@ -192,6 +192,10 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		if v == "User" && appId == repo.config.UserAppId {
 			role.Id = repo.config.UserAppRoleId
+		}
+
+		if v == "User" && appId == repo.config.SafeAppId {
+			role.Id = repo.config.SafeAppRoleId
 		}
 
 		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(roleIndex).Type("_doc").Doc(role))

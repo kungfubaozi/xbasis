@@ -6,7 +6,7 @@ import "konekko.me/xbasis/commons/dto/commons.proto";
 
 service User {
 
-    rpc isExists (ExistsRequest) returns (xbasis.commons.dto.Status);
+    rpc IsExists (ExistsRequest) returns (xbasis.commons.dto.Status);
 
     rpc GetUserInfoById (GetUserInfoByIdRequest) returns (SimpleUserInfo);
 
@@ -14,6 +14,7 @@ service User {
 
 message ExistsRequest {
     string userId = 1;
+    string account = 2;
 }
 
 message SimpleUserInfo {

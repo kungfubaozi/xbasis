@@ -3,10 +3,12 @@ package userhandlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/olivere/elastic"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	"konekko.me/xbasis/commons/indexutils"
+	regx "konekko.me/xbasis/commons/regx"
 	wrapper "konekko.me/xbasis/commons/wrapper"
 	userpb "konekko.me/xbasis/user/pb"
 	"strings"
@@ -21,9 +23,19 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 		if len(in.Value) == 0 || len(strings.TrimSpace(in.Value)) == 0 {
 			return nil
 		}
-		q := elastic.NewQueryStringQuery(in.Value)
+		if in.Key == "phone" && !regx.Phone(in.Value) {
+			return errstate.ErrFormatPhone
+		}
+		if in.Key == "email" && !regx.Email(in.Value) {
+			return errstate.ErrFormatEmail
+		}
+		v1 := in.Value
+		if in.Card {
+			v1 = fmt.Sprintf("*%s*", v1)
+		}
+		q := elastic.NewQueryStringQuery(v1)
 		if len(in.Key) > 0 {
-			q.Field(in.Key)
+			q.Field("fields." + in.Key)
 		} else {
 			q.Field("fields.username")
 			q.Field("fields.real_name")
@@ -48,7 +60,7 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 						UserId:   i.Fields.UserId,
 						Username: i.Fields.Username,
 						Icon:     i.Fields.Icon,
-						State:    i.Fields.State,
+						State:    int64(i.Fields.State),
 						Invite:   i.Fields.Invite,
 						Account:  i.Fields.Account,
 						RealName: i.Fields.RealName,

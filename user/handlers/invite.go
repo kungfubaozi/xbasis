@@ -2,6 +2,7 @@ package userhandlers
 
 import (
 	"context"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
 	"konekko.me/xbasis/commons/config/call"
@@ -9,6 +10,7 @@ import (
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
+	"konekko.me/xbasis/commons/indexutils"
 	regx "konekko.me/xbasis/commons/regx"
 	wrapper "konekko.me/xbasis/commons/wrapper"
 	external "konekko.me/xbasis/user/pb"
@@ -21,6 +23,7 @@ type inviteService struct {
 	log              analysisclient.LogClient
 	id               generator.IDGenerator
 	innerUserService xbasissvc_internal_user.UserService
+	client           *indexutils.Client
 }
 
 func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *commons.Status) error {
@@ -148,10 +151,10 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 		key := ""
 		value := ""
 
-		if len(in.Phone) > 0 && regx.Phone(in.Phone) {
+		if len(in.Phone) > 0 && !regx.Phone(in.Phone) {
 			return errstate.ErrFormatPhone
 		}
-		if len(in.Email) > 0 && regx.Email(in.Email) {
+		if len(in.Email) > 0 && !regx.Email(in.Email) {
 			return errstate.ErrFormatEmail
 		}
 		if configuration.RegisterType == 1001 { //phone
@@ -172,6 +175,36 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 			return nil
 		}
 
+		if len(in.Account) > 0 {
+
+			v, err := svc.client.GetElasticClient().Search(typeUserIndex).Type("_doc").
+				Query(elastic.NewBoolQuery().Must(elastic.NewMatchPhraseQuery("fields.account", in.Account))).
+				Do(context.Background())
+
+			if err != nil {
+				return nil
+			}
+
+			if v.Hits.TotalHits > 0 {
+				return errstate.ErrAccountAlreadyExists
+			}
+		}
+
+		if len(in.Email) > 0 {
+
+			v, err := svc.client.GetElasticClient().Search(typeUserIndex).Type("_doc").
+				Query(elastic.NewBoolQuery().Must(elastic.NewMatchPhraseQuery("fields.email", in.Email))).
+				Do(context.Background())
+
+			if err != nil {
+				return nil
+			}
+
+			if v.Hits.TotalHits > 0 {
+				return errstate.ErrEmailAlreadyExists
+			}
+		}
+
 		repo := svc.GetRepo()
 		defer repo.Close()
 
@@ -185,6 +218,7 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 				UserId:       svc.id.Get(),
 				Username:     in.Username,
 				RealName:     in.RealName,
+				Account:      in.Account,
 				Side:         false, //side的作用是判断user是内部还是外部新的
 				State:        constants.InviteStateOfWaiting,
 			}
@@ -318,9 +352,10 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 						Name: "users",
 						Id:   m.UserId,
 						Fields: &analysisclient.LogFields{
-							"user_id": m.UserId,
-							"invite":  true,
-							"side":    true,
+							"user_id":     m.UserId,
+							"invite":      true,
+							"side":        true,
+							"from_invite": false,
 						},
 					},
 				})
@@ -340,16 +375,15 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 					if i < 0 {
 						i = 0
 					}
-					m.Items = append(m.Items[:i], m.Items[k:]...)
+					if len(in.Item.Roles) > 0 {
+						v.Roles = append(v.Roles, in.Item.Roles...)
+					}
+					if len(in.Item.BindGroupIds) > 0 {
+						v.BingGroupIds = append(v.BingGroupIds, in.Item.BindGroupIds...)
+					}
 					break
 				}
 			}
-
-			m.Items = append(m.Items, &inviteItem{
-				BingGroupIds: in.Item.BindGroupIds,
-				Roles:        in.Item.Roles,
-				AppId:        in.Item.AppId,
-			})
 
 			err = repo.UpdateItems(in.UserId, m.Items)
 		}
@@ -362,6 +396,6 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 	})
 }
 
-func NewInviteService(session *mgo.Session, log analysisclient.LogClient) external.InviteHandler {
-	return &inviteService{session: session, log: log, id: generator.NewIDG()}
+func NewInviteService(session *mgo.Session, log analysisclient.LogClient, innerUserService xbasissvc_internal_user.UserService) external.InviteHandler {
+	return &inviteService{session: session, log: log, id: generator.NewIDG(), innerUserService: innerUserService}
 }

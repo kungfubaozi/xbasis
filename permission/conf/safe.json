@@ -1,6 +1,9 @@
 {
   "version": 1.0,
   "desc": "safety function structure",
+  "roles":[
+    "User"
+  ],
   "api": [
     {
       "group_name": "Safety",

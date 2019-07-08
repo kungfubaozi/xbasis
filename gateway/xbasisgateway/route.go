@@ -1,7 +1,6 @@
 package xbasisgateway
 
 import (
-	"context"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/afex/hystrix-go/hystrix"
@@ -33,21 +32,22 @@ func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, ad
 
 func (r *request) route(req *http.Request) {
 
-	if limiter == nil {
-		limiter = rate.NewLimiter(rate.Every(time.Duration(5)*time.Millisecond), 1)
-	}
-
-	if err := limiter.Wait(context.Background()); err != nil {
-		r.json(errstate.ErrOperateBusy)
-		return
-	}
+	//if limiter == nil {
+	//	limiter = rate.NewLimiter(rate.Every(time.Duration(5)*time.Millisecond), 1)
+	//}
+	//
+	//if err := limiter.Wait(context.Background()); err != nil {
+	//	r.json(errstate.ErrOperateBusy)
+	//	return
+	//}
 
 	if c == nil {
-		c = &http.Client{
-			Transport: &http.Transport{
-				Dial: timeoutDialer(connectTimeout, readWriteTimeout),
-			},
-		}
+		//c = &http.Client{
+		//	Transport: &http.Transport{
+		//		Dial: timeoutDialer(connectTimeout, readWriteTimeout),
+		//	},
+		//}
+		c = http.DefaultClient
 	}
 
 	r.buildHeader(req)

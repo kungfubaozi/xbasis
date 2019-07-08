@@ -36,7 +36,6 @@ func (svc *loginService) GetRepo() *userRepo {
 */
 //web client just support the root project, you need the login to root project and then route to the target client
 func (svc *loginService) WithAccount(ctx context.Context, in *external.EntryRequest, out *external.EntryWithAccountResponse) error {
-	fmt.Println("entry", in)
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.Account) > 0 && len(in.Content) > 0 {
 			repo := svc.GetRepo()
@@ -91,6 +90,8 @@ func (svc *loginService) WithAccount(ctx context.Context, in *external.EntryRequ
 
 			if info != nil && len(info.Id) > 0 {
 				//check state
+
+				fmt.Println("info")
 
 				s, err := svc.innerSecurityService.Get(ctx, &xbasissvc_internal_safety.GetRequest{
 					UserId: info.Id,

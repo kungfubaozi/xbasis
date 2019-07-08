@@ -48,6 +48,7 @@ func (svc *settingsService) GetSetting(ctx context.Context, in *external.GetSett
 			Quarantine:  info.Settings.Quarantine,
 			SyncURL:     info.Settings.SyncUserURL,
 			RedirectURL: info.Settings.RedirectURL,
+			ServiceName: info.Settings.ServiceName,
 		}
 
 		a := info.Settings.AllowNewUsers

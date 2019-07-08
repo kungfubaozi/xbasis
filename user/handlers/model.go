@@ -33,6 +33,7 @@ type inviteModel struct {
 	UserId       string        `bson:"user_id"`
 	State        int64         `bson:"state"`
 	Side         bool          `bson:"side"`
+	Account      string        `bson:"account"`
 }
 
 type inviteItem struct {
@@ -78,13 +79,13 @@ type userIndex struct {
 }
 
 type userIndexFields struct {
-	UserId   string `json:"user_id"`
-	Account  string `json:"account"`
-	Invite   bool   `json:"invite"`
-	State    int64  `json:"state"`
-	Icon     string `json:"icon"`
-	Username string `json:"username"`
-	RealName string `json:"real_name"`
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
+	UserId   string  `json:"user_id"`
+	Account  string  `json:"account"`
+	Invite   bool    `json:"invite"`
+	State    float64 `json:"state"`
+	Icon     string  `json:"icon"`
+	Username string  `json:"username"`
+	RealName string  `json:"real_name"`
+	Phone    string  `json:"phone"`
+	Email    string  `json:"email"`
 }

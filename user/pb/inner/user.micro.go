@@ -68,7 +68,7 @@ func NewUserService(name string, c client.Client) UserService {
 }
 
 func (c *userService) IsExists(ctx context.Context, in *ExistsRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
-	req := c.c.NewRequest(c.name, "User.isExists", in)
+	req := c.c.NewRequest(c.name, "User.IsExists", in)
 	out := new(xbasis_commons_dto.Status)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

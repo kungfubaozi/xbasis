@@ -24,6 +24,7 @@ type GosionInitializeConfig struct {
 	AdminAppId string
 
 	UserAppRoleId string
+	SafeAppRoleId string
 }
 
 type OnNodeDataChanged func(data []byte, version int32) bool

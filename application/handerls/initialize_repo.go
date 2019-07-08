@@ -59,6 +59,7 @@ func (repo *initializeRepo) AddRouteApp() {
 func (repo *initializeRepo) AddSafeApp() {
 	app := repo.getApp(repo.config.SafeAppId, "Safety", constants.AppTypeSafe)
 	app.Settings.AllowNewUsers = &allowNewUsersToEnter{
+		DefaultRole:  []string{repo.config.SafeAppRoleId},
 		DefaultGroup: constants.AppUserGroup,
 		Enabled:      true,
 	}

@@ -24,6 +24,7 @@ service Invite {
     rpc SetState (SetStateRequest) returns (xbasis.commons.dto.Status);
 
     rpc Append (AppendRequest) returns (xbasis.commons.dto.Status);
+
 }
 
 message InviteUserRequest {
@@ -33,6 +34,7 @@ message InviteUserRequest {
     string realName = 4;
     repeated InviteItem items = 5;
     int64 expiredAt = 6;
+    string account = 7;
 }
 
 message AppendRequest {
