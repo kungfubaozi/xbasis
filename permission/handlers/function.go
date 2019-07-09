@@ -194,54 +194,31 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 
 		now := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM_I_DD)
 		q := elastic.NewBoolQuery()
-		q.Must(elastic.NewMatchPhraseQuery("fields.id", f.Id), elastic.NewMatchPhraseQuery("action", "UserRequestApi"))
+		q.Must(elastic.NewMatchPhraseQuery("funcId", f.Id), elastic.NewMatchPhraseQuery("action", loggeractions.UserRequestApi))
 
 		var wg sync.WaitGroup
-		wg.Add(4)
-		//today visit count
-		go func() {
-			defer wg.Done()
-			c, err := svc.GetElasticClient().Count("xbs-logger." + now).Type("_doc").Query(q).Do(context.Background())
-			if err != nil {
-				return
-			}
-			function.TodayVisit = c
-		}()
+		wg.Add(2)
 
-		//today visit user count
+		//today
 		go func() {
 			defer wg.Done()
-			v, err := svc.GetElasticClient().Search("xbs-logger."+now).Type("_doc").Query(q).Aggregation("count", elastic.NewCardinalityAggregation().Field("headers.userId.keyword")).Do(context.Background())
+			total, user, err := svc.find(now, q)
 			if err != nil {
 				return
 			}
-			if v.Aggregations != nil {
-				c, ok := v.Aggregations.Cardinality("count")
-				if ok {
-					function.TodayVisitUser = int64(*c.Value)
-				}
-			}
-		}()
-
-		//month
-		go func() {
-			defer wg.Done()
-			t := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM)
-			c, err := svc.GetElasticClient().Count(fmt.Sprintf("xbs-logger.%s.*", t)).Type("_doc").Query(q).Do(context.Background())
-			if err != nil {
-				return
-			}
-			function.MonthVisit = c
+			function.TodayVisit = total / 4
+			function.TodayUserVisit = user
 		}()
 
 		//total
 		go func() {
 			defer wg.Done()
-			c, err := svc.GetElasticClient().Count("xbs-logger.*").Type("_doc").Query(q).Do(context.Background())
+			total, user, err := svc.find("*", q)
 			if err != nil {
 				return
 			}
-			function.TotalVisit = c
+			function.TotalVisit = total / 4
+			function.TotalUserVisit = user
 		}()
 
 		wg.Wait()
@@ -250,6 +227,29 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 
 		return errstate.Success
 	})
+}
+
+func (svc *functionService) find(now string, q elastic.Query) (int64, int64, error) {
+	v, err := svc.GetElasticClient().Search(statementIndex+now).Type("_doc").Query(q).
+		Aggregation("user", elastic.NewCardinalityAggregation().Field("who.keyword")).
+		Aggregation("total", elastic.NewSumAggregation().Field("total")).
+		Do(context.Background())
+	if err != nil {
+		return 0, 0, err
+	}
+	var total int64 = 0
+	var user int64 = 0
+	if v.Aggregations != nil {
+		c, ok := v.Aggregations.Cardinality("total")
+		if ok {
+			total = int64(*c.Value)
+		}
+		c, ok = v.Aggregations.Sum("user")
+		if ok {
+			user = int64(*c.Value)
+		}
+	}
+	return total, user, nil
 }
 
 func (svc *functionService) GetRepo() *functionRepo {

@@ -22,6 +22,8 @@ const (
 	functionGroupRelationIndex = "xbs-function-groups"
 
 	roleIndex = "xbs-roles"
+
+	statementIndex = "xbs-statement."
 )
 
 type accessibale struct {

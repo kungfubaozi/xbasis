@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/olivere/elastic"
+	"konekko.me/xbasis/commons/constants"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	"konekko.me/xbasis/commons/indexutils"
 	regx "konekko.me/xbasis/commons/regx"
 	wrapper "konekko.me/xbasis/commons/wrapper"
 	userpb "konekko.me/xbasis/user/pb"
-	"strings"
 )
 
 type userService struct {
@@ -20,9 +20,10 @@ type userService struct {
 
 func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, out *userpb.SearchResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
-		if len(in.Value) == 0 || len(strings.TrimSpace(in.Value)) == 0 {
-			return nil
-		}
+		//if len(in.AppId) == 0 && (len(in.Value) == 0 || len(strings.TrimSpace(in.Value)) == 0) {
+		//	return nil
+		//}
+
 		if in.Key == "phone" && !regx.Phone(in.Value) {
 			return errstate.ErrFormatPhone
 		}
@@ -33,18 +34,32 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 		if in.Card {
 			v1 = fmt.Sprintf("*%s*", v1)
 		}
-		q := elastic.NewQueryStringQuery(v1)
-		if len(in.Key) > 0 {
-			q.Field("fields." + in.Key)
-		} else {
-			q.Field("fields.username")
-			q.Field("fields.real_name")
-			q.Field("fields.account")
-			q.Field("fields.phone")
-			q.Field("fields.email")
+
+		e := svc.client.GetElasticClient().Search(typeUserIndex)
+
+		query := elastic.NewBoolQuery()
+
+		if len(v1) > 0 {
+			q := elastic.NewQueryStringQuery(v1)
+			if len(in.Key) > 0 {
+				q.Field(in.Key)
+			} else {
+				q.Field("username")
+				q.Field("real_name")
+				q.Field("account")
+				q.Field("phone")
+				q.Field("email")
+			}
+			query.Must(q)
+		}
+		if len(in.AppId) > 0 {
+			query.Must(elastic.NewMatchPhraseQuery("app_"+in.AppId, true))
+		}
+		if in.Invite {
+			query.Must(elastic.NewMatchPhraseQuery("from_invite", true))
 		}
 
-		v, err := svc.client.GetElasticClient().Search(typeUserIndex).Query(q).Type("_doc").From(int(in.Size * in.Page)).Size(int(in.Size)).Do(context.Background())
+		v, err := e.Type("_doc").Query(query).From(int(in.Size * in.Page)).Size(int(in.Size)).Do(context.Background())
 		if err != nil {
 			return nil
 		}
@@ -53,18 +68,21 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 
 		if v.Hits.TotalHits > 0 {
 			for _, v := range v.Hits.Hits {
-				i := &userIndex{}
+				i := &userIndexFields{}
 				err := json.Unmarshal(*v.Source, i)
 				if err == nil {
-					datas = append(datas, &userpb.SimpleUserData{
-						UserId:   i.Fields.UserId,
-						Username: i.Fields.Username,
-						Icon:     i.Fields.Icon,
-						State:    int64(i.Fields.State),
-						Invite:   i.Fields.Invite,
-						Account:  i.Fields.Account,
-						RealName: i.Fields.RealName,
-					})
+					d := &userpb.SimpleUserData{
+						UserId:     i.UserId,
+						Username:   i.Username,
+						Icon:       i.Icon,
+						State:      int64(i.State),
+						Invite:     i.Invite,
+						Account:    i.Account,
+						RealName:   i.RealName,
+						FromInvite: i.FromInvite,
+					}
+					d.Label = xbasisconstants.GetStateString(d.State)
+					datas = append(datas, d)
 				}
 			}
 		}

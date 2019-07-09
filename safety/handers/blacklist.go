@@ -16,8 +16,11 @@ type blacklistService struct {
 	*indexutils.Client
 }
 
-func (svc *blacklistService) Search(context.Context, *external.BlacklistSearchRequest, *external.BlacklistSearchResponse) error {
-	panic("implement me")
+func (svc *blacklistService) Search(ctx context.Context, in *external.BlacklistSearchRequest, out *external.BlacklistSearchResponse) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+
+		return nil
+	})
 }
 
 func (svc *blacklistService) GetRepo() blacklistRepo {
@@ -31,7 +34,7 @@ func (svc *blacklistService) Check(ctx context.Context, in *external.CheckReques
 			return errstate.Success
 		}
 
-		if in.Type == constants.BlacklistOfIP || in.Type == constants.BlacklistOfUserDevice {
+		if in.Type == constants.BlacklistOfIP || in.Type == constants.BlacklistOfDevice {
 
 			repo := svc.GetRepo()
 			defer repo.Close()

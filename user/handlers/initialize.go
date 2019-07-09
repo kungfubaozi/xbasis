@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	xconfig "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/constants"
 	"konekko.me/xbasis/commons/hashcode"
 	"konekko.me/xbasis/commons/indexutils"
 	"time"
@@ -56,17 +57,20 @@ func Initialize(session *mgo.Session, client *indexutils.Client) xconfig.OnConfi
 			}
 
 			_, err = client.AddData(fmt.Sprintf("xbs-index.users.%d", hashcode.Equa(u.Id)), map[string]interface{}{
-				"name": "users",
-				"id":   u.Id,
-				"fields": map[string]interface{}{
-					"username":  info.Username,
-					"real_name": info.RealName,
-					"phone":     u.Phone,
-					"email":     u.Email,
-					"user_id":   u.Id,
-					"invite":    false,
-					"account":   u.Account,
-				},
+				"name":                     "users",
+				"id":                       u.Id,
+				"username":                 info.Username,
+				"real_name":                info.RealName,
+				"phone":                    u.Phone,
+				"email":                    u.Email,
+				"user_id":                  u.Id,
+				"invite":                   false,
+				"account":                  u.Account,
+				"state":                    xbasisconstants.StateOk,
+				"app_" + config.AdminAppId: true,
+				"app_" + config.SafeAppId:  true,
+				"app_" + config.RouteAppId: true,
+				"app_" + config.UserAppId:  true,
 			})
 
 			if err != nil {

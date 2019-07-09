@@ -16,6 +16,8 @@ message SearchRequest {
     int64 page = 3;
     int64 size = 4;
     bool card = 5;
+    string appId = 6;
+    bool invite = 7;
 }
 
 message SearchResponse {
@@ -33,4 +35,6 @@ message SimpleUserData {
     int64 state = 7;
     string account = 8;
     bool invite = 9;
+    bool fromInvite = 10;
+    string label = 11;
 }

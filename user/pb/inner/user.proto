@@ -23,6 +23,9 @@ message SimpleUserInfo {
     string username = 3;
     string icon = 4;
     string realName = 5;
+    int64 userState = 6;
+    bool fromInvite = 7;
+    bool invite = 8;
 }
 
 message GetUserInfoByIdRequest {

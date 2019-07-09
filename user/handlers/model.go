@@ -74,18 +74,15 @@ type userModel struct {
 	RegisterAt string `bson:"register_at"`
 }
 
-type userIndex struct {
-	Fields *userIndexFields `json:"fields"`
-}
-
 type userIndexFields struct {
-	UserId   string  `json:"user_id"`
-	Account  string  `json:"account"`
-	Invite   bool    `json:"invite"`
-	State    float64 `json:"state"`
-	Icon     string  `json:"icon"`
-	Username string  `json:"username"`
-	RealName string  `json:"real_name"`
-	Phone    string  `json:"phone"`
-	Email    string  `json:"email"`
+	UserId     string  `json:"user_id"`
+	Account    string  `json:"account"`
+	Invite     bool    `json:"invite"`
+	State      float64 `json:"state"`
+	Icon       string  `json:"icon"`
+	Username   string  `json:"username"`
+	RealName   string  `json:"real_name"`
+	Phone      string  `json:"phone"`
+	Email      string  `json:"email"`
+	FromInvite bool    `json:"from_invite"`
 }

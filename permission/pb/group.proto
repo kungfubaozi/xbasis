@@ -74,6 +74,7 @@ message GroupItem {
     bool user = 2;
     string icon = 3;
     string id = 4;
+    repeated string groupIds = 5;
 }
 
 message GetGroupItemDetailResponse {

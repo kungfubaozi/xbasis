@@ -70,7 +70,7 @@ func StartService() {
 
 		xbasissvc_external_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
 
-		xbasissvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session, userclient.NewExtUserClient(m.Client())))
+		xbasissvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session, userclient.NewExtUserClient(m.Client()), logger))
 
 		xbasissvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool,
 			permissioncli.NewBindingClient(m.Client())))

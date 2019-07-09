@@ -33,8 +33,7 @@ type requestHeaders struct {
 	fromClientId  string
 }
 
-var whiteApiList = []string{"/authentication/router/refresh",
-	"/authentication/router/logout", "/apps/settings/getSetting", "/permission/userGroup/move"}
+var whiteApiList = []string{"/authentication/router/logout"}
 
 func (r *request) verification() bool {
 
@@ -144,7 +143,7 @@ func (r *request) verification() bool {
 		defer wg.Done()
 		s, err := r.services.blacklistService.Check(ctx,
 			&xbasissvc_external_safety.CheckRequest{
-				Type:    constants.BlacklistOfUserDevice,
+				Type:    constants.BlacklistOfDevice,
 				Content: rh.userDevice,
 			})
 		if err != nil {
@@ -460,13 +459,15 @@ func (r *request) verification() bool {
 			Message:   "verification passed",
 			StateCode: 0,
 			Fields: &analysisclient.LogFields{
-				"id":             f.Id,
-				"user_id":        userId,
-				"from_client_id": headers.FromClientId,
-				"ref_client_id":  headers.RefClientId,
-				"app_id":         appResp.AppId,
+				"func_id":   f.Id,
+				"user_id":   userId,
+				"client_id": callClientId,
+				"app_id":    appResp.AppId,
+				"platform":  appResp.ClientPlatform,
 			},
 		})
+
+		fmt.Println("fid", f.Id)
 
 		r.services._log.WithFields(logrus.Fields{
 			"taking": fmt.Sprintf("%dms", (time.Now().UnixNano()-r.startAt)/1e6),

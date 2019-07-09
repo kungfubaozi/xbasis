@@ -114,9 +114,10 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 
 		for _, v := range groups {
 			groupItems = append(groupItems, &external.GroupItem{
-				Id:   v.Id,
-				Name: v.Name,
-				User: false,
+				Id:       v.Id,
+				Name:     v.Name,
+				User:     false,
+				GroupIds: []string{v.BindGroupId},
 			})
 		}
 
@@ -136,20 +137,27 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 					}
 				}
 
-				getUserInfo := func(userId string) (string, bool) {
+				getUserInfo := func(userId string, groups []string) {
 					s, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
 						UserId: userId,
 					})
 					if err != nil {
 						resp(errstate.ErrRequest)
-						return "", false
+						return
 					}
 					if !s.State.Ok {
 						resp(s.State)
-						return "", false
+						return
 					}
-					resp(errstate.Success)
-					return s.Username, true
+
+					name := constants.GetStateString(s.UserState)
+
+					groupItems = append(groupItems, &external.GroupItem{
+						Id:       userId,
+						User:     true,
+						Name:     s.Username + name,
+						GroupIds: groups,
+					})
 				}
 
 				if len(users) >= 2 {
@@ -160,14 +168,7 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 						defer wg.Done()
 						a := users[:a]
 						for _, v := range a {
-							n, s := getUserInfo(v.UserId)
-							if s {
-								groupItems = append(groupItems, &external.GroupItem{
-									Id:   v.UserId,
-									User: true,
-									Name: n,
-								})
-							}
+							getUserInfo(v.UserId, v.BindGroupId)
 						}
 					}()
 
@@ -175,26 +176,12 @@ func (svc *groupService) GetGroupItems(ctx context.Context, in *external.GetGrou
 						defer wg.Done()
 						a := users[:a]
 						for _, v := range a {
-							n, s := getUserInfo(v.UserId)
-							if s {
-								groupItems = append(groupItems, &external.GroupItem{
-									Id:   v.UserId,
-									User: true,
-									Name: n,
-								})
-							}
+							getUserInfo(v.UserId, v.BindGroupId)
 						}
 					}()
 				} else {
 					for _, v := range users {
-						n, s := getUserInfo(v.UserId)
-						if s {
-							groupItems = append(groupItems, &external.GroupItem{
-								Id:   v.UserId,
-								User: true,
-								Name: n,
-							})
-						}
+						getUserInfo(v.UserId, v.BindGroupId)
 					}
 				}
 				wg.Wait()
@@ -284,13 +271,18 @@ func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserReques
 			return nil
 		}
 
-		header := &analysisclient.LogHeaders{}
+		header := &analysisclient.LogHeaders{
+			ModuleName:  "AddUserToGroup",
+			TraceId:     auth.TraceId,
+			ServiceName: constants.PermissionService,
+		}
 
 		repo := svc.GetRepo()
 		defer repo.Close()
 
 		ur, err := repo.FindUserById(in.UserId, in.AppId)
 		if err != nil && err == mgo.ErrNotFound {
+			err = nil
 			ur = &userGroupsRelation{
 				UserId:   in.UserId,
 				AppId:    in.AppId,
@@ -325,18 +317,24 @@ func (svc *groupService) AddUser(ctx context.Context, in *external.AddUserReques
 				return nil
 			}
 
-			for _, v := range groups {
-				if v == "register" {
-					svc.log.Info(&analysisclient.LogContent{
-						Headers: header,
-						Action:  "NewUser",
-						Fields: &analysisclient.LogFields{
-							"appId":  in.AppId,
-							"userId": in.UserId,
-						},
-					})
-				}
-			}
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: header,
+				Action:  "AddUserToGroup",
+				Fields: &analysisclient.LogFields{
+					"userId":   in.UserId,
+					"groupIds": in.GroupIds,
+					"appId":    in.AppId,
+					"operate":  auth.Token.UserId,
+				},
+				Index: &analysisclient.LogIndex{
+					Id:   in.UserId,
+					Name: "users",
+					Fields: &analysisclient.LogFields{
+						"app_" + in.AppId: true,
+						"user_id":         in.UserId,
+					},
+				},
+			})
 		}
 
 		return errstate.Success
@@ -354,10 +352,21 @@ func (svc *groupService) Move(ctx context.Context, in *external.MoveRequest, out
 		repo := svc.GetRepo()
 		defer repo.Close()
 
-		for _, v := range in.Groups {
-			if v != constants.AppMainStructureGroup {
-
+		if !in.User {
+			groupId := in.Groups[0]
+			if groupId == in.Id {
+				return nil
 			}
+			err := repo.MoveGroup(in.AppId, in.Id, groupId)
+			if err != nil {
+				return nil
+			}
+			return errstate.Success
+		}
+
+		err := repo.MoveUser(in.Id, in.AppId, in.Groups)
+		if err == nil {
+			return errstate.Success
 		}
 
 		return nil
@@ -367,10 +376,46 @@ func (svc *groupService) Move(ctx context.Context, in *external.MoveRequest, out
 //删除组
 func (svc *groupService) Remove(ctx context.Context, in *external.SimpleGroup, out *commons.Status) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
-		return nil
+
+		if len(in.Id) == 0 || len(in.AppId) == 0 {
+			return nil
+		}
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		state := errstate.Success
+
+		resp := func(e error) {
+			if e == mgo.ErrNotFound {
+				return
+			}
+			if state.Ok && e != nil {
+				state = errstate.ErrRequest
+			}
+		}
+
+		go func() {
+			defer wg.Done()
+			err := repo.DeleteUserGroupRelation(in.AppId, in.Id)
+			resp(err)
+		}()
+
+		go func() {
+			defer wg.Done()
+			err := repo.DeleteGroupRelation(in.AppId, in.Id)
+			resp(err)
+		}()
+
+		wg.Wait()
+
+		return state
 	})
 }
 
-func NewGroupService(pool *redis.Pool, session *mgo.Session, innerUserService xbasissvc_internal_user.UserService) external.UserGroupHandler {
-	return &groupService{pool: pool, session: session, innerUserService: innerUserService}
+func NewGroupService(pool *redis.Pool, session *mgo.Session, innerUserService xbasissvc_internal_user.UserService, log analysisclient.LogClient) external.UserGroupHandler {
+	return &groupService{pool: pool, session: session, innerUserService: innerUserService, log: log}
 }

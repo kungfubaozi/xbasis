@@ -6,6 +6,7 @@ import (
 	"konekko.me/xbasis/analysis/client"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/indexutils"
 	wrapper "konekko.me/xbasis/commons/wrapper"
 	userpb "konekko.me/xbasis/user/pb"
 )
@@ -13,10 +14,11 @@ import (
 type userInfoService struct {
 	session *mgo.Session
 	log     analysisclient.LogClient
+	client  *indexutils.Client
 }
 
 func (svc *userInfoService) GetRepo() *userRepo {
-	return &userRepo{session: svc.session.Clone()}
+	return &userRepo{session: svc.session.Clone(), Client: svc.client}
 }
 
 func (svc *userInfoService) GetLocalInfo(ctx context.Context, in *userpb.GetInfoByIdRequest, out *userpb.GetInfoResponse) error {
@@ -37,6 +39,6 @@ func (svc *userInfoService) GetLocalInfo(ctx context.Context, in *userpb.GetInfo
 	})
 }
 
-func NewUserInfoService(session *mgo.Session, log analysisclient.LogClient) userpb.UserInfoHandler {
-	return &userInfoService{session: session, log: log}
+func NewUserInfoService(session *mgo.Session, log analysisclient.LogClient, client *indexutils.Client) userpb.UserInfoHandler {
+	return &userInfoService{session: session, log: log, client: client}
 }

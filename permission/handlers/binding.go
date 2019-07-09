@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
@@ -14,6 +15,7 @@ import (
 	external "konekko.me/xbasis/permission/pb"
 	"konekko.me/xbasis/user/pb/inner"
 	"sync"
+	"time"
 )
 
 type bindingService struct {
@@ -66,10 +68,12 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 
 					if err != nil {
 						resp(errstate.ErrSystem)
+						return
 					}
 
 					if len(role.Id) == 0 {
 						resp(errstate.ErrRequest)
+						return
 					}
 				}()
 
@@ -82,21 +86,41 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 
 			//去重
 			role, err := repo.FindRelationUserById(in.Id, in.AppId)
+			if err != nil && err == mgo.ErrNotFound {
+				role = &userRolesRelation{
+					CreateAt: time.Now().UnixNano(),
+					AppId:    in.AppId,
+					UserId:   in.Id,
+				}
+				err = nil
+			}
 			if err != nil {
 				return nil
 			}
+
 			var roles []string
 			for _, v := range in.Roles {
+				ok := true
 				for _, v1 := range role.Roles {
 					if v == v1 {
-						return errstate.ErrUserAlreadyBindRole
+						ok = false
+						break
 					}
 				}
-				roles = append(roles, v)
+				if ok {
+					roles = append(roles, v)
+				}
 			}
 
+			if len(role.Roles) > 0 {
+				roles = append(roles, role.Roles...)
+			}
+
+			role.Roles = roles
+
 			//update database
-			err = repo.UpdateUserRole(in.Id, in.AppId, roles)
+			err = repo.SetUserRole(in.Id, in.AppId, role)
+			fmt.Println("err", err)
 			if err != nil {
 				return errstate.ErrRequest
 			}

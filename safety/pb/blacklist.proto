@@ -21,6 +21,7 @@ message BlacklistSearchRequest {
     string key = 2;
     int64 size = 3;
     int64 page = 4;
+    string type = 5;
 }
 
 message BlacklistSearchResponse {

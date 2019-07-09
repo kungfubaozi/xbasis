@@ -76,8 +76,8 @@ message FunctionItemDetail {
     int64 valTokenTimes = 8;
     string id = 9;
     int64 todayVisit = 10;
-    int64 todayVisitUser = 11;
-    int64 monthVisit = 12;
+    int64 todayUserVisit = 11;
+    int64 totalUserVisit = 12;
     int64 totalVisit = 13;
 }
 

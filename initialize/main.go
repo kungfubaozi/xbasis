@@ -90,10 +90,11 @@ func main() {
 		Email:         email,
 		SecretKey:     secretKey,
 		UserAppId:     id.Short(),
-		UserAppRoleId: id.String(),
+		UserAppRoleId: id.Get(),
 		RouteAppId:    id.Short(),
 		SafeAppId:     id.Short(),
 		AdminAppId:    id.Short(),
+		SafeAppRoleId: id.Get(),
 	}
 
 	configuration := &xconfig.GosionConfiguration{

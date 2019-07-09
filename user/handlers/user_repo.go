@@ -1,7 +1,10 @@
 package userhandlers
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"konekko.me/xbasis/commons/encrypt"
@@ -38,7 +41,7 @@ func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
 
 func (repo *userRepo) FindIndexTable(key string, content string) (string, error) {
 	var m map[string]interface{}
-	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{"fields." + key: content, "fields.invite": false}, &m)
+	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content, "invite": false}, &m)
 	if err != nil {
 		return "", nil
 	}
@@ -56,10 +59,21 @@ func (repo *userRepo) infoCollection(userId string) *mgo.Collection {
 	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", userInfoCollection, hashcode.Equa(userId)))
 }
 
-func (repo *userRepo) FindUserInfo(userId string) (*userInfo, error) {
-	u := &userInfo{}
-	err := repo.infoCollection(userId).Find(bson.M{"user_id": userId}).One(u)
-	return u, err
+func (repo *userRepo) FindUserInfo(userId string) (*userIndexFields, error) {
+	query := elastic.NewBoolQuery()
+	query.Must(elastic.NewMatchPhraseQuery("user_id", userId))
+	v, err := repo.GetElasticClient().Search(typeUserIndex).Query(query).Type("_doc").Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	if v.Hits.TotalHits == 1 {
+		i := &userIndexFields{}
+		err := json.Unmarshal(*v.Hits.Hits[0].Source, i)
+		if err == nil {
+			return i, nil
+		}
+	}
+	return nil, indexutils.ErrNotFound
 }
 
 func (repo *userRepo) Close() {

@@ -50,7 +50,7 @@ func StartService() {
 
 		xbasissvc_internal_user.RegisterMessageHandler(s.Server(), userhandlers.NewMessageService(ms, session))
 
-		xbasissvc_internal_user.RegisterUserHandler(s.Server(), userhandlers.NewInnerUserService(session, logger))
+		xbasissvc_internal_user.RegisterUserHandler(s.Server(), userhandlers.NewInnerUserService(session, logger, client))
 
 		errc <- s.Run()
 	}()
@@ -72,7 +72,7 @@ func StartService() {
 
 		xbasissvc_external_user.RegisterInviteHandler(s.Server(), userhandlers.NewInviteService(session, logger, userclient.NewExtUserClient(s.Client())))
 
-		xbasissvc_external_user.RegisterUserInfoHandler(s.Server(), userhandlers.NewUserInfoService(session, logger))
+		xbasissvc_external_user.RegisterUserInfoHandler(s.Server(), userhandlers.NewUserInfoService(session, logger, client))
 
 		xbasissvc_external_user.RegisterUserHandler(s.Server(), userhandlers.NewUserService(client))
 

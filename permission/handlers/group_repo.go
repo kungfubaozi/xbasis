@@ -40,8 +40,24 @@ func (repo *groupRepo) groupUsersCollection(appId string) *mgo.Collection {
 	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", groupUsersCollection, hashcode.Equa(appId)))
 }
 
+func (repo *groupRepo) DeleteGroupRelation(appId, groupId string) error {
+	return repo.collection(appId).Remove(bson.M{"_id": groupId, "app_id": appId})
+}
+
+func (repo *groupRepo) DeleteUserGroupRelation(appId, groupId string) error {
+	return repo.groupUsersCollection(appId).Update(bson.M{"bind_group_id": groupId, "app_id": appId}, bson.M{"$pull": bson.M{"bind_group_id": groupId}})
+}
+
 func (repo *groupRepo) Close() {
 	repo.session.Close()
+}
+
+func (repo *groupRepo) MoveUser(userId, appId string, groupIds []string) error {
+	return repo.groupUsersCollection(appId).Update(bson.M{"user_id": userId, "app_id": appId}, bson.M{"$set": bson.M{"bind_group_id": groupIds}})
+}
+
+func (repo *groupRepo) MoveGroup(appId, groupId, newBindGroupId string) error {
+	return repo.collection(appId).Update(bson.M{"_id": groupId}, bson.M{"$set": bson.M{"bind_group_id": newBindGroupId}})
 }
 
 func (repo *groupRepo) FindGroupItems(appId, id string) ([]*userGroup, error) {

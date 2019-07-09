@@ -22,8 +22,8 @@ type inviteService struct {
 	session          *mgo.Session
 	log              analysisclient.LogClient
 	id               generator.IDGenerator
-	innerUserService xbasissvc_internal_user.UserService
 	client           *indexutils.Client
+	innerUserService xbasissvc_internal_user.UserService
 }
 
 func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *commons.Status) error {
@@ -220,7 +220,7 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 				RealName:     in.RealName,
 				Account:      in.Account,
 				Side:         false, //side的作用是判断user是内部还是外部新的
-				State:        constants.InviteStateOfWaiting,
+				State:        constants.InviteStateOfRegister,
 			}
 
 			var items []*inviteItem
@@ -260,7 +260,7 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 						"invite":      true,
 						"from_invite": true,
 						"timestamp":   time.Now().Unix(),
-						"state":       constants.InviteStateOfWaiting,
+						"state":       m.State,
 					},
 				},
 			})
@@ -297,6 +297,18 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 
 		repo := svc.GetRepo()
 		defer repo.Close()
+
+		v, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
+			UserId: in.UserId,
+		})
+
+		if err != nil {
+			return nil
+		}
+
+		if !v.State.Ok {
+			return v.State
+		}
 
 		m, err := repo.FindByKey("user_id", in.UserId)
 		e := false
@@ -336,6 +348,8 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 				CreateUserId: auth.Token.UserId,
 			}
 
+			//path search
+
 			err = repo.Add(u)
 
 			if err == nil {
@@ -352,10 +366,11 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 						Name: "users",
 						Id:   m.UserId,
 						Fields: &analysisclient.LogFields{
-							"user_id":     m.UserId,
-							"invite":      true,
-							"side":        true,
-							"from_invite": false,
+							"user_id":                         m.UserId,
+							"invite":                          true,
+							"side":                            true,
+							"from_invite":                     false,
+							"authorize_apps." + in.Item.AppId: true,
 						},
 					},
 				})
@@ -386,6 +401,25 @@ func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest
 			}
 
 			err = repo.UpdateItems(in.UserId, m.Items)
+
+			if err == nil {
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: header,
+					Action:  "AppendInviteUserAccess",
+					Fields: &analysisclient.LogFields{
+						"app_id":    in.Item.AppId,
+						"user_id":   m.UserId,
+						"timestamp": time.Now().Unix(),
+					},
+					Index: &analysisclient.LogIndex{
+						Name: "users",
+						Id:   m.UserId,
+						Fields: &analysisclient.LogFields{
+							"apps." + in.Item.AppId: true,
+						},
+					},
+				})
+			}
 		}
 
 		if err != nil {

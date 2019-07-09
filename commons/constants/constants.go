@@ -27,10 +27,26 @@ const (
 )
 
 const (
+	StateOk int64 = 3 << 3
+)
+
+const (
 	InviteStateOfRegister  int64 = 2 << 2
 	InviteStateOfAuthorize int64 = 2 << 3
-	InviteStateOfWaiting   int64 = 2 << 3
 )
+
+func GetStateString(state int64) string {
+	value := ""
+	switch state {
+	case InviteStateOfRegister:
+		value = "(等待注册)"
+		break
+	case InviteStateOfAuthorize:
+		value = "(等待授权)"
+		break
+	}
+	return value
+}
 
 const (
 	//send email or phone validate code, next request user usage _stat
@@ -118,13 +134,11 @@ const (
 )
 
 const (
-	UserGroupTypeOfRoot   = 7 << 5
-	UserGroupTypeOfNormal = 7 << 6
-)
-
-const (
-	BlacklistOfIP         = 5 << 4
-	BlacklistOfUserDevice = 5 << 6
+	BlacklistOfIP       = 5 << 4
+	BlacklistOfDevice   = 5 << 6
+	BlacklistOfRegister = 5 << 7
+	BlacklistOfArea     = 5 << 8
+	BlacklistOfUser     = 5 << 9
 )
 
 const (

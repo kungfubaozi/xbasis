@@ -116,7 +116,7 @@ func (log *logClient) buildMessage(content *LogContent) {
 	}
 	message := &sarama.ProducerMessage{
 		Partition: 1,
-		Topic:     "xbs-analysis-logger-topic-1",
+		Topic:     "xbs-analysis-logger-topic-5",
 		Value:     sarama.StringEncoder(string(b)),
 	}
 	_, _, err = log.producer.SendMessage(message)
