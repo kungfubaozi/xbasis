@@ -73,7 +73,7 @@ func StartService() {
 		xbasissvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session, userclient.NewExtUserClient(m.Client()), logger))
 
 		xbasissvc_external_permission.RegisterRoleHandler(m.Server(), permissionhandlers.NewRoleService(session, pool,
-			permissioncli.NewBindingClient(m.Client())))
+			permissioncli.NewBindingClient(m.Client()), client))
 
 		errc <- m.Run()
 

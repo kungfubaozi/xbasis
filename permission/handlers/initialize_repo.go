@@ -54,6 +54,7 @@ type initializeRepo struct {
 	functionRoles     map[int][]interface{}
 	groupUsers        map[int][]interface{}
 	groups            map[int][]interface{}
+	adminRoles        []string
 	//callback
 }
 
@@ -142,6 +143,9 @@ func (repo *initializeRepo) SaveAndClose() {
 			}
 		}
 
+		index := fmt.Sprintf("xbs-index.users.%d", hashcode.Equa(repo.config.UserId))
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(index).Type("_doc").Id(encrypt.Md5(repo.config.UserId + index)).Routing(repo.config.UserId).Doc(getRolesRelation(repo.config.UserId, repo.adminRoles)))
+
 		ok, err := repo.bulk.Do(context.Background())
 		check(err)
 		if ok.Errors {
@@ -164,7 +168,7 @@ func (repo *initializeRepo) SaveAndClose() {
 var c *xconfig.AutonomyRouteConfig
 
 func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync bool) {
-	roleMap := make(map[string]string)
+	roleMap := make(map[string]*roleIndexModel)
 
 	var adminRoles []string
 	for _, v := range config.Roles {
@@ -198,8 +202,6 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			role.Id = repo.config.SafeAppRoleId
 		}
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(roleIndex).Type("_doc").Doc(role))
-
 		if repo.userRoles == nil {
 			repo.userRoles = make(map[int][]interface{})
 		}
@@ -208,7 +210,14 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		repo.userRoles[hashcode.Equa(appId)] = append(v1, role)
 
-		roleMap[role.Name] = role.Id
+		roleMap[role.Name] = &roleIndexModel{
+			Name:          v,
+			Id:            role.Id,
+			CreateAt:      role.CreateAt,
+			AppId:         appId,
+			CreateUserId:  repo.config.UserId,
+			RelationUsers: 1,
+		}
 	}
 
 	if len(adminRoles) > 0 {
@@ -228,6 +237,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		repo.userRolesRelation[hashcode.Equa(repo.config.UserId)] = append(v1, u)
 
+		repo.adminRoles = append(repo.adminRoles, adminRoles...)
 	}
 
 	for _, v := range config.Data {
@@ -265,12 +275,15 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				Share:        v.Share,
 			}
 
+			var roles []string
+
 			if v.Roles != nil && len(v.Roles) > 0 {
 				var nr []string
 
 				for _, r := range v.Roles {
-					id := roleMap[r]
-					nr = append(nr, id)
+					r := roleMap[r]
+					nr = append(nr, r.Id)
+					r.RelationFunctions = r.RelationFunctions + 1
 				}
 				if repo.functionRoles == nil {
 					repo.functionRoles = make(map[int][]interface{})
@@ -285,17 +298,20 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				}
 
 				repo.functionRoles[hashcode.Equa(f.Id)] = append(v, fr)
+
+				roles = nr
 			}
 
 			if repo.functions == nil {
 				repo.functions = make(map[int][]interface{})
 			}
 
-			v := repo.functions[hashcode.Equa(f.AppId)]
+			v1 := repo.functions[hashcode.Equa(f.AppId)]
 
-			repo.functions[hashcode.Equa(f.AppId)] = append(v, f)
+			repo.functions[hashcode.Equa(f.AppId)] = append(v1, f)
 
 			sf := &SimplifiedFunction{
+				JoinField:     "relation",
 				Id:            f.Id,
 				AuthTypes:     f.AuthTypes,
 				Share:         f.Share,
@@ -305,8 +321,14 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				Path:          encrypt.SHA1(f.Api),
 			}
 
-			repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionIndex).Type("_doc").Doc(sf))
+			repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionIndex).Id(f.Id).Type("_doc").Doc(sf))
+
+			repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionIndex).Type("_doc").Id(encrypt.Md5(f.Id + functionIndex)).Routing(f.Id).Doc(getRolesRelation(f.Id, roles)))
+
 		}
+	}
+	for _, v := range roleMap {
+		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(roleIndex).Type("_doc").Doc(v))
 	}
 }
 

@@ -3,7 +3,7 @@ package xbasisconstants
 const (
 	PermissionService     = "xbasis.external.permission"
 	GatewayService        = "xbasis.external.gateway"
-	AnalysisService       = "xbasis.external.analysis"
+	AnalysisService       = "xbasis.external.analytical"
 	MessageService        = "xbasis.external.message"
 	ConnectionService     = "xbasis.external.connection"
 	UserService           = "xbasis.external.user"
@@ -167,3 +167,18 @@ const (
 	AppUserGroup          = "$app"
 	AppMainStructureGroup = "$org"
 )
+
+var IndexMapping = `{
+	"mappings":{
+		"_doc":{
+			"properties":{
+				"join_field":{
+					"type":"join",
+					"relations":{
+						"relation":"child"
+					}
+				}
+			}
+		}
+	}
+}`

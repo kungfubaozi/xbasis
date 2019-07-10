@@ -22,24 +22,17 @@ const (
 )
 
 type inviteModel struct {
-	Phone        string        `bson:"phone"`
-	Email        string        `bson:"email"`
-	CreateAt     int64         `bson:"create_at"`
-	CreateUserId string        `bson:"create_user_id"`
-	Username     string        `bson:"username"`
-	RealName     string        `bson:"real_name"`
-	Items        []*inviteItem `bson:"items"`
-	Type         int64         `bson:"type"` //邀请类型
-	UserId       string        `bson:"user_id"`
-	State        int64         `bson:"state"`
-	Side         bool          `bson:"side"`
-	Account      string        `bson:"account"`
-}
-
-type inviteItem struct {
-	AppId        string   `bson:"app_id"`
-	BingGroupIds []string `bson:"bing_group_id"`
-	Roles        []string `bson:"roles"`
+	Phone        string `bson:"phone"`
+	Email        string `bson:"email"`
+	CreateAt     int64  `bson:"create_at"`
+	CreateUserId string `bson:"create_user_id"`
+	Username     string `bson:"username"`
+	RealName     string `bson:"real_name"`
+	Type         int64  `bson:"type"` //邀请类型
+	UserId       string `bson:"user_id"`
+	State        int64  `bson:"state"`
+	Side         bool   `bson:"side"`
+	Account      string `bson:"account"`
 }
 
 type userOAuth struct {

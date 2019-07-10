@@ -172,6 +172,9 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 			if len(v.Username) > 0 {
 				info.Username = v.Username
 			}
+			if len(v.Account) > 0 {
+				user.Account = v.Account
+			}
 		}
 
 		//需要设置用户名
@@ -192,7 +195,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 		if invited {
 			s, err := svc.inviteService.SetState(ctx, &external.SetStateRequest{
 				UserId: userId,
-				State:  constants.InviteStateOfRegister,
+				State:  constants.InviteStateOfAuthorize,
 			})
 			if err != nil {
 				return nil
@@ -221,7 +224,7 @@ func (svc *registerService) New(ctx context.Context, in *external.NewRequest, ou
 					"phone":     user.Phone,
 					"email":     user.Email,
 					"user_id":   user.Id,
-					"invite":    false,
+					"state":     constants.InviteStateOfAuthorize,
 				},
 			},
 		})

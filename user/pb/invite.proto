@@ -12,8 +12,6 @@ service Invite {
     //1.如果没有注册，需要注册再进行
     rpc User (InviteUserRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Search (InviteSearchRequest) returns (InviteSearchResponse);
-
     //是否被邀请
     rpc HasInvited (HasInvitedRequest) returns (HasInvitedResponse);
 
@@ -23,8 +21,6 @@ service Invite {
     //完成
     rpc SetState (SetStateRequest) returns (xbasis.commons.dto.Status);
 
-    rpc Append (AppendRequest) returns (xbasis.commons.dto.Status);
-
 }
 
 message InviteUserRequest {
@@ -32,20 +28,13 @@ message InviteUserRequest {
     string email = 2;
     string username = 3;
     string realName = 4;
-    repeated InviteItem items = 5;
-    int64 expiredAt = 6;
-    string account = 7;
-}
-
-message AppendRequest {
-    string userId = 1;
-    InviteItem item = 2;
+    int64 expiredAt = 5;
+    string account = 6;
 }
 
 message SetStateRequest {
     string userId = 1;
-    string appId = 2;
-    int64 state = 3;
+    int64 state = 2;
 }
 
 message HasInvitedRequest {
@@ -58,14 +47,7 @@ message HasInvitedRequest {
 message HasInvitedResponse {
     xbasis.commons.dto.State state = 1;
     string userId = 2;
-    int64 status = 3;
-}
-
-message InviteSearchRequest {
-    int64 pageIndex = 1;
-    int64 pageSize = 2;
-    string key = 3;
-    string value = 4;
+    int64 userState = 3;
 }
 
 message InviteSearchResponse {
@@ -74,15 +56,10 @@ message InviteSearchResponse {
 
 message GetDetailResponse {
     xbasis.commons.dto.State state = 1;
-    repeated InviteItem items = 2;
-    string username = 3;
-    string realName = 4;
-    string phone = 5;
-    string email = 6;
-}
-
-message InviteItem {
-    string appId = 1;
-    repeated string roles = 2;
-    repeated string bindGroupIds = 3;
+    string username = 2;
+    string realName = 3;
+    string phone = 4;
+    string email = 5;
+    string account = 6;
+    int64 userState = 7;
 }

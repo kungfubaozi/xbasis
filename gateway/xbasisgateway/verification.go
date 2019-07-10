@@ -12,6 +12,7 @@ import (
 	"konekko.me/xbasis/commons/actions"
 	"konekko.me/xbasis/commons/config/call"
 	constants "konekko.me/xbasis/commons/constants"
+	"konekko.me/xbasis/commons/date"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/encrypt"
 	"konekko.me/xbasis/commons/errstate"
@@ -33,7 +34,7 @@ type requestHeaders struct {
 	fromClientId  string
 }
 
-var whiteApiList = []string{"/authentication/router/logout"}
+var whiteApiList = []string{"/authentication/router/logout", "/analytical/analysis/searchTracking"}
 
 func (r *request) verification() bool {
 
@@ -86,7 +87,7 @@ func (r *request) verification() bool {
 
 	headers := &analysisclient.LogHeaders{
 		ServiceName:      constants.GatewayService,
-		ModuleName:       "Route",
+		ModuleName:       "Verification",
 		UserAgent:        rh.userAgent,
 		RefClientId:      rh.refClientId,
 		Device:           rh.userDevice,
@@ -98,11 +99,16 @@ func (r *request) verification() bool {
 		TraceId:          traceId,
 	}
 
+	r.logId = r.services.id.String()
+	r.logIndex = "xbs-logger." + xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM_I_DD)
+
 	r.services.log.Info(&analysisclient.LogContent{
 		Headers:   headers,
 		Action:    "PermissionVerification",
 		Message:   "start verification",
 		StateCode: 0,
+		LogIndex:  r.logIndex,
+		Id:        r.logId,
 	})
 
 	r.c.Request.Header.Del("authorization")
@@ -181,12 +187,32 @@ func (r *request) verification() bool {
 			Action:    "ThreeBasicValidations",
 			Message:   "CheckFailed",
 			StateCode: state.Code,
+			Index: &analysisclient.LogIndex{
+				Id:   r.logId,
+				Name: r.logIndex,
+				Fields: &analysisclient.LogFields{
+					"basic_validation": true,
+				},
+			},
 		})
 		r.json(state)
 		return false
 	}
 
 	if appResp != nil && len(appResp.AppId) > 0 {
+
+		r.services.log.Info(&analysisclient.LogContent{
+			Headers: &analysisclient.LogHeaders{
+				TraceId: traceId,
+			},
+			Index: &analysisclient.LogIndex{
+				Id:   r.logId,
+				Name: r.logIndex,
+				Fields: &analysisclient.LogFields{
+					"app_id": appResp.AppId,
+				},
+			},
+		})
 
 		if appResp.ClientEnabled != constants.Enabled {
 			r.json(errstate.ErrClientClosed)
@@ -195,15 +221,17 @@ func (r *request) verification() bool {
 
 		var f *xbasissvc_internal_permission.LookupApiResponse
 
+		wl := false
 		for _, v := range whiteApiList {
 			if v == rh.path {
 				f = &xbasissvc_internal_permission.LookupApiResponse{
 					AuthTypes: []int64{},
 				}
+				wl = true
 				break
 			}
 		}
-		if f == nil {
+		if f == nil && !wl {
 
 			f1, err := r.services.accessibleService.LookupApi(ctx, &xbasissvc_internal_permission.LookupApiRequest{
 				AppId: appResp.AppId,
@@ -216,6 +244,13 @@ func (r *request) verification() bool {
 						TraceId: traceId,
 					},
 					Action: "InvalidApi",
+					Index: &analysisclient.LogIndex{
+						Id:   r.logId,
+						Name: r.logIndex,
+						Fields: &analysisclient.LogFields{
+							"invalid_api": true,
+						},
+					},
 				})
 				r.json(errstate.ErrRequest)
 				return false
@@ -233,10 +268,15 @@ func (r *request) verification() bool {
 				for _, v := range f.GrantPlatforms {
 					if v == appResp.ClientPlatform {
 						r.services.log.Info(&analysisclient.LogContent{
-							Headers: &analysisclient.LogHeaders{
-								TraceId: traceId,
+							Headers: headers,
+							Action:  "ApiPlatformAccessDenied",
+							Index: &analysisclient.LogIndex{
+								Id:   r.logId,
+								Name: r.logIndex,
+								Fields: &analysisclient.LogFields{
+									"denied_api_client": true,
+								},
 							},
-							Action: "ApiPlatformAccessDenied",
 						})
 						r.json(errstate.ErrRequest)
 						return false
@@ -250,8 +290,15 @@ func (r *request) verification() bool {
 			Action:  "RequestApi",
 			Message: headers.Path,
 			Fields: &analysisclient.LogFields{
-				"id":    f.Id,
-				"appId": appResp.AppId,
+				"function_id": f.Id,
+				"app_id":      appResp.AppId,
+			},
+			Index: &analysisclient.LogIndex{
+				Id:   r.logId,
+				Name: r.logIndex,
+				Fields: &analysisclient.LogFields{
+					"function": f.Name,
+				},
 			},
 		})
 
@@ -395,6 +442,13 @@ func (r *request) verification() bool {
 				Action:    "BasicApplicationInfoCheck",
 				Message:   "CheckFailed",
 				StateCode: state.Code,
+				Index: &analysisclient.LogIndex{
+					Id:   r.logId,
+					Name: r.logIndex,
+					Fields: &analysisclient.LogFields{
+						"passed": false,
+					},
+				},
 			})
 			r.json(state)
 			return false
@@ -465,6 +519,13 @@ func (r *request) verification() bool {
 				"app_id":    appResp.AppId,
 				"platform":  appResp.ClientPlatform,
 			},
+			Index: &analysisclient.LogIndex{
+				Id:   r.logId,
+				Name: r.logIndex,
+				Fields: &analysisclient.LogFields{
+					"passed": true,
+				},
+			},
 		})
 
 		fmt.Println("fid", f.Id)
@@ -491,6 +552,8 @@ func (r *request) verification() bool {
 			r.dat.Cv = cv
 		}
 
+		r.funcName = f.Name
+		r.traceId = traceId
 		r.headers = cm
 		r.toAppId = appResp.AppId
 		r.userId = userId

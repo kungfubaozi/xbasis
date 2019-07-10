@@ -38,6 +38,7 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 		e := svc.client.GetElasticClient().Search(typeUserIndex)
 
 		query := elastic.NewBoolQuery()
+		query.Must(elastic.NewMatchPhraseQuery("join_field", "relation"))
 
 		if len(v1) > 0 {
 			q := elastic.NewQueryStringQuery(v1)

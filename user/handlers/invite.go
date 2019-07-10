@@ -29,11 +29,11 @@ type inviteService struct {
 func (svc *inviteService) SetState(ctx context.Context, in *external.SetStateRequest, out *commons.Status) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
-		if len(in.UserId) > 10 && len(in.AppId) > 8 && in.State > 0 {
+		if len(in.UserId) > 10 && in.State > 0 {
 			repo := svc.GetRepo()
 			defer repo.Close()
 
-			err := repo.SetState(in.UserId, in.AppId, in.State)
+			err := repo.SetState(in.UserId, in.State)
 			if err == nil {
 				return errstate.Success
 			}
@@ -62,32 +62,10 @@ func (svc *inviteService) GetDetail(ctx context.Context, in *external.HasInvited
 		out.RealName = m.RealName
 		out.Email = m.Email
 		out.Phone = m.Phone
-
-		var items []*external.InviteItem
-		for _, v := range m.Items {
-			if len(in.AppId) > 8 && v.AppId != in.AppId {
-				continue
-			}
-			items = append(items, &external.InviteItem{
-				AppId:        v.AppId,
-				BindGroupIds: v.BingGroupIds,
-				Roles:        v.Roles,
-			})
-			if len(in.AppId) > 8 {
-				break
-			}
-		}
-
-		out.Items = items
+		out.Account = m.Account
+		out.UserState = m.State
 
 		return errstate.Success
-	})
-}
-
-func (svc *inviteService) Search(ctx context.Context, in *external.InviteSearchRequest, out *external.InviteSearchResponse) error {
-	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
-
-		return nil
 	})
 }
 
@@ -123,7 +101,7 @@ func (svc *inviteService) HasInvited(ctx context.Context, in *external.HasInvite
 		}
 
 		out.UserId = m.UserId
-		out.Status = m.State
+		out.UserState = m.State
 
 		return errstate.Success
 	})
@@ -223,18 +201,6 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 				State:        constants.InviteStateOfRegister,
 			}
 
-			var items []*inviteItem
-
-			for _, v := range in.Items {
-				items = append(items, &inviteItem{
-					AppId:        v.AppId,
-					Roles:        v.Roles,
-					BingGroupIds: v.BindGroupIds,
-				})
-			}
-
-			m.Items = items
-
 			err = repo.Add(m)
 			if err != nil {
 				return errstate.ErrRequest
@@ -273,160 +239,6 @@ func (svc *inviteService) User(ctx context.Context, in *external.InviteUserReque
 		}
 
 		return errstate.ErrHasInvited
-	})
-}
-
-/**
-Append是在邀请用户或已经注册用户中添加邀请信息，不同与User接口
-*/
-func (svc *inviteService) Append(ctx context.Context, in *external.AppendRequest, out *commons.Status) error {
-	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
-		if len(in.UserId) < 10 || in.Item == nil {
-			return nil
-		}
-
-		header := &analysisclient.LogHeaders{
-			TraceId:     auth.TraceId,
-			ServiceName: constants.UserService,
-			ModuleName:  "InviteUser",
-		}
-
-		//检查用户是否被注册/被邀请
-		//如果是邀请用户则直接在原有内容上继续添加
-		//如果是注册用户，则新建invite，保存
-
-		repo := svc.GetRepo()
-		defer repo.Close()
-
-		v, err := svc.innerUserService.GetUserInfoById(ctx, &xbasissvc_internal_user.GetUserInfoByIdRequest{
-			UserId: in.UserId,
-		})
-
-		if err != nil {
-			return nil
-		}
-
-		if !v.State.Ok {
-			return v.State
-		}
-
-		m, err := repo.FindByKey("user_id", in.UserId)
-		e := false
-		if err != nil && err == mgo.ErrNotFound {
-			err = nil
-			e = true
-		}
-
-		if err != nil {
-			return nil
-		}
-
-		if e {
-			s, err := svc.innerUserService.IsExists(ctx, &xbasissvc_internal_user.ExistsRequest{
-				UserId: in.UserId,
-			})
-
-			if err != nil {
-				return nil
-			}
-
-			if !s.State.Ok {
-				return s.State
-			}
-
-			u := &inviteModel{
-				UserId: in.UserId,
-				Side:   true,
-				Items: []*inviteItem{
-					{
-						BingGroupIds: in.Item.BindGroupIds,
-						AppId:        in.Item.AppId,
-						Roles:        in.Item.Roles,
-					},
-				},
-				CreateAt:     time.Now().UnixNano(),
-				CreateUserId: auth.Token.UserId,
-			}
-
-			//path search
-
-			err = repo.Add(u)
-
-			if err == nil {
-
-				svc.log.Info(&analysisclient.LogContent{
-					Headers: header,
-					Action:  "InviteSideUserToApp",
-					Fields: &analysisclient.LogFields{
-						"app_id":    in.Item.AppId,
-						"user_id":   m.UserId,
-						"timestamp": time.Now().Unix(),
-					},
-					Index: &analysisclient.LogIndex{
-						Name: "users",
-						Id:   m.UserId,
-						Fields: &analysisclient.LogFields{
-							"user_id":                         m.UserId,
-							"invite":                          true,
-							"side":                            true,
-							"from_invite":                     false,
-							"authorize_apps." + in.Item.AppId: true,
-						},
-					},
-				})
-
-			}
-
-		} else {
-			//已经邀请但未注册
-			if m == nil {
-				return nil
-			}
-
-			//去除原有的
-			for k, v := range m.Items {
-				if v.AppId == in.Item.AppId {
-					i := k - 1
-					if i < 0 {
-						i = 0
-					}
-					if len(in.Item.Roles) > 0 {
-						v.Roles = append(v.Roles, in.Item.Roles...)
-					}
-					if len(in.Item.BindGroupIds) > 0 {
-						v.BingGroupIds = append(v.BingGroupIds, in.Item.BindGroupIds...)
-					}
-					break
-				}
-			}
-
-			err = repo.UpdateItems(in.UserId, m.Items)
-
-			if err == nil {
-				svc.log.Info(&analysisclient.LogContent{
-					Headers: header,
-					Action:  "AppendInviteUserAccess",
-					Fields: &analysisclient.LogFields{
-						"app_id":    in.Item.AppId,
-						"user_id":   m.UserId,
-						"timestamp": time.Now().Unix(),
-					},
-					Index: &analysisclient.LogIndex{
-						Name: "users",
-						Id:   m.UserId,
-						Fields: &analysisclient.LogFields{
-							"apps." + in.Item.AppId: true,
-						},
-					},
-				})
-			}
-		}
-
-		if err != nil {
-			return nil
-		}
-
-		return errstate.Success
 	})
 }
 

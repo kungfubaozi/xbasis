@@ -73,7 +73,7 @@ func (svc *loggerService) GetAxisData(ctx context.Context, in *external.GetDataR
 			query.Filter(filters...)
 		}
 
-		search := svc.GetElasticClient().Search("gosion-logger.*")
+		search := svc.GetElasticClient().Search("xbs-logger.*")
 
 		source := elastic.NewSearchSource().Query(query)
 

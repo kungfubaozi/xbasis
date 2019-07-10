@@ -41,12 +41,12 @@ func (repo *userRepo) oauthCollection(openId string) *mgo.Collection {
 
 func (repo *userRepo) FindIndexTable(key string, content string) (string, error) {
 	var m map[string]interface{}
-	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content, "invite": false}, &m)
+	ok, err := repo.QueryFirst(typeUserIndex, map[string]interface{}{key: content, "invite": false, "join_field": "relation"}, &m)
 	if err != nil {
 		return "", nil
 	}
 	if ok {
-		return m["id"].(string), nil
+		return m["user_id"].(string), nil
 	}
 	return "", indexutils.ErrNotFound
 }
@@ -62,6 +62,7 @@ func (repo *userRepo) infoCollection(userId string) *mgo.Collection {
 func (repo *userRepo) FindUserInfo(userId string) (*userIndexFields, error) {
 	query := elastic.NewBoolQuery()
 	query.Must(elastic.NewMatchPhraseQuery("user_id", userId))
+	query.Must(elastic.NewMatchPhraseQuery("join_field", "relation"))
 	v, err := repo.GetElasticClient().Search(typeUserIndex).Query(query).Type("_doc").Do(context.Background())
 	if err != nil {
 		return nil, err

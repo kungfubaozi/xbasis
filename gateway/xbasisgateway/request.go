@@ -39,6 +39,10 @@ type request struct {
 	host        string
 	serviceName string
 	secure      bool
+	traceId     string
+	logId       string
+	logIndex    string
+	funcName    string
 }
 
 type services struct {

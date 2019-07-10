@@ -2,8 +2,6 @@ package permissionhandlers
 
 import (
 	"context"
-	"fmt"
-	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
 	constants "konekko.me/xbasis/commons/constants"
@@ -75,6 +73,11 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 						resp(errstate.ErrRequest)
 						return
 					}
+
+					if role.AppId != in.AppId {
+						resp(errstate.ErrRequest)
+						return
+					}
 				}()
 
 			}
@@ -120,7 +123,6 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 
 			//update database
 			err = repo.SetUserRole(in.Id, in.AppId, role)
-			fmt.Println("err", err)
 			if err != nil {
 				return errstate.ErrRequest
 			}
@@ -132,6 +134,14 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 					"userId": in.Id,
 					"appId":  in.AppId,
 					"roles":  in.Roles,
+				},
+				Index: &analysisclient.LogIndex{
+					Name:     "users",
+					Id:       in.Id,
+					Relation: true,
+					Fields: &analysisclient.LogFields{
+						"roles": role.Roles,
+					},
 				},
 			})
 
@@ -158,51 +168,89 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *external.Bindin
 			roleRepo := svc.GetRoleRepo()
 			defer roleRepo.Close()
 
-			for _, v := range in.Roles {
-				role, err := roleRepo.FindRoleById(v, in.AppId)
-				if err != nil {
-					return errstate.ErrSystem
-				}
-
-				if len(role.Id) == 0 {
-					return errstate.ErrRequest
-				}
-
-				//不在同一个应用内
-				if role.AppId != in.AppId {
-					return errstate.ErrRequest
+			s := errstate.Success
+			resp := func(s1 *commons.State) {
+				if s.Ok {
+					s = s1
 				}
 			}
 
+			var wg sync.WaitGroup
+			wg.Add(len(in.Roles))
+
+			for _, v := range in.Roles {
+				go func() {
+					defer wg.Done()
+					role, err := roleRepo.FindRoleById(v, in.AppId)
+					if err != nil {
+						resp(errstate.ErrSystem)
+						return
+					}
+
+					if len(role.Id) == 0 {
+						resp(errstate.ErrRequest)
+						return
+					}
+
+					//不在同一个应用内
+					if role.AppId != in.AppId {
+						resp(errstate.ErrRequest)
+						return
+					}
+				}()
+			}
+
+			wg.Wait()
+
+			if !s.Ok {
+				return s
+			}
+
 			//先查找当前功能是否已经绑定角色
-			f, err := repo.FindRelationFunctionById(in.Id, in.AppId)
+			role, err := repo.FindRelationFunctionById(in.Id, in.AppId)
 			if err != nil {
 				return errstate.ErrRequest
 			}
 
-			if in.AppId != f.AppId {
-				return errstate.ErrRequest
-			}
-
-			for _, v := range f.Roles {
-				for _, v1 := range in.Roles {
+			var roles []string
+			for _, v := range in.Roles {
+				ok := true
+				for _, v1 := range role.Roles {
 					if v == v1 {
-						return errstate.ErrFunctionAlreadyBindRole
+						ok = false
+						break
 					}
+				}
+				if ok {
+					roles = append(roles, v)
 				}
 			}
 
+			if len(role.Roles) > 0 {
+				roles = append(roles, role.Roles...)
+			}
+
+			role.Roles = roles
+
 			//更新数据库
-			err = repo.UpdateFunctionRole(in.Id, in.AppId, in.Roles)
+			err = repo.SetFunctionRole(in.Id, in.AppId, role)
 			if err == nil {
 
 				svc.log.Info(&analysisclient.LogContent{
 					Headers: headers,
-					Action:  "UpdateUserRole",
+					Action:  "UpdateFunctionRole",
 					Fields: &analysisclient.LogFields{
-						"userId": in.Id,
-						"appId":  in.AppId,
-						"roles":  in.Roles,
+						"functionId": in.Id,
+						"appId":      in.AppId,
+						"roles":      in.Roles,
+					},
+					Index: &analysisclient.LogIndex{
+						Name:     functionIndex,
+						Id:       in.Id,
+						Relation: true,
+						Fields: &analysisclient.LogFields{
+							"roles": role.Roles,
+						},
 					},
 				})
 
@@ -219,6 +267,12 @@ func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.Bind
 
 		if len(in.AppId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
 
+			headers := &analysisclient.LogHeaders{
+				TraceId:     auth.TraceId,
+				ServiceName: constants.PermissionService,
+				ModuleName:  "UnbindUserRole",
+			}
+
 			repo := svc.GetRepo()
 			defer repo.Close()
 
@@ -235,23 +289,51 @@ func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.Bind
 				return errstate.ErrRequest
 			}
 
-			//所有包含此角色的索引全都删除
-			query := elastic.NewBoolQuery()
-			query.Must(elastic.NewMatchPhraseQuery("userId", in.Id))
-			query.Must(elastic.NewMatchPhraseQuery("appId", in.AppId))
-			query.Must(elastic.NewMatchQuery("roles", in.RoleId))
-			r, err := svc.GetElasticClient().DeleteByQuery(getFunctionAuthorizeIndex(in.Id)).Query(query).Type("_doc").Do(context.Background())
+			user, err := repo.FindRelationUserById(in.Id, in.AppId)
 			if err != nil {
-				return errstate.ErrRequest
+				return nil
 			}
 
-			if r.Total >= 0 {
+			if len(user.Roles) == 0 {
+				return nil
+			}
 
-				err = repo.RemoveRoleFromUserRelation(in.Id, in.RoleId)
-				if err == nil {
-					return errstate.Success
+			var roles []string
+			for _, v := range user.Roles {
+				ok := true
+				if v == in.RoleId {
+					ok = false
+				}
+				if ok {
+					roles = append(roles, v)
 				}
 			}
+
+			user.Roles = roles
+
+			err = repo.SetUserRole(in.Id, in.AppId, user)
+
+			if err != nil {
+				return nil
+			}
+
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "UnbindUserRole",
+				Fields: &analysisclient.LogFields{
+					"userId": in.Id,
+					"appId":  in.AppId,
+					"roleId": in.RoleId,
+				},
+				Index: &analysisclient.LogIndex{
+					Name:     "users",
+					Id:       in.Id,
+					Relation: true,
+					Fields: &analysisclient.LogFields{
+						"roles": roles,
+					},
+				},
+			})
 
 		}
 
@@ -264,6 +346,12 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.
 
 		if len(in.AppId) > 0 && len(in.RoleId) > 0 && len(in.Id) > 0 {
 
+			headers := &analysisclient.LogHeaders{
+				TraceId:     auth.TraceId,
+				ServiceName: constants.PermissionService,
+				ModuleName:  "UnbindFunctionRole",
+			}
+
 			repo := svc.GetRepo()
 			defer repo.Close()
 
@@ -280,24 +368,51 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.
 				return errstate.ErrRequest
 			}
 
-			//所有包含此角色的索引全都删除
-			query := elastic.NewBoolQuery()
-			query.Must(elastic.NewMatchPhraseQuery("functionId", in.Id))
-			query.Must(elastic.NewMatchPhraseQuery("appId", in.AppId))
-			query.Must(elastic.NewMatchQuery("roles", in.RoleId))
-			r, err := svc.GetElasticClient().DeleteByQuery(getFunctionAuthorizeIndex(in.Id)).Query(query).Type("_doc").Do(context.Background())
+			function, err := repo.FindRelationFunctionById(in.Id, in.AppId)
 			if err != nil {
-				return errstate.ErrRequest
+				return nil
 			}
 
-			if r.Total >= 0 {
+			if len(function.Roles) == 0 {
+				return nil
+			}
 
-				err = repo.RemoveRoleFromFunctions(in.Id, in.AppId, in.RoleId)
-				if err == nil {
-					return errstate.Success
+			var roles []string
+			for _, v := range function.Roles {
+				ok := true
+				if v == in.RoleId {
+					ok = false
 				}
-
+				if ok {
+					roles = append(roles, v)
+				}
 			}
+
+			function.Roles = roles
+
+			err = repo.SetFunctionRole(in.Id, in.AppId, function)
+
+			if err != nil {
+				return nil
+			}
+
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "UnbindFunctionRole",
+				Fields: &analysisclient.LogFields{
+					"functionId": in.Id,
+					"appId":      in.AppId,
+					"roleId":     in.RoleId,
+				},
+				Index: &analysisclient.LogIndex{
+					Name:     functionIndex,
+					Id:       in.Id,
+					Relation: true,
+					Fields: &analysisclient.LogFields{
+						"roles": roles,
+					},
+				},
+			})
 		}
 
 		return nil

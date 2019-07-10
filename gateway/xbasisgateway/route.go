@@ -6,6 +6,8 @@ import (
 	"github.com/afex/hystrix-go/hystrix"
 	"golang.org/x/time/rate"
 	"io/ioutil"
+	"konekko.me/xbasis/analysis/client"
+	"konekko.me/xbasis/commons/constants"
 	"konekko.me/xbasis/commons/encrypt"
 	"konekko.me/xbasis/commons/errstate"
 	"net"
@@ -50,6 +52,12 @@ func (r *request) route(req *http.Request) {
 		c = http.DefaultClient
 	}
 
+	header := &analysisclient.LogHeaders{
+		TraceId:     r.traceId,
+		ServiceName: xbasisconstants.GatewayService,
+		ModuleName:  "RouteToTarget",
+	}
+
 	r.buildHeader(req)
 
 	req.Header.Set("Content-Type", "application/json")
@@ -58,6 +66,24 @@ func (r *request) route(req *http.Request) {
 		"service": r.serviceName,
 		"routeTo": r.path,
 	}).Info("request redirect")
+
+	r.services.log.Info(&analysisclient.LogContent{
+		Headers: header,
+		Action:  "StartUserRequestApi",
+		Fields: &analysisclient.LogFields{
+			"function_id":  r.funcId,
+			"route_to":     r.path,
+			"path":         req.RequestURI,
+			"service_name": r.serviceName,
+		},
+		Index: &analysisclient.LogIndex{
+			Id:   r.logId,
+			Name: r.logIndex,
+			Fields: &analysisclient.LogFields{
+				"route_to": r.path,
+			},
+		},
+	})
 
 	rt := time.Now().UnixNano()
 
@@ -120,12 +146,61 @@ func (r *request) route(req *http.Request) {
 			"processing": fmt.Sprintf("%dms", (time.Now().UnixNano()-rt)/1e6),
 		}).Info("all time consuming")
 
+		all := (time.Now().UnixNano() - r.startAt) / 1e6
+		processing := (time.Now().UnixNano() - rt) / 1e6
+
+		r.services.log.Info(&analysisclient.LogContent{
+			Headers:   header,
+			Action:    "UserRequestApiFinished",
+			StateCode: int64(resp.StatusCode),
+			Fields: &analysisclient.LogFields{
+				"function_id":  r.funcId,
+				"processing":   processing,
+				"all":          all,
+				"verification": all - processing,
+			},
+			Index: &analysisclient.LogIndex{
+				Id:   r.logId,
+				Name: r.logIndex,
+				Fields: &analysisclient.LogFields{
+					"processing":   processing,
+					"all":          all,
+					"verification": all - processing,
+				},
+			},
+		})
+
 		return nil
 	}, func(e error) error {
 		r.services._log.WithFields(logrus.Fields{
 			"err":     e.Error(),
 			"service": r.serviceName,
 		}).Error("request service failed")
+
+		all := (time.Now().UnixNano() - r.startAt) / 1e6
+		processing := (time.Now().UnixNano() - rt) / 1e6
+
+		r.services.log.Error(&analysisclient.LogContent{
+			Headers:   header,
+			Action:    "UserRequestApiFinished",
+			StateCode: errstate.ErrRequest.Code,
+			Message:   e.Error(),
+			Fields: &analysisclient.LogFields{
+				"function_id":  r.funcId,
+				"processing":   processing,
+				"all":          all,
+				"verification": all - processing,
+			},
+			Index: &analysisclient.LogIndex{
+				Id:   r.logId,
+				Name: r.logIndex,
+				Fields: &analysisclient.LogFields{
+					"processing":   processing,
+					"all":          all,
+					"verification": all - processing,
+				},
+			},
+		})
 
 		switch e {
 		case hystrix.ErrCircuitOpen:

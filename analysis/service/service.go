@@ -28,6 +28,8 @@ func StartService() {
 
 		xbasissvc_external_analysis.RegisterLoggerHandler(s.Server(), analysishandlers.NewLoggerService(logger, client))
 
+		xbasissvc_external_analysis.RegisterAnalysisHandler(s.Server(), analysishandlers.NewAnalysisService(client, logger))
+
 		errc <- s.Run()
 	}()
 

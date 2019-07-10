@@ -19,12 +19,8 @@ func (repo *inviteRepo) FindByKey(key string, value interface{}) (*inviteModel, 
 	return model, err
 }
 
-func (repo *inviteRepo) UpdateItems(userId string, item []*inviteItem) error {
-	return repo.collection().Update(bson.M{"user_id": userId}, bson.M{"$set": bson.M{"items": item}})
-}
-
-func (repo *inviteRepo) SetState(userId, appId string, state int64) error {
-	return repo.collection().Update(bson.M{"user_id": userId, "app_id": appId}, bson.M{"$set": bson.M{"state": state}})
+func (repo *inviteRepo) SetState(userId string, state int64) error {
+	return repo.collection().Update(bson.M{"user_id": userId}, bson.M{"$set": bson.M{"state": state}})
 }
 
 func (repo *inviteRepo) collection() *mgo.Collection {

@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package xbasissvc.external.analysis;
+
+import "konekko.me/xbasis/commons/dto/commons.proto";
+
+service Analysis {
+
+    rpc SearchTracking (SearchTrackingRequest) returns (SearchTrackingResponse);
+
+    rpc GetTrackingStageDetail (GetTrackingDetailRequest) returns (TrackingStageResponse);
+
+    rpc GetFunctionDetail (GetFunctionDetailRequest) returns (GetFunctionDetailResponse);
+}
+
+message GetFunctionDetailRequest {
+    string functionId = 1;
+}
+
+message GetFunctionDetailResponse {
+    xbasis.commons.dto.State state = 1;
+}
+
+message SearchTrackingRequest {
+    //def is PermissionVerification
+    string key = 1;
+    string value = 2;
+    string appId = 3;
+    int64 page = 4;
+    int64 size = 5;
+}
+
+message SearchTrackingResponse {
+    xbasis.commons.dto.State state = 1;
+    repeated RequestTracking data = 2;
+}
+
+message RequestTracking {
+    string trackId = 1;
+    string userAgent = 2;
+    string path = 3;
+    string ip = 4;
+    string routeTo = 5;
+    string function = 6;
+    int64 timestamp = 7;
+    string userId = 8;
+    bool hasAccessToken = 9;
+    bool hasDurationToken = 10;
+    bool passed = 11;
+    StageTaking taking = 12;
+    bool basicValidation = 13;
+    bool invalidApi = 14;
+    bool deniedApiClient = 15;
+}
+
+message GetTrackingDetailRequest {
+    string traceId = 1;
+}
+
+message TrackingStageResponse {
+    xbasis.commons.dto.State state = 1;
+    repeated TrackingStageItem data = 2;
+    string functionId = 3;
+    string appId = 4;
+    StageTaking taking = 5;
+}
+
+message TrackingStageItem {
+    string serviceName = 1;
+    StageTaking taking = 2;
+}
+
+message StageTaking {
+    double verification = 1;
+    double process = 2;
+    double all = 3;
+}

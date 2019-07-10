@@ -1,10 +1,12 @@
 package permissionhandlers
 
 import (
+	"context"
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
 	"gopkg.in/mgo.v2"
 	xconfig "konekko.me/xbasis/commons/config"
+	"konekko.me/xbasis/commons/constants"
 	generator "konekko.me/xbasis/commons/generator"
 	"konekko.me/xbasis/commons/indexutils"
 )
@@ -18,7 +20,19 @@ func Initialize(session *mgo.Session, client *indexutils.Client, zk *zk.Conn) xc
 		}
 
 		if c == 0 {
-			repo := &initializeRepo{session: session, conn: zk, bulk: client.GetElasticClient().Bulk(), config: config, id: generator.NewIDG()}
+
+			bulk := client.GetElasticClient().Bulk()
+
+			_, err := client.GetElasticClient().CreateIndex(functionIndex).BodyString(xbasisconstants.IndexMapping).Do(context.Background())
+			if err != nil {
+				panic(err)
+			}
+			_, err = client.GetElasticClient().CreateIndex(roleIndex).BodyString(xbasisconstants.IndexMapping).Do(context.Background())
+			if err != nil {
+				panic(err)
+			}
+			repo := &initializeRepo{session: session, conn: zk, bulk: bulk, config: config, id: generator.NewIDG()}
+
 			repo.AddManageApp()
 			repo.AddRouteApp()
 			repo.AddSafeApp()

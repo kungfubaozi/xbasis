@@ -17,30 +17,67 @@ service Role {
 
     rpc GetAppRoles (GetAppRolesRequest) returns (GetRoleResponse);
 
-    rpc EffectUserSize (EffectUserSizeRequest) returns (EffectUserSizeResponse);
+    rpc SearchRole (SearchRoleRequest) returns (SearchRoleResponse);
 
-    rpc Search (SearchRequest) returns (SearchResponse);
+    //搜索关联的用户
+    rpc SearchUserRelations (SearchUserRelationsRequest) returns (SearchUserRelationsResponse);
+
+    //搜索关联的功能
+    rpc SearchFunctionRelations (SearchFunctionRelationsRequest) returns (SearchFunctionRelationsResponse);
 }
 
-message SearchRequest {
+message SearchUserRelationsRequest {
+    string roleId = 1;
+    string keyword = 2;
+    string appId = 3;
+}
+
+message SearchUserRelationsResponse {
+    xbasis.commons.dto.State state = 1;
+    repeated UserRelationItem data = 2;
+}
+
+message UserRelationItem {
+    string username = 1;
+    string phone = 2;
+    string email = 3;
+    string realName = 4;
+    string userId = 5;
+    string icon = 6;
+    int64 state = 7;
+    string account = 8;
+    bool invite = 9;
+    bool fromInvite = 10;
+    string label = 11;
+}
+
+message SearchFunctionRelationsRequest {
+    string roleId = 1;
+    string keyword = 2;
+    string appId = 3;
+}
+
+message SearchFunctionRelationsResponse {
+    xbasis.commons.dto.State state = 1;
+    repeated FunctionRelationItem data = 2;
+}
+
+message FunctionRelationItem {
+    string name = 1;
+    string functionId = 2;
+}
+
+message SearchRoleRequest {
     string key = 1;
     string value = 2;
     int64 page = 3;
     int64 size = 4;
+    string appId = 5;
 }
 
-message SearchResponse {
-    SimpleRoleInfo data = 1;
+message SearchRoleResponse {
+    repeated SimpleRoleInfo data = 1;
     xbasis.commons.dto.State state = 2;
-}
-
-message EffectUserSizeRequest {
-    string roleId = 1;
-}
-
-message EffectUserSizeResponse {
-    xbasis.commons.dto.State state = 1;
-    int64 size = 2;
 }
 
 message GetAppRolesRequest {
@@ -63,6 +100,8 @@ message SimpleRoleInfo {
     string name = 2;
     int64 createAt = 3;
     string appId = 4;
+    int64 users = 5;
+    int64 functions = 6;
 }
 
 message RoleRequest {

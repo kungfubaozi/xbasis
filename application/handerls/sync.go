@@ -2,7 +2,6 @@ package applicationhanderls
 
 import (
 	"context"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	inner "konekko.me/xbasis/application/pb/inner"
@@ -50,8 +49,6 @@ func (svc *syncService) Check(ctx context.Context, in *inner.CheckRequest, out *
 			return errstate.ErrUserNotAuthorize
 
 		}
-
-		fmt.Println("enter 1")
 
 		return nil
 	})
@@ -103,29 +100,22 @@ func (svc *syncService) Update(ctx context.Context, in *inner.UserInfo, out *com
 				var bindGroupIds []string
 
 				if invited {
-					as, err := svc.inviteService.GetDetail(ctx, &xbasissvc_external_user.HasInvitedRequest{
-						UserId: in.GId,
-						AppId:  in.AppId,
+					s, err := svc.inviteService.SetState(ctx, &xbasissvc_external_user.SetStateRequest{
+						UserId: i.UserId,
+						State:  constants.StateOk,
 					})
 					if err != nil {
 						return nil
 					}
-					if !as.State.Ok {
-						return as.State
-					}
-					if len(as.Items) > 0 {
-						item := as.Items[0]
-						roles = item.Roles
-						bindGroupIds = append(bindGroupIds, item.BindGroupIds...)
+					if !s.State.Ok {
+						return s.State
 					}
 				}
 
 				if appInfo.Settings.AllowNewUsers != nil && len(appInfo.Settings.AllowNewUsers.DefaultRole) > 0 {
 					allow := appInfo.Settings.AllowNewUsers
 					roles = append(roles, allow.DefaultRole...)
-					if len(allow.DefaultGroup) > 0 {
-						bindGroupIds = append(bindGroupIds, allow.DefaultGroup)
-					}
+					bindGroupIds = append(bindGroupIds, allow.DefaultGroup)
 				}
 
 				var wg sync.WaitGroup

@@ -1,6 +1,7 @@
 package userhandlers
 
 import (
+	"context"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
@@ -56,9 +57,16 @@ func Initialize(session *mgo.Session, client *indexutils.Client) xconfig.OnConfi
 				panic(err)
 			}
 
-			_, err = client.AddData(fmt.Sprintf("xbs-index.users.%d", hashcode.Equa(u.Id)), map[string]interface{}{
+			index := fmt.Sprintf("xbs-index.users.%d", hashcode.Equa(u.Id))
+
+			_, err = client.GetElasticClient().CreateIndex(index).BodyString(xbasisconstants.IndexMapping).Do(context.Background())
+			if err != nil {
+				panic(err)
+			}
+
+			_, err = client.AddDataById(u.Id, index, map[string]interface{}{
 				"name":                     "users",
-				"id":                       u.Id,
+				"join_field":               "relation",
 				"username":                 info.Username,
 				"real_name":                info.RealName,
 				"phone":                    u.Phone,

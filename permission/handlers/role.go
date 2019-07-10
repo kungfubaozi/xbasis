@@ -2,8 +2,10 @@ package permissionhandlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
@@ -20,14 +22,78 @@ type roleService struct {
 	bindingService external.BindingService
 }
 
-func (svc *roleService) Search(context.Context, *external.SearchRequest, *external.SearchResponse) error {
-	panic("implement me")
-}
-
-//获取和角色关联的用户数量
-func (svc *roleService) EffectUserSize(ctx context.Context, in *external.EffectUserSizeRequest, out *external.EffectUserSizeResponse) error {
+func (svc *roleService) SearchUserRelations(ctx context.Context, in *external.SearchUserRelationsRequest, out *external.SearchUserRelationsResponse) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
+	})
+}
+
+func (svc *roleService) SearchFunctionRelations(ctx context.Context, in *external.SearchFunctionRelationsRequest, out *external.SearchFunctionRelationsResponse) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+
+		if len(in.RoleId) == 0 {
+			return nil
+		}
+
+		//e := svc.GetElasticClient().Search(functionIndex)
+		//query := elastic.NewBoolQuery()
+		//
+		//query.Must(elastic.NewMatchPhraseQuery("app_id", in.AppId))
+
+		return nil
+	})
+}
+
+func (svc *roleService) SearchRole(ctx context.Context, in *external.SearchRoleRequest, out *external.SearchRoleResponse) error {
+	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+
+		if len(in.AppId) == 0 {
+			return nil
+		}
+
+		e := svc.GetElasticClient().Search(roleIndex)
+
+		query := elastic.NewBoolQuery()
+
+		query.Must(elastic.NewMatchPhraseQuery("app_id", in.AppId))
+
+		if len(in.Value) > 0 {
+			q := elastic.NewQueryStringQuery("*" + in.Value + "*")
+			if len(in.Key) > 0 {
+				q.Field(in.Key)
+			} else {
+				q.Field("name")
+			}
+			query.Must(q)
+		}
+
+		v, err := e.Type("_doc").Query(query).From(int(in.Size * in.Page)).Size(int(in.Size)).Do(context.Background())
+		if err != nil {
+			return nil
+		}
+
+		var datas []*external.SimpleRoleInfo
+
+		if v.Hits.TotalHits > 0 {
+			for _, v := range v.Hits.Hits {
+				i := &roleIndexModel{}
+				err := json.Unmarshal(*v.Source, i)
+				if err == nil {
+					d := &external.SimpleRoleInfo{
+						Name:      i.Name,
+						Id:        i.Id,
+						CreateAt:  i.CreateAt,
+						Users:     i.RelationUsers,
+						Functions: i.RelationFunctions,
+					}
+					datas = append(datas, d)
+				}
+			}
+		}
+
+		out.Data = datas
+
+		return errstate.Success
 	})
 }
 
@@ -109,6 +175,6 @@ func (svc *roleService) Rename(ctx context.Context, in *external.RoleRequest, ou
 	})
 }
 
-func NewRoleService(session *mgo.Session, pool *redis.Pool, bindingService external.BindingService) external.RoleHandler {
-	return &roleService{session: session, pool: pool, bindingService: bindingService}
+func NewRoleService(session *mgo.Session, pool *redis.Pool, bindingService external.BindingService, client *indexutils.Client) external.RoleHandler {
+	return &roleService{session: session, pool: pool, bindingService: bindingService, Client: client}
 }

@@ -22,16 +22,15 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type InviteUserRequest struct {
-	Phone                string        `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
-	Email                string        `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	Username             string        `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
-	RealName             string        `protobuf:"bytes,4,opt,name=realName,proto3" json:"realName,omitempty"`
-	Items                []*InviteItem `protobuf:"bytes,5,rep,name=items,proto3" json:"items,omitempty"`
-	ExpiredAt            int64         `protobuf:"varint,6,opt,name=expiredAt,proto3" json:"expiredAt,omitempty"`
-	Account              string        `protobuf:"bytes,7,opt,name=account,proto3" json:"account,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
-	XXX_unrecognized     []byte        `json:"-"`
-	XXX_sizecache        int32         `json:"-"`
+	Phone                string   `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email                string   `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Username             string   `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	RealName             string   `protobuf:"bytes,4,opt,name=realName,proto3" json:"realName,omitempty"`
+	ExpiredAt            int64    `protobuf:"varint,5,opt,name=expiredAt,proto3" json:"expiredAt,omitempty"`
+	Account              string   `protobuf:"bytes,6,opt,name=account,proto3" json:"account,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *InviteUserRequest) Reset()         { *m = InviteUserRequest{} }
@@ -87,13 +86,6 @@ func (m *InviteUserRequest) GetRealName() string {
 	return ""
 }
 
-func (m *InviteUserRequest) GetItems() []*InviteItem {
-	if m != nil {
-		return m.Items
-	}
-	return nil
-}
-
 func (m *InviteUserRequest) GetExpiredAt() int64 {
 	if m != nil {
 		return m.ExpiredAt
@@ -108,57 +100,9 @@ func (m *InviteUserRequest) GetAccount() string {
 	return ""
 }
 
-type AppendRequest struct {
-	UserId               string      `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	Item                 *InviteItem `protobuf:"bytes,2,opt,name=item,proto3" json:"item,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
-}
-
-func (m *AppendRequest) Reset()         { *m = AppendRequest{} }
-func (m *AppendRequest) String() string { return proto.CompactTextString(m) }
-func (*AppendRequest) ProtoMessage()    {}
-func (*AppendRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{1}
-}
-
-func (m *AppendRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AppendRequest.Unmarshal(m, b)
-}
-func (m *AppendRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AppendRequest.Marshal(b, m, deterministic)
-}
-func (m *AppendRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AppendRequest.Merge(m, src)
-}
-func (m *AppendRequest) XXX_Size() int {
-	return xxx_messageInfo_AppendRequest.Size(m)
-}
-func (m *AppendRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_AppendRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AppendRequest proto.InternalMessageInfo
-
-func (m *AppendRequest) GetUserId() string {
-	if m != nil {
-		return m.UserId
-	}
-	return ""
-}
-
-func (m *AppendRequest) GetItem() *InviteItem {
-	if m != nil {
-		return m.Item
-	}
-	return nil
-}
-
 type SetStateRequest struct {
 	UserId               string   `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	AppId                string   `protobuf:"bytes,2,opt,name=appId,proto3" json:"appId,omitempty"`
-	State                int64    `protobuf:"varint,3,opt,name=state,proto3" json:"state,omitempty"`
+	State                int64    `protobuf:"varint,2,opt,name=state,proto3" json:"state,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -168,7 +112,7 @@ func (m *SetStateRequest) Reset()         { *m = SetStateRequest{} }
 func (m *SetStateRequest) String() string { return proto.CompactTextString(m) }
 func (*SetStateRequest) ProtoMessage()    {}
 func (*SetStateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{2}
+	return fileDescriptor_3caf1176bf5393cc, []int{1}
 }
 
 func (m *SetStateRequest) XXX_Unmarshal(b []byte) error {
@@ -196,13 +140,6 @@ func (m *SetStateRequest) GetUserId() string {
 	return ""
 }
 
-func (m *SetStateRequest) GetAppId() string {
-	if m != nil {
-		return m.AppId
-	}
-	return ""
-}
-
 func (m *SetStateRequest) GetState() int64 {
 	if m != nil {
 		return m.State
@@ -224,7 +161,7 @@ func (m *HasInvitedRequest) Reset()         { *m = HasInvitedRequest{} }
 func (m *HasInvitedRequest) String() string { return proto.CompactTextString(m) }
 func (*HasInvitedRequest) ProtoMessage()    {}
 func (*HasInvitedRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{3}
+	return fileDescriptor_3caf1176bf5393cc, []int{2}
 }
 
 func (m *HasInvitedRequest) XXX_Unmarshal(b []byte) error {
@@ -276,7 +213,7 @@ func (m *HasInvitedRequest) GetAppId() string {
 type HasInvitedResponse struct {
 	State                *dto.State `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
 	UserId               string     `protobuf:"bytes,2,opt,name=userId,proto3" json:"userId,omitempty"`
-	Status               int64      `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
+	UserState            int64      `protobuf:"varint,3,opt,name=userState,proto3" json:"userState,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
 	XXX_unrecognized     []byte     `json:"-"`
 	XXX_sizecache        int32      `json:"-"`
@@ -286,7 +223,7 @@ func (m *HasInvitedResponse) Reset()         { *m = HasInvitedResponse{} }
 func (m *HasInvitedResponse) String() string { return proto.CompactTextString(m) }
 func (*HasInvitedResponse) ProtoMessage()    {}
 func (*HasInvitedResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{4}
+	return fileDescriptor_3caf1176bf5393cc, []int{3}
 }
 
 func (m *HasInvitedResponse) XXX_Unmarshal(b []byte) error {
@@ -321,74 +258,11 @@ func (m *HasInvitedResponse) GetUserId() string {
 	return ""
 }
 
-func (m *HasInvitedResponse) GetStatus() int64 {
+func (m *HasInvitedResponse) GetUserState() int64 {
 	if m != nil {
-		return m.Status
+		return m.UserState
 	}
 	return 0
-}
-
-type InviteSearchRequest struct {
-	PageIndex            int64    `protobuf:"varint,1,opt,name=pageIndex,proto3" json:"pageIndex,omitempty"`
-	PageSize             int64    `protobuf:"varint,2,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
-	Key                  string   `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Value                string   `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *InviteSearchRequest) Reset()         { *m = InviteSearchRequest{} }
-func (m *InviteSearchRequest) String() string { return proto.CompactTextString(m) }
-func (*InviteSearchRequest) ProtoMessage()    {}
-func (*InviteSearchRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{5}
-}
-
-func (m *InviteSearchRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_InviteSearchRequest.Unmarshal(m, b)
-}
-func (m *InviteSearchRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_InviteSearchRequest.Marshal(b, m, deterministic)
-}
-func (m *InviteSearchRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InviteSearchRequest.Merge(m, src)
-}
-func (m *InviteSearchRequest) XXX_Size() int {
-	return xxx_messageInfo_InviteSearchRequest.Size(m)
-}
-func (m *InviteSearchRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_InviteSearchRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_InviteSearchRequest proto.InternalMessageInfo
-
-func (m *InviteSearchRequest) GetPageIndex() int64 {
-	if m != nil {
-		return m.PageIndex
-	}
-	return 0
-}
-
-func (m *InviteSearchRequest) GetPageSize() int64 {
-	if m != nil {
-		return m.PageSize
-	}
-	return 0
-}
-
-func (m *InviteSearchRequest) GetKey() string {
-	if m != nil {
-		return m.Key
-	}
-	return ""
-}
-
-func (m *InviteSearchRequest) GetValue() string {
-	if m != nil {
-		return m.Value
-	}
-	return ""
 }
 
 type InviteSearchResponse struct {
@@ -402,7 +276,7 @@ func (m *InviteSearchResponse) Reset()         { *m = InviteSearchResponse{} }
 func (m *InviteSearchResponse) String() string { return proto.CompactTextString(m) }
 func (*InviteSearchResponse) ProtoMessage()    {}
 func (*InviteSearchResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{6}
+	return fileDescriptor_3caf1176bf5393cc, []int{4}
 }
 
 func (m *InviteSearchResponse) XXX_Unmarshal(b []byte) error {
@@ -431,22 +305,23 @@ func (m *InviteSearchResponse) GetState() *dto.State {
 }
 
 type GetDetailResponse struct {
-	State                *dto.State    `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
-	Items                []*InviteItem `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`
-	Username             string        `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
-	RealName             string        `protobuf:"bytes,4,opt,name=realName,proto3" json:"realName,omitempty"`
-	Phone                string        `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
-	Email                string        `protobuf:"bytes,6,opt,name=email,proto3" json:"email,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
-	XXX_unrecognized     []byte        `json:"-"`
-	XXX_sizecache        int32         `json:"-"`
+	State                *dto.State `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
+	Username             string     `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	RealName             string     `protobuf:"bytes,3,opt,name=realName,proto3" json:"realName,omitempty"`
+	Phone                string     `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email                string     `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	Account              string     `protobuf:"bytes,6,opt,name=account,proto3" json:"account,omitempty"`
+	UserState            int64      `protobuf:"varint,7,opt,name=userState,proto3" json:"userState,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
 }
 
 func (m *GetDetailResponse) Reset()         { *m = GetDetailResponse{} }
 func (m *GetDetailResponse) String() string { return proto.CompactTextString(m) }
 func (*GetDetailResponse) ProtoMessage()    {}
 func (*GetDetailResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{7}
+	return fileDescriptor_3caf1176bf5393cc, []int{5}
 }
 
 func (m *GetDetailResponse) XXX_Unmarshal(b []byte) error {
@@ -470,13 +345,6 @@ var xxx_messageInfo_GetDetailResponse proto.InternalMessageInfo
 func (m *GetDetailResponse) GetState() *dto.State {
 	if m != nil {
 		return m.State
-	}
-	return nil
-}
-
-func (m *GetDetailResponse) GetItems() []*InviteItem {
-	if m != nil {
-		return m.Items
 	}
 	return nil
 }
@@ -509,113 +377,59 @@ func (m *GetDetailResponse) GetEmail() string {
 	return ""
 }
 
-type InviteItem struct {
-	AppId                string   `protobuf:"bytes,1,opt,name=appId,proto3" json:"appId,omitempty"`
-	Roles                []string `protobuf:"bytes,2,rep,name=roles,proto3" json:"roles,omitempty"`
-	BindGroupIds         []string `protobuf:"bytes,3,rep,name=bindGroupIds,proto3" json:"bindGroupIds,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *InviteItem) Reset()         { *m = InviteItem{} }
-func (m *InviteItem) String() string { return proto.CompactTextString(m) }
-func (*InviteItem) ProtoMessage()    {}
-func (*InviteItem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3caf1176bf5393cc, []int{8}
-}
-
-func (m *InviteItem) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_InviteItem.Unmarshal(m, b)
-}
-func (m *InviteItem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_InviteItem.Marshal(b, m, deterministic)
-}
-func (m *InviteItem) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InviteItem.Merge(m, src)
-}
-func (m *InviteItem) XXX_Size() int {
-	return xxx_messageInfo_InviteItem.Size(m)
-}
-func (m *InviteItem) XXX_DiscardUnknown() {
-	xxx_messageInfo_InviteItem.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_InviteItem proto.InternalMessageInfo
-
-func (m *InviteItem) GetAppId() string {
+func (m *GetDetailResponse) GetAccount() string {
 	if m != nil {
-		return m.AppId
+		return m.Account
 	}
 	return ""
 }
 
-func (m *InviteItem) GetRoles() []string {
+func (m *GetDetailResponse) GetUserState() int64 {
 	if m != nil {
-		return m.Roles
+		return m.UserState
 	}
-	return nil
-}
-
-func (m *InviteItem) GetBindGroupIds() []string {
-	if m != nil {
-		return m.BindGroupIds
-	}
-	return nil
+	return 0
 }
 
 func init() {
 	proto.RegisterType((*InviteUserRequest)(nil), "xbasissvc.external.user.InviteUserRequest")
-	proto.RegisterType((*AppendRequest)(nil), "xbasissvc.external.user.AppendRequest")
 	proto.RegisterType((*SetStateRequest)(nil), "xbasissvc.external.user.SetStateRequest")
 	proto.RegisterType((*HasInvitedRequest)(nil), "xbasissvc.external.user.HasInvitedRequest")
 	proto.RegisterType((*HasInvitedResponse)(nil), "xbasissvc.external.user.HasInvitedResponse")
-	proto.RegisterType((*InviteSearchRequest)(nil), "xbasissvc.external.user.InviteSearchRequest")
 	proto.RegisterType((*InviteSearchResponse)(nil), "xbasissvc.external.user.InviteSearchResponse")
 	proto.RegisterType((*GetDetailResponse)(nil), "xbasissvc.external.user.GetDetailResponse")
-	proto.RegisterType((*InviteItem)(nil), "xbasissvc.external.user.InviteItem")
 }
 
 func init() { proto.RegisterFile("user/pb/invite.proto", fileDescriptor_3caf1176bf5393cc) }
 
 var fileDescriptor_3caf1176bf5393cc = []byte{
-	// 608 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0x4f, 0x6f, 0xd3, 0x4e,
-	0x10, 0x95, 0xeb, 0xc4, 0x6d, 0xe6, 0xf7, 0x43, 0x90, 0x25, 0x2a, 0xc6, 0xea, 0x21, 0x32, 0x12,
-	0x8a, 0x28, 0xd8, 0x52, 0x39, 0x20, 0x8e, 0x95, 0x90, 0x82, 0x25, 0x54, 0x21, 0x47, 0xbd, 0x71,
-	0x60, 0x63, 0x8f, 0xa8, 0x15, 0xdb, 0x6b, 0xbc, 0xeb, 0x10, 0xf8, 0x4a, 0x7c, 0x2c, 0x6e, 0x7c,
-	0x0a, 0xb4, 0xbb, 0x76, 0x9c, 0xb4, 0xcd, 0x9f, 0xe6, 0xe6, 0xb7, 0x3b, 0x3b, 0x6f, 0xde, 0xec,
-	0xdb, 0x31, 0x0c, 0x2a, 0x8e, 0xa5, 0x5f, 0x4c, 0xfd, 0x24, 0x9f, 0x27, 0x02, 0xbd, 0xa2, 0x64,
-	0x82, 0x91, 0x67, 0x8b, 0x29, 0xe5, 0x09, 0xe7, 0xf3, 0xc8, 0xc3, 0x85, 0xc0, 0x32, 0xa7, 0xa9,
-	0x27, 0x03, 0x9d, 0xf3, 0x19, 0xcb, 0x71, 0x36, 0x63, 0x5e, 0x86, 0xbe, 0x8e, 0xf1, 0x23, 0x96,
-	0x65, 0x2c, 0xe7, 0x7e, 0x2c, 0x58, 0xf3, 0xad, 0xb3, 0xb8, 0x7f, 0x0d, 0xe8, 0x07, 0x2a, 0xed,
-	0x35, 0xc7, 0x32, 0xc4, 0xef, 0x15, 0x72, 0x41, 0x06, 0xd0, 0x2d, 0x6e, 0x58, 0x8e, 0xb6, 0x31,
-	0x34, 0x46, 0xbd, 0x50, 0x03, 0xb9, 0x8a, 0x19, 0x4d, 0x52, 0xfb, 0x48, 0xaf, 0x2a, 0x40, 0x1c,
-	0x38, 0x91, 0xb4, 0x39, 0xcd, 0xd0, 0x36, 0xd5, 0xc6, 0x12, 0xcb, 0xbd, 0x12, 0x69, 0x7a, 0x25,
-	0xf7, 0x3a, 0x7a, 0xaf, 0xc1, 0xe4, 0x3d, 0x74, 0x13, 0x81, 0x19, 0xb7, 0xbb, 0x43, 0x73, 0xf4,
-	0xdf, 0xc5, 0x0b, 0x6f, 0x83, 0x1e, 0x4f, 0x97, 0x17, 0x08, 0xcc, 0x42, 0x7d, 0x82, 0x9c, 0x41,
-	0x0f, 0x17, 0x45, 0x52, 0x62, 0x7c, 0x29, 0x6c, 0x6b, 0x68, 0x8c, 0xcc, 0xb0, 0x5d, 0x20, 0x36,
-	0x1c, 0xd3, 0x28, 0x62, 0x55, 0x2e, 0xec, 0x63, 0xc5, 0xd9, 0x40, 0xf7, 0x2b, 0x3c, 0xba, 0x2c,
-	0x0a, 0xcc, 0xe3, 0x46, 0xe7, 0x29, 0x58, 0x92, 0x22, 0x88, 0x6b, 0xa1, 0x35, 0x22, 0xef, 0xa0,
-	0x23, 0x99, 0x94, 0xd0, 0x3d, 0x4b, 0x53, 0x07, 0xdc, 0x6b, 0x78, 0x3c, 0x41, 0x31, 0x11, 0x54,
-	0xe0, 0x2e, 0x8e, 0x01, 0x74, 0x69, 0x51, 0x04, 0x71, 0xd3, 0x4d, 0x05, 0xe4, 0x2a, 0x97, 0xa7,
-	0x55, 0x2b, 0xcd, 0x50, 0x03, 0x37, 0x83, 0xfe, 0x47, 0xca, 0x35, 0x5b, 0x7c, 0xc8, 0x25, 0xb5,
-	0x45, 0x98, 0xf7, 0x17, 0xd1, 0x59, 0x29, 0xc2, 0xad, 0x80, 0xac, 0xd2, 0xf1, 0x82, 0xe5, 0x1c,
-	0x89, 0xdf, 0x94, 0x66, 0xa8, 0xae, 0x3c, 0xaf, 0xbb, 0xe2, 0x35, 0x86, 0x8a, 0x05, 0xf3, 0xb4,
-	0x72, 0x1d, 0xb7, 0x42, 0x7a, 0xb4, 0x46, 0x7a, 0x0a, 0x96, 0x0c, 0xa8, 0x78, 0x2d, 0xb2, 0x46,
-	0xee, 0x0f, 0x78, 0xaa, 0x39, 0x27, 0x48, 0xcb, 0xe8, 0xa6, 0xd1, 0x79, 0x06, 0xbd, 0x82, 0x7e,
-	0xc3, 0x20, 0x8f, 0x71, 0xa1, 0xb8, 0xcd, 0xb0, 0x5d, 0x90, 0x16, 0x93, 0x60, 0x92, 0xfc, 0x42,
-	0x45, 0x63, 0x86, 0x4b, 0x4c, 0x9e, 0x80, 0x39, 0xc3, 0x9f, 0xb5, 0x64, 0xf9, 0x29, 0xf5, 0xce,
-	0x69, 0x5a, 0x35, 0x6e, 0xd4, 0xc0, 0x1d, 0xc3, 0x60, 0x9d, 0xf8, 0x40, 0xc5, 0xee, 0x1f, 0x03,
-	0xfa, 0x63, 0x14, 0x1f, 0x50, 0xd0, 0x24, 0x3d, 0xbc, 0x71, 0xcb, 0xa7, 0x71, 0xf4, 0xe0, 0xa7,
-	0x71, 0xe8, 0x6b, 0x5c, 0x9a, 0xa9, 0x7b, 0xaf, 0x99, 0xac, 0x15, 0x33, 0xb9, 0x5f, 0x00, 0x5a,
-	0xe2, 0xd6, 0x42, 0xc6, 0x2d, 0x1f, 0x97, 0x2c, 0x45, 0x2d, 0xa1, 0x17, 0x6a, 0x40, 0x5c, 0xf8,
-	0x7f, 0x9a, 0xe4, 0xf1, 0xb8, 0x64, 0x55, 0x11, 0xc4, 0xf2, 0xfe, 0xe5, 0xe6, 0xda, 0xda, 0xc5,
-	0xef, 0x0e, 0x58, 0x3a, 0x3d, 0xb9, 0x82, 0x8e, 0x9c, 0x4a, 0xe4, 0xd5, 0x8e, 0x06, 0xac, 0x8c,
-	0x2e, 0xc7, 0xd9, 0xd4, 0xdd, 0x8a, 0x13, 0x04, 0x4b, 0xdf, 0x30, 0x79, 0xbd, 0x23, 0xe3, 0x9a,
-	0x03, 0x9d, 0x37, 0x7b, 0x46, 0xd7, 0xf7, 0x8d, 0x00, 0xed, 0xf3, 0xd9, 0x52, 0xfc, 0x9d, 0x27,
-	0xed, 0x9c, 0xef, 0x15, 0x5b, 0xd3, 0x44, 0xd0, 0x5b, 0x7a, 0xed, 0x41, 0x2c, 0x9b, 0x63, 0xef,
-	0x7a, 0xf7, 0x33, 0x9c, 0x34, 0x03, 0x8d, 0x8c, 0x36, 0x9e, 0xbb, 0x35, 0xf3, 0xb6, 0x5e, 0xc2,
-	0x27, 0xb0, 0xf4, 0x10, 0x26, 0x2f, 0x37, 0xe6, 0x5b, 0x9b, 0xd2, 0xdb, 0xb2, 0x4d, 0x2d, 0xf5,
-	0x1b, 0x7b, 0xfb, 0x2f, 0x00, 0x00, 0xff, 0xff, 0x96, 0x3d, 0xe5, 0x2d, 0x24, 0x07, 0x00, 0x00,
+	// 447 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xc1, 0x8a, 0xdb, 0x30,
+	0x10, 0xc5, 0x71, 0xe2, 0x5d, 0x4f, 0x0f, 0x25, 0x22, 0xb4, 0xae, 0xd9, 0xc3, 0xe2, 0x53, 0xe8,
+	0x82, 0x0c, 0xdb, 0x0f, 0x28, 0x85, 0xc2, 0x36, 0x97, 0xa5, 0x38, 0xf4, 0x03, 0x14, 0x7b, 0x60,
+	0x4d, 0x6c, 0xc9, 0xb5, 0xe4, 0x25, 0xd0, 0x8f, 0xea, 0x2f, 0xf5, 0x2b, 0x7a, 0x2e, 0x92, 0xec,
+	0xd8, 0xeb, 0xd4, 0xa1, 0xcd, 0xcd, 0x4f, 0xf3, 0xa4, 0x37, 0x33, 0x6f, 0xc6, 0xb0, 0x6a, 0x24,
+	0xd6, 0x71, 0xb5, 0x8b, 0x73, 0xfe, 0x9c, 0x2b, 0xa4, 0x55, 0x2d, 0x94, 0x20, 0x6f, 0x0f, 0x3b,
+	0x26, 0x73, 0x29, 0x9f, 0x53, 0x8a, 0x07, 0x85, 0x35, 0x67, 0x05, 0xd5, 0xc4, 0xf0, 0x6e, 0x2f,
+	0x38, 0xee, 0xf7, 0x82, 0x96, 0x18, 0x5b, 0x4e, 0x9c, 0x8a, 0xb2, 0x14, 0x5c, 0xc6, 0x99, 0x12,
+	0xdd, 0xb7, 0x7d, 0x25, 0xfa, 0xe9, 0xc0, 0x72, 0x63, 0x9e, 0xfd, 0x26, 0xb1, 0x4e, 0xf0, 0x7b,
+	0x83, 0x52, 0x91, 0x15, 0x2c, 0xaa, 0x27, 0xc1, 0x31, 0x70, 0x6e, 0x9d, 0xb5, 0x9f, 0x58, 0xa0,
+	0x4f, 0xb1, 0x64, 0x79, 0x11, 0xcc, 0xec, 0xa9, 0x01, 0x24, 0x84, 0x6b, 0x2d, 0xcb, 0x59, 0x89,
+	0x81, 0x6b, 0x02, 0x47, 0xac, 0x63, 0x35, 0xb2, 0xe2, 0x51, 0xc7, 0xe6, 0x36, 0xd6, 0x61, 0x72,
+	0x03, 0x3e, 0x1e, 0xaa, 0xbc, 0xc6, 0xec, 0x93, 0x0a, 0x16, 0xb7, 0xce, 0xda, 0x4d, 0xfa, 0x03,
+	0x12, 0xc0, 0x15, 0x4b, 0x53, 0xd1, 0x70, 0x15, 0x78, 0xe6, 0x62, 0x07, 0xa3, 0x8f, 0xf0, 0x7a,
+	0x8b, 0x6a, 0xab, 0x98, 0xc2, 0x2e, 0xdd, 0x37, 0xe0, 0x69, 0xc9, 0x4d, 0xd6, 0xe6, 0xdb, 0x22,
+	0x9d, 0xb0, 0xd4, 0x3c, 0x93, 0xb0, 0x9b, 0x58, 0x10, 0x95, 0xb0, 0xfc, 0xc2, 0xa4, 0x2d, 0x3a,
+	0xbb, 0xa4, 0xe2, 0x5e, 0xce, 0x1d, 0xcb, 0xb1, 0xaa, 0xda, 0x64, 0x6d, 0xa9, 0x16, 0x44, 0x3f,
+	0x80, 0x0c, 0xe5, 0x64, 0x25, 0xb8, 0x44, 0x12, 0x77, 0xa9, 0x69, 0xbd, 0x57, 0xf7, 0xef, 0xa8,
+	0x75, 0x8a, 0x76, 0xee, 0x64, 0x4a, 0x50, 0x5b, 0xa3, 0xe5, 0x0d, 0x44, 0x67, 0x2f, 0x44, 0x6f,
+	0xc0, 0xd7, 0x5f, 0x86, 0x6b, 0xf2, 0x71, 0x93, 0xfe, 0x20, 0x7a, 0x80, 0x95, 0x55, 0xde, 0x22,
+	0xab, 0xd3, 0xa7, 0x8b, 0xe5, 0xa3, 0x5f, 0x0e, 0x2c, 0x1f, 0x50, 0x7d, 0x46, 0xc5, 0xf2, 0xe2,
+	0xf2, 0x2a, 0x86, 0xc3, 0x32, 0x3b, 0x33, 0x2c, 0xee, 0x68, 0x58, 0x8e, 0xf6, 0xcc, 0xff, 0x6a,
+	0xcf, 0x62, 0x68, 0xcf, 0xe4, 0xe8, 0xbc, 0xec, 0xd5, 0xd5, 0xa8, 0x57, 0xf7, 0xbf, 0x67, 0xe0,
+	0xd9, 0x66, 0x91, 0x47, 0x98, 0xeb, 0x75, 0x20, 0xef, 0xe9, 0xc4, 0x92, 0xd1, 0x93, 0x9d, 0x09,
+	0xc3, 0xa9, 0xe2, 0x1b, 0x49, 0x10, 0xa0, 0x9f, 0x81, 0x33, 0xaf, 0x9e, 0xcc, 0x65, 0x78, 0xf7,
+	0x4f, 0xdc, 0xd6, 0x8e, 0x14, 0xfc, 0xa3, 0x47, 0xff, 0xa5, 0x32, 0xcd, 0x3d, 0xf5, 0xfc, 0x2b,
+	0x5c, 0x77, 0xfb, 0x47, 0xd6, 0x93, 0xf7, 0x46, 0x2b, 0x7a, 0xae, 0x3b, 0x3b, 0xcf, 0xfc, 0x8a,
+	0x3e, 0xfc, 0x09, 0x00, 0x00, 0xff, 0xff, 0x80, 0x6c, 0x18, 0x3f, 0xe8, 0x04, 0x00, 0x00,
 }

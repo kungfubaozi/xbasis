@@ -14,7 +14,7 @@ type LogHeaders struct {
 	ModuleName       string `json:"moduleName"`
 	UserAgent        string `json:"userAgent"`
 	Ip               string `json:"ip"`
-	FromClientId     string `json:"from_client_id"`
+	FromClientId     string `json:"fromClientId"`
 	UserId           string `json:"userId"`
 	Path             string `json:"path"`
 	Api              string `json:"api"`
@@ -37,6 +37,7 @@ type LogIndex struct {
 	Id       string     `json:"id"`
 	Operator int64      `json:"operator"`
 	Fields   *LogFields `json:"fields"`
+	Relation bool       `json:"parent"`
 }
 
 type LogContent struct {
@@ -44,8 +45,9 @@ type LogContent struct {
 	Headers   *LogHeaders `json:"headers"`
 	Fields    *LogFields  `json:"fields"`
 	Index     *LogIndex   `json:"index"`
+	LogIndex  string      `json:"logIndex"`
 	Action    string      `json:"action"`
-	SubAction string      `json:"sub_action"`
+	SubAction string      `json:"subAction"`
 	Message   string      `json:"message"`
 	Timestamp int64       `json:"timestamp"`
 	Level     string      `json:"level"`
@@ -99,7 +101,9 @@ func (log *logClient) Info(content *LogContent) {
 
 func (log *logClient) fields(content *LogContent) *logrus.Entry {
 	content.Timestamp = time.Now().UnixNano() / 1e6
-	content.Id = log.id.String()
+	if len(content.Id) == 0 {
+		content.Id = log.id.String()
+	}
 	log.buildMessage(content)
 	return log.log.WithFields(logrus.Fields{
 		"action":    content.Action,

@@ -293,18 +293,6 @@
           ]
         },
         {
-          "api": "/role/effectUserSize",
-          "name": "EffectUserSize",
-          "desc": "获取影响用户数量",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
           "api": "/role/getRole",
           "name": "GetRoleDetail",
           "roles": [
@@ -360,9 +348,33 @@
           ]
         },
         {
-          "api": "/role/search",
-          "name": "RoleSearch",
+          "api": "/role/searchRole",
+          "name": "SearchRole",
           "desc": "查找角色",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/searchUserRelations",
+          "name": "SearchRoleUserRelations",
+          "desc": "查找关联用户",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/role/searchFunctionRelations",
+          "name": "SearchRoleFunctionRelations",
+          "desc": "查找关联功能",
           "roles": [
             "Administrator",
             "AppManage"

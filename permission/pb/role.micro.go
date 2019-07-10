@@ -8,10 +8,14 @@ It is generated from these files:
 	permission/pb/role.proto
 
 It has these top-level messages:
-	SearchRequest
-	SearchResponse
-	EffectUserSizeRequest
-	EffectUserSizeResponse
+	SearchUserRelationsRequest
+	SearchUserRelationsResponse
+	UserRelationItem
+	SearchFunctionRelationsRequest
+	SearchFunctionRelationsResponse
+	FunctionRelationItem
+	SearchRoleRequest
+	SearchRoleResponse
 	GetAppRolesRequest
 	GetRoleRequest
 	GetRoleResponse
@@ -56,8 +60,11 @@ type RoleService interface {
 	Rename(ctx context.Context, in *RoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	GetAppRoles(ctx context.Context, in *GetAppRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error)
-	EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, opts ...client.CallOption) (*EffectUserSizeResponse, error)
-	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
+	SearchRole(ctx context.Context, in *SearchRoleRequest, opts ...client.CallOption) (*SearchRoleResponse, error)
+	// 搜索关联的用户
+	SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, opts ...client.CallOption) (*SearchUserRelationsResponse, error)
+	// 搜索关联的功能
+	SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, opts ...client.CallOption) (*SearchFunctionRelationsResponse, error)
 }
 
 type roleService struct {
@@ -128,9 +135,9 @@ func (c *roleService) GetAppRoles(ctx context.Context, in *GetAppRolesRequest, o
 	return out, nil
 }
 
-func (c *roleService) EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, opts ...client.CallOption) (*EffectUserSizeResponse, error) {
-	req := c.c.NewRequest(c.name, "Role.EffectUserSize", in)
-	out := new(EffectUserSizeResponse)
+func (c *roleService) SearchRole(ctx context.Context, in *SearchRoleRequest, opts ...client.CallOption) (*SearchRoleResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.SearchRole", in)
+	out := new(SearchRoleResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -138,9 +145,19 @@ func (c *roleService) EffectUserSize(ctx context.Context, in *EffectUserSizeRequ
 	return out, nil
 }
 
-func (c *roleService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
-	req := c.c.NewRequest(c.name, "Role.Search", in)
-	out := new(SearchResponse)
+func (c *roleService) SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, opts ...client.CallOption) (*SearchUserRelationsResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.SearchUserRelations", in)
+	out := new(SearchUserRelationsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roleService) SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, opts ...client.CallOption) (*SearchFunctionRelationsResponse, error) {
+	req := c.c.NewRequest(c.name, "Role.SearchFunctionRelations", in)
+	out := new(SearchFunctionRelationsResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -156,8 +173,11 @@ type RoleHandler interface {
 	Rename(context.Context, *RoleRequest, *xbasis_commons_dto.Status) error
 	GetRole(context.Context, *GetRoleRequest, *GetRoleResponse) error
 	GetAppRoles(context.Context, *GetAppRolesRequest, *GetRoleResponse) error
-	EffectUserSize(context.Context, *EffectUserSizeRequest, *EffectUserSizeResponse) error
-	Search(context.Context, *SearchRequest, *SearchResponse) error
+	SearchRole(context.Context, *SearchRoleRequest, *SearchRoleResponse) error
+	// 搜索关联的用户
+	SearchUserRelations(context.Context, *SearchUserRelationsRequest, *SearchUserRelationsResponse) error
+	// 搜索关联的功能
+	SearchFunctionRelations(context.Context, *SearchFunctionRelationsRequest, *SearchFunctionRelationsResponse) error
 }
 
 func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.HandlerOption) error {
@@ -167,8 +187,9 @@ func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.Handl
 		Rename(ctx context.Context, in *RoleRequest, out *xbasis_commons_dto.Status) error
 		GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error
 		GetAppRoles(ctx context.Context, in *GetAppRolesRequest, out *GetRoleResponse) error
-		EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error
-		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
+		SearchRole(ctx context.Context, in *SearchRoleRequest, out *SearchRoleResponse) error
+		SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, out *SearchUserRelationsResponse) error
+		SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, out *SearchFunctionRelationsResponse) error
 	}
 	type Role struct {
 		role
@@ -201,10 +222,14 @@ func (h *roleHandler) GetAppRoles(ctx context.Context, in *GetAppRolesRequest, o
 	return h.RoleHandler.GetAppRoles(ctx, in, out)
 }
 
-func (h *roleHandler) EffectUserSize(ctx context.Context, in *EffectUserSizeRequest, out *EffectUserSizeResponse) error {
-	return h.RoleHandler.EffectUserSize(ctx, in, out)
+func (h *roleHandler) SearchRole(ctx context.Context, in *SearchRoleRequest, out *SearchRoleResponse) error {
+	return h.RoleHandler.SearchRole(ctx, in, out)
 }
 
-func (h *roleHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
-	return h.RoleHandler.Search(ctx, in, out)
+func (h *roleHandler) SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, out *SearchUserRelationsResponse) error {
+	return h.RoleHandler.SearchUserRelations(ctx, in, out)
+}
+
+func (h *roleHandler) SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, out *SearchFunctionRelationsResponse) error {
+	return h.RoleHandler.SearchFunctionRelations(ctx, in, out)
 }

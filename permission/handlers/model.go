@@ -78,6 +78,26 @@ type durationAccess struct {
 	Auth          bool
 }
 
+type rolesRelation struct {
+	Roles     []string   `json:"roles"`
+	JoinField *joinField `json:"join_field"`
+}
+
+type joinField struct {
+	Name   string `json:"name"`
+	Parent string `json:"parent"`
+}
+
+func getRolesRelation(id string, roles []string) *rolesRelation {
+	return &rolesRelation{
+		Roles: roles,
+		JoinField: &joinField{
+			Name:   "child",
+			Parent: id,
+		},
+	}
+}
+
 type userRolesRelation struct {
 	CreateAt int64    `bson:"create_at" json:"create_at"`
 	UserId   string   `bson:"user_id" json:"user_id"`
@@ -117,6 +137,16 @@ type role struct {
 	AppId        string `bson:"app_id" json:"app_id"`
 }
 
+type roleIndexModel struct {
+	Id                string `json:"id"`
+	CreateUserId      string `json:"create_user_id"`
+	CreateAt          int64  `json:"create_at"`
+	Name              string `json:"name"`
+	AppId             string `json:"app_id"`
+	RelationUsers     int64  `json:"relation_users"`
+	RelationFunctions int64  `json:"relation_functions"`
+}
+
 type functionGroup struct {
 	Id           string `bson:"_id" json:"id"`
 	SID          string `bson:"sid" json:"sid"`
@@ -148,6 +178,7 @@ type function struct {
 }
 
 type SimplifiedFunction struct {
+	JoinField      string  `json:"join_field"`
 	Id             string  `json:"id"`
 	AuthTypes      []int64 `json:"auth_types"`
 	ValTokenTimes  int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
