@@ -35,6 +35,8 @@ type request struct {
 	rh            *requestHeaders
 	auth          bool
 	funcId        string
+	funcAppId     string
+	funcPath      string
 	cv            string
 	host          string
 	serviceName   string

@@ -8,14 +8,12 @@ import (
 	"konekko.me/xbasis/analysis/client"
 	"konekko.me/xbasis/commons/actions"
 	constants "konekko.me/xbasis/commons/constants"
-	"konekko.me/xbasis/commons/date"
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
 	"konekko.me/xbasis/commons/indexutils"
-	"konekko.me/xbasis/commons/wrapper"
+	wrapper "konekko.me/xbasis/commons/wrapper"
 	external "konekko.me/xbasis/permission/pb"
-	"sync"
 	"time"
 )
 
@@ -26,12 +24,40 @@ type functionService struct {
 	log     analysisclient.LogClient
 }
 
-func (svc *functionService) Search(context.Context, *external.FunctionSearchRequest, *external.FunctionSearchResponse) error {
-	panic("implement me")
+func (svc *functionService) Search(ctx context.Context, in *external.FunctionSearchRequest, out *external.FunctionSearchResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		query := elastic.NewBoolQuery()
+
+		v1 := in.Value
+
+		e := svc.Client.GetElasticClient().Search(functionIndex)
+
+		query.Must(elastic.NewMatchPhraseQuery("action", "PermissionVerification"))
+		if len(v1) > 0 {
+			q := elastic.NewQueryStringQuery("*" + v1 + "*")
+			if len(in.Key) > 0 {
+				q.Field(in.Key)
+			} else {
+				q.Field("headers.path")
+				q.Field("headers.userAgent")
+				q.Field("headers.fromClientId")
+				q.Field("headers.refClientId")
+				q.Field("function")
+				q.Field("headers.ip")
+			}
+			query.Must(q)
+		}
+		query.Must(elastic.NewMatchPhraseQuery("app_id", in.AppId))
+
+		e.Query(query)
+
+		return nil
+	})
 }
 
 func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.GetFunctionItemsRequest, out *external.GetFunctionItemsResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.AppId) == 0 {
 			return nil
 		}
@@ -75,7 +101,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 }
 
 func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *external.GetFunctionItemRequest, out *external.GetFunctionItemResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		if len(in.Id) == 0 || len(in.AppId) == 0 {
 			return nil
 		}
@@ -192,36 +218,36 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 			Message: "found",
 		})
 
-		now := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM_I_DD)
-		q := elastic.NewBoolQuery()
-		q.Must(elastic.NewMatchPhraseQuery("funcId", f.Id), elastic.NewMatchPhraseQuery("action", loggeractions.UserRequestApi))
-
-		var wg sync.WaitGroup
-		wg.Add(2)
-
-		//today
-		go func() {
-			defer wg.Done()
-			total, user, err := svc.find(now, q)
-			if err != nil {
-				return
-			}
-			function.TodayVisit = total / 4
-			function.TodayUserVisit = user
-		}()
-
-		//total
-		go func() {
-			defer wg.Done()
-			total, user, err := svc.find("*", q)
-			if err != nil {
-				return
-			}
-			function.TotalVisit = total / 4
-			function.TotalUserVisit = user
-		}()
-
-		wg.Wait()
+		//now := xbasisdate.FormatDate(time.Now(), xbasisdate.YYYY_I_MM_I_DD)
+		//q := elastic.NewBoolQuery()
+		//q.Must(elastic.NewMatchPhraseQuery("funcId", f.Id), elastic.NewMatchPhraseQuery("action", loggeractions.UserRequestApi))
+		//
+		//var wg sync.WaitGroup
+		//wg.Add(2)
+		//
+		////today
+		//go func() {
+		//	defer wg.Done()
+		//	total, user, err := svc.find(now, q)
+		//	if err != nil {
+		//		return
+		//	}
+		//	function.TodayVisit = total / 4
+		//	function.TodayUserVisit = user
+		//}()
+		//
+		////total
+		//go func() {
+		//	defer wg.Done()
+		//	total, user, err := svc.find("*", q)
+		//	if err != nil {
+		//		return
+		//	}
+		//	function.TotalVisit = total / 4
+		//	function.TotalUserVisit = user
+		//}()
+		//
+		//wg.Wait()
 
 		out.Data = function
 
@@ -261,7 +287,7 @@ func (svc *functionService) GetRoleRepo() *roleRepo {
 }
 
 func (svc *functionService) Add(ctx context.Context, in *external.FunctionRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		repo := svc.GetRepo()
 		defer repo.Close()
@@ -326,20 +352,20 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 }
 
 func (svc *functionService) Rename(ctx context.Context, in *external.FunctionRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func (svc *functionService) Move(ctx context.Context, in *external.FunctionRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 //one application one root group, bindGroupId = appId
 func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionGroupRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
 		if len(in.Name) == 0 && len(in.AppId) == 0 {
 			return nil
@@ -370,13 +396,13 @@ func (svc *functionService) AddGroup(ctx context.Context, in *external.FunctionG
 }
 
 func (svc *functionService) MoveGroup(ctx context.Context, in *external.FunctionGroupRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
 func (svc *functionService) RenameGroup(ctx context.Context, in *external.FunctionGroupRequest, out *commons.Status) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }

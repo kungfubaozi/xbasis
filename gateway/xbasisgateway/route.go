@@ -54,6 +54,7 @@ func (r *request) route(req *http.Request) {
 
 	header := &analysisclient.LogHeaders{
 		TraceId:     r.traceId,
+		UserId:      r.userId,
 		ServiceName: xbasisconstants.GatewayService,
 		ModuleName:  "RouteToTarget",
 	}
@@ -157,10 +158,14 @@ func (r *request) route(req *http.Request) {
 			StateCode: int64(resp.StatusCode),
 			Message:   fmt.Sprintf("StatusCode: %d Timline: %dms", resp.StatusCode, processing),
 			Fields: &analysisclient.LogFields{
-				"function_id":  r.funcId,
-				"processing":   processing,
-				"all":          all,
-				"verification": all - processing,
+				"function_id":   r.funcId,
+				"function_name": r.funcName,
+				"app_id":        r.funcAppId,
+				"function_path": r.funcPath,
+				"processing":    processing,
+				"all":           all,
+				"ok":            true,
+				"verification":  all - processing,
 			},
 			Index: &analysisclient.LogIndex{
 				Id:   r.logId,
@@ -189,9 +194,14 @@ func (r *request) route(req *http.Request) {
 			StateCode: errstate.ErrRequest.Code,
 			Message:   fmt.Sprintf("State: %s ERROR: %s", errstate.ErrRequest.Message, e.Error()),
 			Fields: &analysisclient.LogFields{
-				"processing":   processing,
-				"all":          all,
-				"verification": all - processing,
+				"function_id":   r.funcId,
+				"function_name": r.funcName,
+				"app_id":        r.funcAppId,
+				"function_path": r.funcPath,
+				"processing":    processing,
+				"all":           all,
+				"ok":            false,
+				"verification":  all - processing,
 			},
 			Index: &analysisclient.LogIndex{
 				Id:   r.logId,

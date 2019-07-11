@@ -550,6 +550,7 @@ func (r *request) verification() bool {
 			r.dat.Cv = cv
 		}
 
+		r.funcAppId = f.AppId
 		r.funcName = f.Name
 		r.traceId = traceId
 		r.headers = cm
