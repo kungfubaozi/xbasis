@@ -23,26 +23,28 @@ import (
 )
 
 type request struct {
-	c           *gin.Context
-	services    *services
-	toAppId     string
-	headers     map[string]string
-	path        string
-	startAt     int64
-	ctx         context.Context
-	dat         *xbasissvc_internal_permission.FunctionDat
-	userId      string
-	rh          *requestHeaders
-	auth        bool
-	funcId      string
-	cv          string
-	host        string
-	serviceName string
-	secure      bool
-	traceId     string
-	logId       string
-	logIndex    string
-	funcName    string
+	c             *gin.Context
+	services      *services
+	toAppId       string
+	headers       map[string]string
+	path          string
+	startAt       int64
+	ctx           context.Context
+	dat           *xbasissvc_internal_permission.FunctionDat
+	userId        string
+	rh            *requestHeaders
+	auth          bool
+	funcId        string
+	cv            string
+	host          string
+	serviceName   string
+	secure        bool
+	traceId       string
+	logId         string
+	logIndex      string
+	funcName      string
+	requestMethod string
+	requestPath   string
 }
 
 type services struct {

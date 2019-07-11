@@ -33,6 +33,8 @@ message HasPermissionResponse {
     string datTo = 14;
     int64 datAuth = 15;
     string functionId = 16;
+    string logId = 17;
+    string logIndex = 18;
 }
 
 message TokenInfo {

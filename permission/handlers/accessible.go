@@ -94,6 +94,12 @@ func (svc *accessibleService) DatReduce(ctx context.Context, in *inner.FunctionD
 func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApiRequest, out *inner.LookupApiResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
+		headers := &analysisclient.LogHeaders{
+			ServiceName: xbasisconstants.PermissionService,
+			ModuleName:  "LookupApi",
+			TraceId:     auth.TraceId,
+		}
+
 		repo := svc.GetFunctionRepo()
 		defer repo.Close()
 
@@ -110,6 +116,25 @@ func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApi
 		out.ValTokenTimes = f.ValTokenTimes
 		out.Share = f.Share
 		out.GrantPlatforms = f.GrantPlatforms
+
+		svc.log.Info(&analysisclient.LogContent{
+			Headers: headers,
+			Action:  "SimplifiedLookupApi",
+			Message: "Found application function",
+			Fields: &analysisclient.LogFields{
+				"function_id":   f.Id,
+				"function_name": f.Name,
+				"auth_types":    f.AuthTypes,
+				"app_id":        f.AppId,
+			},
+			Index: &analysisclient.LogIndex{
+				Id:   auth.LogId,
+				Name: auth.LogIndex,
+				Fields: &analysisclient.LogFields{
+					"function": f.Name,
+				},
+			},
+		})
 
 		return errstate.Success
 	})
@@ -152,7 +177,7 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 
 		header := &analysisclient.LogHeaders{
 			TraceId:     auth.TraceId,
-			ModuleName:  "Check",
+			ModuleName:  "AccessibleCheck",
 			ServiceName: xbasisconstants.InternalPermission,
 		}
 
@@ -186,6 +211,11 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 
 		//这里的目的就是对用户权限进行授权
 		if a.Recheck {
+
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: header,
+				Action:  "RecheckUserPermission",
+			})
 
 			//先获取用户和功能的角色
 			repo := svc.GetRepo()
@@ -253,7 +283,7 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: header,
 				Action:  "FunctionAuthorize",
-				Message: "sync function authorize",
+				Message: "Sync function authorize",
 				Fields: &analysisclient.LogFields{
 					"appId":      in.AppId,
 					"userId":     in.UserId,
@@ -264,7 +294,14 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 				},
 			})
 
+			return errstate.Success
 		}
+
+		svc.log.Info(&analysisclient.LogContent{
+			Headers: header,
+			Action:  "CheckUserPermission",
+			Message: "Passed",
+		})
 
 		return errstate.Success
 

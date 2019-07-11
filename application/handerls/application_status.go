@@ -2,6 +2,7 @@ package applicationhanderls
 
 import (
 	"context"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"konekko.me/xbasis/analysis/client"
 	inner "konekko.me/xbasis/application/pb/inner"
@@ -22,7 +23,18 @@ type applicationStatusService struct {
 func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in *inner.GetAppClientStatusRequest,
 	out *inner.GetAppClientStatusResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+		headers := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: constants.InternalApplicationService,
+			ModuleName:  "GetAppClientStatus",
+		}
+
 		if len(in.ClientId) == 0 {
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "GetAppByClientId",
+				Message: "Invalid input clientId",
+			})
 			return errstate.ErrRequest
 		}
 
@@ -31,12 +43,21 @@ func (svc *applicationStatusService) GetAppClientStatus(ctx context.Context, in 
 
 		a, err := repo.FindByClientId(in.ClientId)
 		if err != nil {
-
+			svc.log.Info(&analysisclient.LogContent{
+				Headers: headers,
+				Action:  "GetAppByClientId",
+				Message: fmt.Sprintf("Not found application as clientId %s", in.ClientId),
+			})
 			return errstate.ErrInvalidClientId
 		}
 
 		for _, v := range a.Clients {
 			if v.Id == in.ClientId {
+
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: headers,
+					Action:  "GetAppByClientId",
+				})
 
 				if v.Platform == constants.PlatformOfWeb {
 					if in.Redirect == a.Settings.RedirectURL {

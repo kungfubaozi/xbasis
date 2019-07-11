@@ -34,7 +34,7 @@ type requestHeaders struct {
 	fromClientId  string
 }
 
-var whiteApiList = []string{"/authentication/router/logout", "/analytical/analysis/searchTracking"}
+var whiteApiList = []string{"/authentication/router/logout", "/analytical/analysis/searchTracking", "/analytical/analysis/getTrackingStageDetail"}
 
 func (r *request) verification() bool {
 
@@ -105,7 +105,7 @@ func (r *request) verification() bool {
 	r.services.log.Info(&analysisclient.LogContent{
 		Headers:   headers,
 		Action:    "PermissionVerification",
-		Message:   "start verification",
+		Message:   "Start verification",
 		StateCode: 0,
 		LogIndex:  r.logIndex,
 		Id:        r.logId,
@@ -118,7 +118,9 @@ func (r *request) verification() bool {
 	wg.Add(3)
 
 	ctx := metadata.NewContext(context.Background(), map[string]string{
-		"transport-trace-id": traceId,
+		"transport-trace-id":  traceId,
+		"transport-log-id":    r.logId,
+		"transport-log-index": r.logIndex,
 	})
 
 	r.ctx = ctx
@@ -182,7 +184,9 @@ func (r *request) verification() bool {
 	if !state.Ok {
 		r.services.log.Info(&analysisclient.LogContent{
 			Headers: &analysisclient.LogHeaders{
-				TraceId: traceId,
+				ServiceName: constants.GatewayService,
+				ModuleName:  "Verification",
+				TraceId:     traceId,
 			},
 			Action:    "ThreeBasicValidations",
 			Message:   "CheckFailed",
@@ -203,8 +207,12 @@ func (r *request) verification() bool {
 
 		r.services.log.Info(&analysisclient.LogContent{
 			Headers: &analysisclient.LogHeaders{
-				TraceId: traceId,
+				TraceId:     traceId,
+				ServiceName: constants.GatewayService,
+				ModuleName:  "Verification",
 			},
+			Action:  "ThreeBasicValidations",
+			Message: "Check blacklist(ip, userDevice) and clientId to passed",
 			Index: &analysisclient.LogIndex{
 				Id:   r.logId,
 				Name: r.logIndex,
@@ -241,9 +249,12 @@ func (r *request) verification() bool {
 			if err != nil {
 				r.services.log.Info(&analysisclient.LogContent{
 					Headers: &analysisclient.LogHeaders{
-						TraceId: traceId,
+						TraceId:     traceId,
+						ServiceName: constants.GatewayService,
+						ModuleName:  "Verification",
 					},
-					Action: "InvalidApi",
+					Action:  "InvalidApi",
+					Message: fmt.Sprintf("Not found api %s in %s", rh.path, appResp.AppId),
 					Index: &analysisclient.LogIndex{
 						Id:   r.logId,
 						Name: r.logIndex,
@@ -284,23 +295,6 @@ func (r *request) verification() bool {
 				}
 			}
 		}
-
-		r.services.log.Info(&analysisclient.LogContent{
-			Headers: headers,
-			Action:  "RequestApi",
-			Message: headers.Path,
-			Fields: &analysisclient.LogFields{
-				"function_id": f.Id,
-				"app_id":      appResp.AppId,
-			},
-			Index: &analysisclient.LogIndex{
-				Id:   r.logId,
-				Name: r.logIndex,
-				Fields: &analysisclient.LogFields{
-					"function": f.Name,
-				},
-			},
-		})
 
 		userId := ""
 		cv := ""
@@ -413,7 +407,9 @@ func (r *request) verification() bool {
 					} else {
 						r.services.log.Info(&analysisclient.LogContent{
 							Headers: &analysisclient.LogHeaders{
-								TraceId: traceId,
+								TraceId:     traceId,
+								ServiceName: constants.GatewayService,
+								ModuleName:  "Verification",
 							},
 							Action:  "ExtAuthVerify",
 							Message: "VerificationFailed",
@@ -437,7 +433,8 @@ func (r *request) verification() bool {
 		if !state.Ok {
 			r.services.log.Info(&analysisclient.LogContent{
 				Headers: &analysisclient.LogHeaders{
-					TraceId: traceId,
+					TraceId:     traceId,
+					ServiceName: constants.GatewayService,
 				},
 				Action:    "BasicApplicationInfoCheck",
 				Message:   "CheckFailed",
@@ -506,8 +503,9 @@ func (r *request) verification() bool {
 
 		r.services.log.Info(&analysisclient.LogContent{
 			Headers: &analysisclient.LogHeaders{
-				TraceId: traceId,
-				UserId:  userId,
+				TraceId:     traceId,
+				UserId:      userId,
+				ServiceName: constants.GatewayService,
 			},
 			Action:    loggeractions.UserRequestApi,
 			Message:   "verification passed",
@@ -528,12 +526,12 @@ func (r *request) verification() bool {
 			},
 		})
 
-		fmt.Println("fid", f.Id)
-
 		r.services._log.WithFields(logrus.Fields{
 			"taking": fmt.Sprintf("%dms", (time.Now().UnixNano()-r.startAt)/1e6),
 		}).Info("auth time consuming")
 
+		cm["transport-log-id"] = r.logId
+		cm["transport-log-index"] = r.logIndex
 		cm["transport-user"] = userId
 		cm["transport-app-id"] = appResp.AppId
 		cm["transport-from-client-id"] = rh.fromClientId

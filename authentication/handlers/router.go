@@ -6,6 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
+	"konekko.me/xbasis/analysis/client"
 	"konekko.me/xbasis/application/pb/inner"
 	external "konekko.me/xbasis/authentication/pb"
 	"konekko.me/xbasis/authentication/pb/inner"
@@ -32,6 +33,7 @@ type routeService struct {
 	*indexutils.Client
 	pool *redis.Pool
 	id   xbasisgenerator.IDGenerator
+	log  analysisclient.LogClient
 }
 
 func (svc *routeService) Authorize(ctx context.Context, in *external.AuthorizeRequest, out *commons.Status) error {
@@ -330,8 +332,8 @@ func (svc *routeService) Push(ctx context.Context, in *external.PushRequest, out
 func NewRouteService(client *indexutils.Client, pool *redis.Pool, innerApplicationStatusService xbasissvc_internal_application.ApplicationStatusService,
 	innerUserSyncService xbasissvc_internal_application.UserSyncService,
 	innerTokenService xbasissvc_internal_authentication.TokenService,
-	connectioncli connectioncli.ConnectionClient, innerUserService xbasissvc_internal_user.UserService, innerAccessible xbasissvc_internal_permission.AccessibleService) external.RouterHandler {
-	return &routeService{Client: client, pool: pool, innerTokenService: innerTokenService,
+	connectioncli connectioncli.ConnectionClient, innerUserService xbasissvc_internal_user.UserService, innerAccessible xbasissvc_internal_permission.AccessibleService, log analysisclient.LogClient) external.RouterHandler {
+	return &routeService{Client: client, pool: pool, innerTokenService: innerTokenService, log: log,
 		innerUserSyncService: innerUserSyncService, innerUserService: innerUserService, id: xbasisgenerator.NewIDG(),
 		innerApplicationStatusService: innerApplicationStatusService, connectioncli: connectioncli, innerAccessible: innerAccessible}
 }

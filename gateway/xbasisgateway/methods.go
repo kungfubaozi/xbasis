@@ -8,6 +8,8 @@ import (
 
 func (r *request) call(method string) {
 	req, err := http.NewRequest(method, fmt.Sprintf("http://%s%s", r.path, r.c.Request.RequestURI), r.c.Request.Body)
+	r.requestMethod = method
+	r.requestPath = r.c.Request.RequestURI
 	if err != nil {
 		r.json(errstate.ErrRequest)
 		return

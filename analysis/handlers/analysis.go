@@ -6,10 +6,12 @@ import (
 	"github.com/olivere/elastic"
 	"konekko.me/xbasis/analysis/client"
 	analysispb "konekko.me/xbasis/analysis/pb"
+	"konekko.me/xbasis/commons/constants"
 	"konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	"konekko.me/xbasis/commons/indexutils"
 	wrapper "konekko.me/xbasis/commons/wrapper"
+	"strings"
 )
 
 type analysisService struct {
@@ -25,7 +27,93 @@ func (svc *analysisService) GetFunctionDetail(ctx context.Context, in *analysisp
 
 func (svc *analysisService) GetTrackingStageDetail(ctx context.Context, in *analysispb.GetTrackingDetailRequest, out *analysispb.TrackingStageResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *xbasis_commons_dto.State {
-		return nil
+
+		if len(in.TraceId) < 18 {
+			return nil
+		}
+
+		query := elastic.NewBoolQuery()
+		query.Must(elastic.NewMatchPhraseQuery("headers.traceId", in.TraceId))
+
+		v, err := svc.client.GetElasticClient().Search("xbs-logger.*").Query(query).Type("_doc").Sort("timestamp", false).Do(context.Background())
+		if err != nil {
+			return nil
+		}
+
+		var items []*analysispb.TrackingStageItem
+		if v.Hits.TotalHits > 0 {
+			for _, s := range v.Hits.Hits {
+				t := &tracking{}
+				err := json.Unmarshal(*s.Source, t)
+				if err == nil {
+					item := &analysispb.TrackingStageItem{}
+					item.Message = t.Message
+					item.ServiceName = t.Header.ServiceName
+					item.StateCode = t.StateCode
+					item.ModuleName = t.Header.ModuleName
+					item.Timing = t.Timing
+					item.Level = t.Level
+					item.Action = t.Action
+					if len(item.Level) > 0 {
+						item.Level = strings.ToUpper(item.Level)
+					}
+					if t.Action == "PermissionVerification" {
+						out.Timestamp = t.Timestamp
+						out.UserAgent = t.Header.UserAgent
+						out.Ip = t.Header.Ip
+						out.UserDevice = t.Header.Device
+						out.RefClientId = t.Header.RefClientId
+						out.ClientId = t.Header.FromClientId
+						out.HasDurationToken = t.Header.HasDurationToken
+						out.HasAccessToken = t.Header.HasAccessToken
+						out.Passed = t.Passed
+						out.BasicValidation = t.BasicValidation
+						out.DeniedApiClient = t.DeniedApiClient
+						out.InvalidApi = t.InvalidApi
+						out.Path = t.Header.Path
+					} else if t.Action == "UserRequestApiFinished" {
+						if t.Fields != nil {
+							out.Taking = &analysispb.StageTaking{
+								Verification: t.Fields.VerificationTiming,
+								All:          t.Fields.AllTiming,
+								Process:      t.Fields.ProcessTiming,
+							}
+						}
+					} else if t.Action == "UserRequestApi" {
+						out.UserId = t.Header.UserId
+					} else if t.Action == "StartUserRequestApi" {
+
+					} else if t.Action == "SimplifiedLookupApi" {
+						out.FunctionId = t.Fields.FunctionId
+						out.FunctionName = t.Fields.FunctionName
+						if len(t.Fields.AuthTypes) > 0 {
+							for _, v1 := range t.Fields.AuthTypes {
+								switch int(v1) {
+								case xbasisconstants.AuthTypeOfFace:
+									out.AuthTypes = append(out.AuthTypes, "Face")
+									break
+								case xbasisconstants.AuthTypeOfToken:
+									out.AuthTypes = append(out.AuthTypes, "Token")
+									break
+								case xbasisconstants.AuthTypeOfMobileConfirm:
+									out.AuthTypes = append(out.AuthTypes, "MobileConfirm")
+									break
+								case xbasisconstants.AuthTypeOfValcode:
+									out.AuthTypes = append(out.AuthTypes, "DurationAccessToken")
+									break
+								}
+							}
+						}
+						out.AppId = t.Fields.AppId
+					}
+					items = append(items, item)
+				}
+			}
+		}
+
+		out.Data = items
+
+		return errstate.Success
 	})
 }
 

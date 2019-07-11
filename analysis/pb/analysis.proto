@@ -63,11 +63,34 @@ message TrackingStageResponse {
     string functionId = 3;
     string appId = 4;
     StageTaking taking = 5;
+    string functionName = 6;
+    int64 timestamp = 7;
+    string userId = 8;
+    string clientId = 9;
+    string refClientId = 10;
+    repeated string authTypes = 11;
+    string userAgent = 12;
+    string userDevice = 13;
+    string ip = 14;
+    string message = 15;
+    bool hasAccessToken = 16;
+    bool hasDurationToken = 17;
+    bool passed = 18;
+    bool basicValidation = 19;
+    bool invalidApi = 20;
+    bool deniedApiClient = 21;
+    string path = 22;
+    string platform = 23;
 }
 
 message TrackingStageItem {
     string serviceName = 1;
-    StageTaking taking = 2;
+    int64 timing = 2;
+    string message = 3;
+    int64 stateCode = 4;
+    string moduleName = 5;
+    string level = 6;
+    string action = 7;
 }
 
 message StageTaking {

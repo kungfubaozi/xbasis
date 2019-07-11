@@ -25,6 +25,8 @@ type WrapperUser struct {
 	AppType      int64
 	Token        *WrapperUserToken
 	FunctionId   string
+	LogId        string
+	LogIndex     string
 }
 
 func (w *WrapperUser) GetClientId() string {
@@ -61,6 +63,8 @@ func GetData(md metadata.Metadata) *WrapperUser {
 	auth.TraceId = md["transport-trace-id"]
 	auth.UserAgent = md["transport-user-agent"]
 	auth.UserDevice = md["transport-user-device"]
+	auth.LogId = md["transport-log-id"]
+	auth.LogIndex = md["transport-log-index"]
 	auth.Platform = -1
 	auth.AppType = -1
 	a, err := strconv.ParseInt(md["transport-app-type"], 10, 64)

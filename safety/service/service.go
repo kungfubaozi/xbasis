@@ -1,6 +1,7 @@
 package safetyservice
 
 import (
+	"konekko.me/xbasis/analysis/client"
 	xconfig "konekko.me/xbasis/commons/config"
 	"konekko.me/xbasis/commons/config/call"
 	constants "konekko.me/xbasis/commons/constants"
@@ -33,11 +34,13 @@ func StartService() {
 		panic(err)
 	}
 
+	logger := analysisclient.NewLoggerClient()
+
 	go func() {
 		s := microservice.NewService(constants.SafetyService, true)
 		s.Init()
 
-		xbasissvc_external_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, client))
+		xbasissvc_external_safety.RegisterBlacklistHandler(s.Server(), safetyhanders.NewBlacklistService(session, client, logger))
 
 		xbasissvc_external_safety.RegisterLockingHandler(s.Server(), safetyhanders.NewLockingService())
 
@@ -53,7 +56,7 @@ func StartService() {
 	go func() {
 		s := microservice.NewService(constants.InternalSafetyService, true)
 		s.Init()
-		xbasissvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session, pool))
+		xbasissvc_internal_safety.RegisterSecurityHandler(s.Server(), safetyhanders.NewSecurityService(session, pool, logger))
 
 		errc <- s.Run()
 	}()

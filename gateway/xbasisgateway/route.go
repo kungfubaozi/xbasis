@@ -69,7 +69,8 @@ func (r *request) route(req *http.Request) {
 
 	r.services.log.Info(&analysisclient.LogContent{
 		Headers: header,
-		Action:  "StartUserRequestApi",
+		Action:  "StartRequestTargetAppApi",
+		Message: fmt.Sprintf("%s Host: %s  Path: %s", r.requestMethod, r.path, r.requestPath),
 		Fields: &analysisclient.LogFields{
 			"function_id":  r.funcId,
 			"route_to":     r.path,
@@ -141,18 +142,20 @@ func (r *request) route(req *http.Request) {
 		b, err := ioutil.ReadAll(resp.Body)
 		r.c.Writer.Write(b)
 
+		processing := (time.Now().UnixNano() - rt) / 1e6
+
 		r.services._log.WithFields(logrus.Fields{
 			"all":        fmt.Sprintf("%dms", (time.Now().UnixNano()-r.startAt)/1e6),
-			"processing": fmt.Sprintf("%dms", (time.Now().UnixNano()-rt)/1e6),
+			"processing": fmt.Sprintf("%dms", processing),
 		}).Info("all time consuming")
 
 		all := (time.Now().UnixNano() - r.startAt) / 1e6
-		processing := (time.Now().UnixNano() - rt) / 1e6
 
 		r.services.log.Info(&analysisclient.LogContent{
 			Headers:   header,
 			Action:    "UserRequestApiFinished",
 			StateCode: int64(resp.StatusCode),
+			Message:   fmt.Sprintf("StatusCode: %d Timline: %dms", resp.StatusCode, processing),
 			Fields: &analysisclient.LogFields{
 				"function_id":  r.funcId,
 				"processing":   processing,
@@ -184,9 +187,8 @@ func (r *request) route(req *http.Request) {
 			Headers:   header,
 			Action:    "UserRequestApiFinished",
 			StateCode: errstate.ErrRequest.Code,
-			Message:   e.Error(),
+			Message:   fmt.Sprintf("State: %s ERROR: %s", errstate.ErrRequest.Message, e.Error()),
 			Fields: &analysisclient.LogFields{
-				"function_id":  r.funcId,
 				"processing":   processing,
 				"all":          all,
 				"verification": all - processing,

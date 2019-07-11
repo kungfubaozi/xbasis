@@ -2,7 +2,6 @@ package authenticationhandlers
 
 import (
 	"context"
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmihailenco/msgpack"
 	"konekko.me/xbasis/analysis/client"
@@ -68,7 +67,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
 				Action:  "AccessTokenExpired",
-				Message: fmt.Sprintf("%d", claims.ExpiresAt),
+				Message: "AccessToken has been expired",
 			})
 			return errstate.ErrAccessTokenExpired
 		}
@@ -77,6 +76,7 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
 				Action:  "ErrTokenType",
+				Message: "Is not accessToken type",
 			})
 			return errstate.ErrAccessToken
 		}
@@ -229,7 +229,6 @@ func (svc *authService) Verify(ctx context.Context, in *inner.VerifyRequest, out
 			out.Relation = claims.Token.Relation
 
 			if tokenApp != nil {
-				fmt.Println("token app token", tokenApp.Type)
 				out.AppType = tokenApp.Type
 			}
 			return nil

@@ -81,6 +81,8 @@ func (svc *verificationService) Check(ctx context.Context, in *inner.HasPermissi
 				out.User = auth.User
 				out.AppId = auth.AppId
 				out.AppType = auth.AppType
+				out.LogId = auth.LogId
+				out.LogIndex = auth.LogIndex
 				out.Platform = auth.Platform
 				if auth.Access != nil {
 					out.DatTo = auth.Access.To
