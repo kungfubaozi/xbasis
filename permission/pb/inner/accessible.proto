@@ -52,7 +52,7 @@ message LookupApiResponse {
     string id = 2;
     repeated int64 authTypes = 3;
     int64 valTokenTimes = 4;
-    repeated int64 grantPlatforms = 5;
+    repeated int64 noGrantPlatforms = 5;
     bool share = 6;
     string appId = 7;
     string path = 8;

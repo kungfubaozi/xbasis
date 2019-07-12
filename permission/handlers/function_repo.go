@@ -14,7 +14,13 @@ type functionRepo struct {
 }
 
 func (repo *functionRepo) AddFunction(function *function) error {
-	id, err := repo.AddData(functionIndex, function)
+	id, err := repo.AddData(functionIndex, &SimplifiedFunction{
+		Id:    function.Id,
+		Name:  function.Name,
+		AppId: function.AppId,
+		Path:  function.Api,
+		Share: function.Share,
+	})
 	if err != nil {
 		return err
 	}
@@ -26,15 +32,15 @@ func (repo *functionRepo) AddFunction(function *function) error {
 }
 
 func (repo *functionRepo) AddGroup(group *functionGroup) error {
-	id, err := repo.AddData(functionGroupRelationIndex, group)
-	if err != nil {
-		return err
-	}
-	if len(id) > 0 {
-		group.SID = id
-		return repo.groupCollection(group.AppId).Insert(group)
-	}
-	return indexutils.ErrNotFound
+	//id, err := repo.AddData(functionGroupRelationIndex, group)
+	//if err != nil {
+	//	return err
+	//}
+	//if len(id) > 0 {
+	//	group.SID = id
+	//	return
+	//}
+	return repo.groupCollection(group.AppId).Insert(group)
 }
 
 func (repo *functionRepo) FindChildGroups(appId, parentId string) ([]*functionGroup, error) {
@@ -75,18 +81,19 @@ func (repo *functionRepo) FindGroupExists(groupId, appId string) bool {
 	return c > 0
 }
 
-func (repo *functionRepo) SimplifiedLookupApi(appId, path string) (*SimplifiedFunction, error) {
-	var sf SimplifiedFunction
-
-	ok, err := repo.QueryFirst(functionIndex, map[string]interface{}{"app_id": appId, "path": path, "join_field": "relation"}, &sf)
-	if err != nil {
-		return nil, err
-	}
-	if ok {
-		return &sf, nil
-	}
-	return nil, indexutils.ErrNotFound
-}
+//
+//func (repo *functionRepo) SimplifiedLookupApi(appId, path string) (*SimplifiedFunction, error) {
+//	var sf SimplifiedFunction
+//
+//	ok, err := repo.QueryFirst(functionIndex, map[string]interface{}{"app_id": appId, "path": path, "join_field": "relation"}, &sf)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if ok {
+//		return &sf, nil
+//	}
+//	return nil, indexutils.ErrNotFound
+//}
 
 func (repo *functionRepo) groupCollection(appId string) *mgo.Collection {
 	return repo.session.DB(dbName).C(fmt.Sprintf("%s_%d", functionGroupCollection, hashcode.Equa(appId)))

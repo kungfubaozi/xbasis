@@ -260,8 +260,6 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 
 		repo.functionGroups[hashcode.Equa(appId)] = append(v1, g)
 
-		repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionGroupRelationIndex).Type("_doc").Doc(g))
-
 		for _, v := range v.Functions {
 			f := &function{
 				Name:         v.Name,
@@ -311,14 +309,12 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			repo.functions[hashcode.Equa(f.AppId)] = append(v1, f)
 
 			sf := &SimplifiedFunction{
-				JoinField:     "relation",
-				Id:            f.Id,
-				AuthTypes:     f.AuthTypes,
-				Share:         f.Share,
-				AppId:         appId,
-				ValTokenTimes: f.ValTokenTimes,
-				Name:          f.Name,
-				Path:          encrypt.SHA1(f.Api),
+				JoinField: "relation",
+				Id:        f.Id,
+				Share:     f.Share,
+				AppId:     appId,
+				Name:      f.Name,
+				Path:      f.Api,
 			}
 
 			repo.bulk.Add(elastic.NewBulkIndexRequest().Index(functionIndex).Id(f.Id).Type("_doc").Doc(sf))

@@ -6,18 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro"
 	"konekko.me/xbasis/analysis/client"
-	"konekko.me/xbasis/application/client"
 	"konekko.me/xbasis/application/pb/inner"
-	"konekko.me/xbasis/authentication/client"
 	"konekko.me/xbasis/authentication/pb/inner"
-	constants "konekko.me/xbasis/commons/constants"
 	"konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/errstate"
 	"konekko.me/xbasis/commons/generator"
-	"konekko.me/xbasis/commons/microservice"
-	"konekko.me/xbasis/permission/client"
 	"konekko.me/xbasis/permission/pb/inner"
-	"konekko.me/xbasis/safety/client"
 	"konekko.me/xbasis/safety/pb"
 	"net/http"
 )
@@ -58,6 +52,7 @@ type services struct {
 	id                            xbasisgenerator.IDGenerator
 	log                           analysisclient.LogClient
 	_log                          *logrus.Logger
+	functions                     *functions
 }
 
 func (r *request) buildHeader(request *http.Request) {
@@ -69,36 +64,16 @@ func (r *request) json(state *xbasis_commons_dto.State) {
 	r.c.JSON(200, xbasis_commons_dto.Status{State: state})
 }
 
-type Gateway struct {
+type gateway struct {
 	s       *services
 	service micro.Service
 }
 
-func InitService() *Gateway {
-	svc := microservice.NewService(constants.GatewayService, false)
-
-	g := &Gateway{
-		s: &services{
-			verification:                  permissioncli.NewVerificationClient(svc.Client()),
-			accessibleService:             permissioncli.NewAccessibleClient(svc.Client()),
-			innerApplicationStatusService: applicationclient.NewStatusClient(svc.Client()),
-			blacklistService:              safetyclient.NewBlacklistClient(svc.Client()),
-			innerAuthService:              authenticationcli.NewAuthClient(svc.Client()),
-			id:                            xbasisgenerator.NewIDG(),
-			log:                           analysisclient.NewLoggerClient(),
-			_log:                          logrus.New(),
-		},
-		service: svc,
-	}
-
-	return g
-}
-
-func (g *Gateway) Run() error {
+func (g *gateway) run() error {
 	return g.service.Run()
 }
 
-func (g *Gateway) NewRequest(c *gin.Context) {
+func (g *gateway) request(c *gin.Context) {
 
 	g.s._log.WithFields(logrus.Fields{
 		"requestURI": c.Request.RequestURI,

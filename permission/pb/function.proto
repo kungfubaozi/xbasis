@@ -24,6 +24,13 @@ service Function {
     rpc GetFunctionItemDetail (GetFunctionItemRequest) returns (GetFunctionItemResponse);
 
     rpc Search (FunctionSearchRequest) returns (FunctionSearchResponse);
+
+    rpc ModifySettings ( ModifySettingsRequest) returns (xbasis.commons.dto.Status);
+}
+
+message  ModifySettingsRequest {
+    string appId = 1;
+    string functionId = 2;
 }
 
 message FunctionSearchRequest {
@@ -74,7 +81,7 @@ message FunctionItemDetail {
     int64 createAt = 3;
     repeated FunctionBindRole roles = 4;
     repeated FunctionAuthTypes authTypes = 5;
-    repeated FunctionGrantPlatforms platforms = 6;
+    repeated FunctionNoGrantPlatforms platforms = 6;
     bool share = 7;
     int64 valTokenTimes = 8;
     string id = 9;
@@ -95,7 +102,7 @@ message FunctionAuthTypes {
     bool enabled = 3;
 }
 
-message FunctionGrantPlatforms {
+message FunctionNoGrantPlatforms {
     string name = 1;
     int64 type = 2;
     bool enabled = 3;

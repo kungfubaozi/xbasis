@@ -11,6 +11,17 @@ service Analysis {
     rpc GetTrackingStageDetail (GetTrackingDetailRequest) returns (TrackingStageResponse);
 
     rpc GetFunctionDetail (GetFunctionDetailRequest) returns (GetFunctionDetailResponse);
+
+    rpc SearchFunctions (SearchFunctionRequest) returns (SearchFunctionResponse);
+
+}
+
+message SearchFunctionRequest {
+    bool rank = 1;
+}
+
+message SearchFunctionResponse {
+
 }
 
 message GetFunctionDetailRequest {

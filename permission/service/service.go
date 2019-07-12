@@ -10,6 +10,7 @@ import (
 	"konekko.me/xbasis/commons/dao"
 	"konekko.me/xbasis/commons/indexutils"
 	"konekko.me/xbasis/commons/microservice"
+	"konekko.me/xbasis/gateway/client"
 	"konekko.me/xbasis/permission/client"
 	"konekko.me/xbasis/permission/handlers"
 	"konekko.me/xbasis/permission/pb"
@@ -58,6 +59,8 @@ func StartService() {
 
 	go func() {
 
+		gateway := xbsgatewayclient.NewClient("192.168.2.62:9092")
+
 		m := microservice.NewService(constants.PermissionService, true)
 
 		us := userclient.NewExtUserClient(m.Client())
@@ -68,7 +71,7 @@ func StartService() {
 
 		xbasissvc_external_permission.RegisterDurationAccessHandler(m.Server(), permissionhandlers.NewDurationAccessService(pool, session, zk, mc, client, logger))
 
-		xbasissvc_external_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger))
+		xbasissvc_external_permission.RegisterFunctionHandler(m.Server(), permissionhandlers.NewFunctionService(client, session, logger, gateway))
 
 		xbasissvc_external_permission.RegisterUserGroupHandler(m.Server(), permissionhandlers.NewGroupService(pool, session, userclient.NewExtUserClient(m.Client()), logger))
 

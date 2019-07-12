@@ -8,6 +8,7 @@ It is generated from these files:
 	permission/pb/function.proto
 
 It has these top-level messages:
+	ModifySettingsRequest
 	FunctionSearchRequest
 	FunctionSearchResponse
 	GetFunctionItemsRequest
@@ -18,7 +19,7 @@ It has these top-level messages:
 	FunctionItemDetail
 	FunctionBindRole
 	FunctionAuthTypes
-	FunctionGrantPlatforms
+	FunctionNoGrantPlatforms
 	FunctionRequest
 	FunctionGroupRequest
 */
@@ -64,6 +65,7 @@ type FunctionService interface {
 	GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, opts ...client.CallOption) (*GetFunctionItemsResponse, error)
 	GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, opts ...client.CallOption) (*GetFunctionItemResponse, error)
 	Search(ctx context.Context, in *FunctionSearchRequest, opts ...client.CallOption) (*FunctionSearchResponse, error)
+	ModifySettings(ctx context.Context, in *ModifySettingsRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 }
 
 type functionService struct {
@@ -174,6 +176,16 @@ func (c *functionService) Search(ctx context.Context, in *FunctionSearchRequest,
 	return out, nil
 }
 
+func (c *functionService) ModifySettings(ctx context.Context, in *ModifySettingsRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error) {
+	req := c.c.NewRequest(c.name, "Function.ModifySettings", in)
+	out := new(xbasis_commons_dto.Status)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Function service
 
 type FunctionHandler interface {
@@ -186,6 +198,7 @@ type FunctionHandler interface {
 	GetFunctionItems(context.Context, *GetFunctionItemsRequest, *GetFunctionItemsResponse) error
 	GetFunctionItemDetail(context.Context, *GetFunctionItemRequest, *GetFunctionItemResponse) error
 	Search(context.Context, *FunctionSearchRequest, *FunctionSearchResponse) error
+	ModifySettings(context.Context, *ModifySettingsRequest, *xbasis_commons_dto.Status) error
 }
 
 func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...server.HandlerOption) error {
@@ -199,6 +212,7 @@ func RegisterFunctionHandler(s server.Server, hdlr FunctionHandler, opts ...serv
 		GetFunctionItems(ctx context.Context, in *GetFunctionItemsRequest, out *GetFunctionItemsResponse) error
 		GetFunctionItemDetail(ctx context.Context, in *GetFunctionItemRequest, out *GetFunctionItemResponse) error
 		Search(ctx context.Context, in *FunctionSearchRequest, out *FunctionSearchResponse) error
+		ModifySettings(ctx context.Context, in *ModifySettingsRequest, out *xbasis_commons_dto.Status) error
 	}
 	type Function struct {
 		function
@@ -245,4 +259,8 @@ func (h *functionHandler) GetFunctionItemDetail(ctx context.Context, in *GetFunc
 
 func (h *functionHandler) Search(ctx context.Context, in *FunctionSearchRequest, out *FunctionSearchResponse) error {
 	return h.FunctionHandler.Search(ctx, in, out)
+}
+
+func (h *functionHandler) ModifySettings(ctx context.Context, in *ModifySettingsRequest, out *xbasis_commons_dto.Status) error {
+	return h.FunctionHandler.ModifySettings(ctx, in, out)
 }

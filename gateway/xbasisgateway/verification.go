@@ -16,6 +16,7 @@ import (
 	commons "konekko.me/xbasis/commons/dto"
 	"konekko.me/xbasis/commons/encrypt"
 	"konekko.me/xbasis/commons/errstate"
+	"konekko.me/xbasis/commons/transport"
 	"konekko.me/xbasis/permission/handlers"
 	"konekko.me/xbasis/permission/pb/inner"
 	"konekko.me/xbasis/safety/pb"
@@ -34,7 +35,7 @@ type requestHeaders struct {
 	fromClientId  string
 }
 
-var whiteApiList = []string{"/authentication/router/logout", "/analytical/analysis/searchTracking", "/analytical/analysis/getTrackingStageDetail"}
+var whiteApiList = []string{"/authentication/router/logout"}
 
 func (r *request) verification() bool {
 
@@ -227,12 +228,12 @@ func (r *request) verification() bool {
 			return false
 		}
 
-		var f *xbasissvc_internal_permission.LookupApiResponse
+		var f *xbasistransport.AppFunction
 
 		wl := false
 		for _, v := range whiteApiList {
 			if v == rh.path {
-				f = &xbasissvc_internal_permission.LookupApiResponse{
+				f = &xbasistransport.AppFunction{
 					AuthTypes: []int64{},
 				}
 				wl = true
@@ -241,42 +242,85 @@ func (r *request) verification() bool {
 		}
 		if f == nil && !wl {
 
-			f1, err := r.services.accessibleService.LookupApi(ctx, &xbasissvc_internal_permission.LookupApiRequest{
-				AppId: appResp.AppId,
-				Path:  encrypt.SHA1(rh.path),
-			})
+			//in cache
+			f = r.services.functions.find(appResp.AppId, rh.path)
+			if f == nil {
 
-			if err != nil {
+				//from database
+				f1, err := r.services.accessibleService.LookupApi(ctx, &xbasissvc_internal_permission.LookupApiRequest{
+					AppId: appResp.AppId,
+					Path:  rh.path,
+				})
+
+				if err != nil {
+					r.services.log.Info(&analysisclient.LogContent{
+						Headers: &analysisclient.LogHeaders{
+							TraceId:     traceId,
+							ServiceName: constants.GatewayService,
+							ModuleName:  "Verification",
+						},
+						Action:  "InvalidApi",
+						Message: fmt.Sprintf("Not found api %s in %s", rh.path, appResp.AppId),
+						Index: &analysisclient.LogIndex{
+							Id:   r.logId,
+							Name: r.logIndex,
+							Fields: &analysisclient.LogFields{
+								"invalid_api": true,
+							},
+						},
+					})
+					r.json(errstate.ErrRequest)
+					return false
+				}
+
+				if !f1.State.Ok {
+					r.json(f1.State)
+					return false
+				}
+
+				af := &xbasistransport.AppFunction{
+					Id:               f1.Id,
+					Name:             f1.Name,
+					AuthTypes:        f1.AuthTypes,
+					ValTokenTimes:    f1.ValTokenTimes,
+					NoGrantPlatforms: f1.NoGrantPlatforms,
+					Share:            f1.Share,
+					AppId:            f1.AppId,
+					Path:             f1.Path,
+					Version:          1,
+				}
+
+				r.services.functions.update(af)
+
+				f = af
+			} else {
 				r.services.log.Info(&analysisclient.LogContent{
 					Headers: &analysisclient.LogHeaders{
 						TraceId:     traceId,
 						ServiceName: constants.GatewayService,
 						ModuleName:  "Verification",
 					},
-					Action:  "InvalidApi",
-					Message: fmt.Sprintf("Not found api %s in %s", rh.path, appResp.AppId),
+					Action:  "LookupApiFromCache",
+					Message: "Found application function",
+					Fields: &analysisclient.LogFields{
+						"function_id":   f.Id,
+						"function_name": f.Name,
+						"auth_types":    f.AuthTypes,
+						"app_id":        f.AppId,
+					},
 					Index: &analysisclient.LogIndex{
 						Id:   r.logId,
 						Name: r.logIndex,
 						Fields: &analysisclient.LogFields{
-							"invalid_api": true,
+							"function": f.Name,
 						},
 					},
 				})
-				r.json(errstate.ErrRequest)
-				return false
 			}
 
-			if !f1.State.Ok {
-				r.json(f1.State)
-				return false
-			}
-
-			f = f1
-
-			//grant platform
-			if f.GrantPlatforms != nil && len(f.GrantPlatforms) > 0 {
-				for _, v := range f.GrantPlatforms {
+			//grant platform check
+			if f.NoGrantPlatforms != nil && len(f.NoGrantPlatforms) > 0 {
+				for _, v := range f.NoGrantPlatforms {
 					if v == appResp.ClientPlatform {
 						r.services.log.Info(&analysisclient.LogContent{
 							Headers: headers,

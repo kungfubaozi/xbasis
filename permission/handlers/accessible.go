@@ -103,23 +103,23 @@ func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApi
 		repo := svc.GetFunctionRepo()
 		defer repo.Close()
 
-		f, err := repo.SimplifiedLookupApi(in.AppId, in.Path)
+		f, err := repo.FindApi(in.AppId, in.Path)
 		if err != nil {
 			return nil
 		}
 
 		out.AppId = f.AppId
-		out.Path = f.Path
+		out.Path = f.Api
 		out.Id = f.Id
 		out.Name = f.Name
 		out.AuthTypes = f.AuthTypes
 		out.ValTokenTimes = f.ValTokenTimes
 		out.Share = f.Share
-		out.GrantPlatforms = f.GrantPlatforms
+		out.NoGrantPlatforms = f.NoGrantPlatforms
 
 		svc.log.Info(&analysisclient.LogContent{
 			Headers: headers,
-			Action:  "SimplifiedLookupApi",
+			Action:  "LookupApiFromDatabase",
 			Message: "Found application function",
 			Fields: &analysisclient.LogFields{
 				"function_id":   f.Id,

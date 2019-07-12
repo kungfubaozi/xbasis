@@ -116,6 +116,17 @@
           ]
         },
         {
+          "api": "/function/modifySettings",
+          "name": "ModifyFunctionSettings",
+          "roles": [
+            "Administrator",
+            "AppManage"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
           "api": "/function/add",
           "name": "AddFunction",
           "roles": [
@@ -466,6 +477,52 @@
         {
           "api": "/instance/search",
           "name": "InstanceSearch",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "Analytical",
+      "prefix": "/analytical",
+      "functions": [
+        {
+          "api": "/analysis/searchTracking",
+          "name": "SearchTracking",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/analysis/getTrackingStageDetail",
+          "name": "getTrackingStageDetail",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/analysis/getFunctionDetail",
+          "name": "GetFunctionDetail",
+          "roles": [
+            "Administrator"
+          ],
+          "auth_type": [
+            5632
+          ]
+        },
+        {
+          "api": "/analysis/searchFunctions",
+          "name": "SearchFunctions",
           "roles": [
             "Administrator"
           ],

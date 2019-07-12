@@ -17,9 +17,9 @@ const (
 
 	functionRoleRelationCollection = "function_roles_relation"
 
-	functionIndex = "xbs-functions"
+	functionIndex = "xbs-state-functions"
 
-	functionGroupRelationIndex = "xbs-function-groups"
+	//functionGroupRelationIndex = "xbs-function-groups"
 
 	roleIndex = "xbs-roles"
 
@@ -171,20 +171,17 @@ type function struct {
 	AppId        string  `bson:"app_id" json:"app_id"`
 	AuthTypes    []int64 `bson:"auth_types" json:"auth_types"`
 	//authType container AuthTypeOfValcode. valTokenLife is access this function token expired time
-	ValTokenTimes  int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
-	GrantPlatforms []int64 `bson:"grant_platforms" json:"grant_platforms"`
+	ValTokenTimes    int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
+	NoGrantPlatforms []int64 `bson:"no_grant_platforms" json:"no_grant_platforms"`
 	//representation validation does not require judging the application to which it belongs, and each application can share this function (roles need to be set to null)
 	Share bool `bson:"share" json:"share"`
 }
 
 type SimplifiedFunction struct {
-	JoinField      string  `json:"join_field"`
-	Id             string  `json:"id"`
-	AuthTypes      []int64 `json:"auth_types"`
-	ValTokenTimes  int64   `bson:"val_token_times" json:"val_token_times"` //可以使用的次数 >=1
-	GrantPlatforms []int64 `json:"grant_platforms"`
-	Share          bool    `bson:"share" json:"share"`
-	AppId          string  `bson:"app_id" json:"app_id"`
-	Path           string  `bson:"path" json:"path"`
-	Name           string  `bson:"name" json:"name"`
+	JoinField string `json:"join_field"`
+	Id        string `json:"id"`
+	Share     bool   `bson:"share" json:"share"`
+	AppId     string `bson:"app_id" json:"app_id"`
+	Path      string `bson:"path" json:"path"`
+	Name      string `bson:"name" json:"name"`
 }

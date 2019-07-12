@@ -8,6 +8,8 @@ It is generated from these files:
 	analysis/pb/analysis.proto
 
 It has these top-level messages:
+	SearchFunctionRequest
+	SearchFunctionResponse
 	GetFunctionDetailRequest
 	GetFunctionDetailResponse
 	SearchTrackingRequest
@@ -53,6 +55,7 @@ type AnalysisService interface {
 	SearchTracking(ctx context.Context, in *SearchTrackingRequest, opts ...client.CallOption) (*SearchTrackingResponse, error)
 	GetTrackingStageDetail(ctx context.Context, in *GetTrackingDetailRequest, opts ...client.CallOption) (*TrackingStageResponse, error)
 	GetFunctionDetail(ctx context.Context, in *GetFunctionDetailRequest, opts ...client.CallOption) (*GetFunctionDetailResponse, error)
+	SearchFunctions(ctx context.Context, in *SearchFunctionRequest, opts ...client.CallOption) (*SearchFunctionResponse, error)
 }
 
 type analysisService struct {
@@ -103,12 +106,23 @@ func (c *analysisService) GetFunctionDetail(ctx context.Context, in *GetFunction
 	return out, nil
 }
 
+func (c *analysisService) SearchFunctions(ctx context.Context, in *SearchFunctionRequest, opts ...client.CallOption) (*SearchFunctionResponse, error) {
+	req := c.c.NewRequest(c.name, "Analysis.SearchFunctions", in)
+	out := new(SearchFunctionResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Analysis service
 
 type AnalysisHandler interface {
 	SearchTracking(context.Context, *SearchTrackingRequest, *SearchTrackingResponse) error
 	GetTrackingStageDetail(context.Context, *GetTrackingDetailRequest, *TrackingStageResponse) error
 	GetFunctionDetail(context.Context, *GetFunctionDetailRequest, *GetFunctionDetailResponse) error
+	SearchFunctions(context.Context, *SearchFunctionRequest, *SearchFunctionResponse) error
 }
 
 func RegisterAnalysisHandler(s server.Server, hdlr AnalysisHandler, opts ...server.HandlerOption) error {
@@ -116,6 +130,7 @@ func RegisterAnalysisHandler(s server.Server, hdlr AnalysisHandler, opts ...serv
 		SearchTracking(ctx context.Context, in *SearchTrackingRequest, out *SearchTrackingResponse) error
 		GetTrackingStageDetail(ctx context.Context, in *GetTrackingDetailRequest, out *TrackingStageResponse) error
 		GetFunctionDetail(ctx context.Context, in *GetFunctionDetailRequest, out *GetFunctionDetailResponse) error
+		SearchFunctions(ctx context.Context, in *SearchFunctionRequest, out *SearchFunctionResponse) error
 	}
 	type Analysis struct {
 		analysis
@@ -138,4 +153,8 @@ func (h *analysisHandler) GetTrackingStageDetail(ctx context.Context, in *GetTra
 
 func (h *analysisHandler) GetFunctionDetail(ctx context.Context, in *GetFunctionDetailRequest, out *GetFunctionDetailResponse) error {
 	return h.AnalysisHandler.GetFunctionDetail(ctx, in, out)
+}
+
+func (h *analysisHandler) SearchFunctions(ctx context.Context, in *SearchFunctionRequest, out *SearchFunctionResponse) error {
+	return h.AnalysisHandler.SearchFunctions(ctx, in, out)
 }

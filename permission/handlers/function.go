@@ -2,7 +2,6 @@ package permissionhandlers
 
 import (
 	"context"
-	"fmt"
 	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
@@ -12,7 +11,9 @@ import (
 	"konekko.me/xbasis/commons/errstate"
 	generator "konekko.me/xbasis/commons/generator"
 	"konekko.me/xbasis/commons/indexutils"
+	"konekko.me/xbasis/commons/transport"
 	wrapper "konekko.me/xbasis/commons/wrapper"
+	"konekko.me/xbasis/gateway/client"
 	external "konekko.me/xbasis/permission/pb"
 	"time"
 )
@@ -22,35 +23,18 @@ type functionService struct {
 	session *mgo.Session
 	id      generator.IDGenerator
 	log     analysisclient.LogClient
+	gateway xbsgatewayclient.GatewayClient
+}
+
+func (svc *functionService) ModifySettings(ctx context.Context, in *external.ModifySettingsRequest, out *commons.Status) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		return nil
+	})
 }
 
 func (svc *functionService) Search(ctx context.Context, in *external.FunctionSearchRequest, out *external.FunctionSearchResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
-
-		query := elastic.NewBoolQuery()
-
-		v1 := in.Value
-
-		e := svc.Client.GetElasticClient().Search(functionIndex)
-
-		query.Must(elastic.NewMatchPhraseQuery("action", "PermissionVerification"))
-		if len(v1) > 0 {
-			q := elastic.NewQueryStringQuery("*" + v1 + "*")
-			if len(in.Key) > 0 {
-				q.Field(in.Key)
-			} else {
-				q.Field("headers.path")
-				q.Field("headers.userAgent")
-				q.Field("headers.fromClientId")
-				q.Field("headers.refClientId")
-				q.Field("function")
-				q.Field("headers.ip")
-			}
-			query.Must(q)
-		}
-		query.Must(elastic.NewMatchPhraseQuery("app_id", in.AppId))
-
-		e.Query(query)
 
 		return nil
 	})
@@ -67,7 +51,6 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 
 		groups, err := repo.FindChildGroups(in.AppId, in.Id)
 		if err != nil {
-			fmt.Println("123")
 			return nil
 		}
 
@@ -171,15 +154,15 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 		}
 
 		isGrant := func(t int64) bool {
-			for _, v := range f.GrantPlatforms {
+			for _, v := range f.NoGrantPlatforms {
 				if v == t {
-					return true
+					return false
 				}
 			}
-			return false
+			return true
 		}
 
-		function.Platforms = []*external.FunctionGrantPlatforms{
+		function.Platforms = []*external.FunctionNoGrantPlatforms{
 			{
 				Name:    "Web",
 				Type:    constants.PlatformOfWeb,
@@ -301,6 +284,12 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 			return errstate.ErrFunctionBindGroupId
 		}
 
+		header := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: constants.PermissionService,
+			ModuleName:  "AddFunction",
+		}
+
 		//check authTypes
 		if in.AuthTypes != nil && len(in.AuthTypes) > 0 {
 			for _, v := range in.AuthTypes {
@@ -321,27 +310,43 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 		if err != nil && err == mgo.ErrNotFound {
 
 			f := &function{
-				Id:           svc.id.Get(),
-				Name:         in.Name,
-				Type:         in.Type,
-				CreateUserId: auth.Token.UserId,
-				CreateAt:     time.Now().UnixNano(),
-				BindGroupId:  in.BindGroupId,
-				AppId:        in.AppId,
-				Api:          in.Api,
-				AuthTypes:    in.AuthTypes,
-				GrantPlatforms: []int64{
-					constants.PlatformOfWindows,
-					constants.PlatformOfLinux,
-					constants.PlatformOfIOS,
-					constants.PlatformOfFuchsia,
-					constants.PlatformOfAndroid,
-					constants.PlatformOfWeb},
+				Id:               svc.id.Get(),
+				Name:             in.Name,
+				Type:             in.Type,
+				CreateUserId:     auth.Token.UserId,
+				CreateAt:         time.Now().UnixNano(),
+				BindGroupId:      in.BindGroupId,
+				AppId:            in.AppId,
+				Api:              in.Api,
+				AuthTypes:        in.AuthTypes,
+				NoGrantPlatforms: []int64{},
 			}
 
 			err := repo.AddFunction(f)
 
 			if err == nil {
+
+				svc.gateway.SendFunctionChanged(&xbasistransport.AppFunction{
+					Id:               f.Id,
+					Name:             f.Name,
+					NoGrantPlatforms: f.NoGrantPlatforms,
+					AppId:            f.AppId,
+					Path:             f.Api,
+					AuthTypes:        f.AuthTypes,
+					ValTokenTimes:    f.ValTokenTimes,
+					Share:            f.Share,
+				})
+
+				svc.log.Info(&analysisclient.LogContent{
+					Headers: header,
+					Action:  "AddFunction",
+					Fields: &analysisclient.LogFields{
+						"id":     f.Id,
+						"name":   f.Name,
+						"app_id": f.AppId,
+					},
+				})
+
 				return errstate.Success
 			}
 
@@ -407,6 +412,6 @@ func (svc *functionService) RenameGroup(ctx context.Context, in *external.Functi
 	})
 }
 
-func NewFunctionService(client *indexutils.Client, session *mgo.Session, log analysisclient.LogClient) external.FunctionHandler {
-	return &functionService{Client: client, session: session, id: generator.NewIDG(), log: log}
+func NewFunctionService(client *indexutils.Client, session *mgo.Session, log analysisclient.LogClient, gateway xbsgatewayclient.GatewayClient) external.FunctionHandler {
+	return &functionService{Client: client, session: session, id: generator.NewIDG(), log: log, gateway: gateway}
 }

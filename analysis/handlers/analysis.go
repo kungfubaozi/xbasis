@@ -19,6 +19,12 @@ type analysisService struct {
 	log    analysisclient.LogClient
 }
 
+func (svc *analysisService) SearchFunctions(ctx context.Context, in *analysispb.SearchFunctionRequest, out *analysispb.SearchFunctionResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *xbasis_commons_dto.State {
+		return nil
+	})
+}
+
 func (svc *analysisService) GetFunctionDetail(ctx context.Context, in *analysispb.GetFunctionDetailRequest, out *analysispb.GetFunctionDetailResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *xbasis_commons_dto.State {
 		return nil
