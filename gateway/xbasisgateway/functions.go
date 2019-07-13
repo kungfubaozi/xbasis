@@ -37,6 +37,9 @@ func (f *functions) update(af *xbasistransport.AppFunction) {
 				af.Version = d.Version + 1
 				f.funcs[af.AppId][af.Path] = af
 			}
+		} else {
+			f.funcs[af.AppId] = make(map[string]*xbasistransport.AppFunction)
+			f.update(af)
 		}
 	}
 }
