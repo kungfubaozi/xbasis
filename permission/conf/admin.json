@@ -502,7 +502,7 @@
         },
         {
           "api": "/analysis/getTrackingStageDetail",
-          "name": "getTrackingStageDetail",
+          "name": "GetTrackingStageDetail",
           "roles": [
             "Administrator"
           ],

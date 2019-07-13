@@ -21,7 +21,63 @@ type analysisService struct {
 
 func (svc *analysisService) SearchFunctions(ctx context.Context, in *analysispb.SearchFunctionRequest, out *analysispb.SearchFunctionResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *xbasis_commons_dto.State {
-		return nil
+
+		if len(in.AppId) == 0 {
+			return nil
+		}
+
+		query := elastic.NewBoolQuery()
+
+		v1 := in.Keyword
+
+		e := svc.client.GetElasticClient().Search("xbs-state-functions")
+
+		if len(v1) > 0 {
+			q := elastic.NewQueryStringQuery("*" + v1 + "*")
+			q.Field("path")
+			q.Field("name")
+			query.Must(q)
+		}
+		query.Must(elastic.NewMatchPhraseQuery("appId", in.AppId))
+
+		v, err := e.Type("_doc").Query(query).From(int(in.Size*in.Page)).Size(int(in.Size)).Sort("total", false).Do(context.Background())
+		if err != nil {
+			return nil
+		}
+
+		var datas []*analysispb.StateFunction
+
+		if v.Hits.TotalHits > 0 {
+			for _, s := range v.Hits.Hits {
+				t := &analysispb.StateFunction{}
+				err := json.Unmarshal(*s.Source, t)
+				if err == nil {
+					//d := &analysispb.StateFunction{
+					//	Path:             t.path,
+					//	FunctionId:       t.functionId,
+					//	FunctionName:     t.functionName,
+					//	Total:            t.total,
+					//	TodayTotal:       t.todayTotal,
+					//	LastDayTotal:     t.lastDayTotal,
+					//	Error:            t.error,
+					//	TodayError:       t.todayError,
+					//	LastDayError:     t.lastDayError,
+					//	AvgTiming:        t.avgTiming,
+					//	MinTiming:        t.minTiming,
+					//	MaxTiming:        t.maxTiming,
+					//	Timing:           t.timing,
+					//	LastDayUserVisit: t.lastDayUserVisit,
+					//	TodayUserVisit:   t.todayUserVisit,
+					//	AppId:            t.appId,
+					//}
+					datas = append(datas, t)
+				}
+			}
+		}
+
+		out.Data = datas
+
+		return errstate.Success
 	})
 }
 

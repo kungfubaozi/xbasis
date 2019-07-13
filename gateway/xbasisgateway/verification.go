@@ -244,6 +244,9 @@ func (r *request) verification() bool {
 
 			//in cache
 			f = r.services.functions.find(appResp.AppId, rh.path)
+
+			fmt.Println("path", rh.path)
+
 			if f == nil {
 
 				//from database

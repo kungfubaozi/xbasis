@@ -18,10 +18,38 @@ service Analysis {
 
 message SearchFunctionRequest {
     bool rank = 1;
+    int64 page = 2;
+    int64 size = 3;
+    string keyword = 4;
+    string appId = 5;
 }
 
 message SearchFunctionResponse {
+    xbasis.commons.dto.State state = 1;
+    repeated StateFunction data = 2;
+}
 
+message StateFunction {
+    string functionId = 1;
+    int64 total = 2;
+    int64 todayTotal = 3;
+    int64 lastDayTotal = 4;
+    int64 error = 5;
+    int64 todayError = 6;
+    int64 lastDayError = 7;
+    int64 avgTiming = 8;
+    int64 minTiming = 9;
+    int64 maxTiming = 10;
+    int64 timing = 11;
+    int64 lastDayUserVisit = 12;
+    int64 todayUserVisit = 13;
+    string functionName = 14;
+    string path = 15;
+    string appId = 16;
+    int64 mnovps = 17; //最大每秒访问次数
+    int64 mnovpm = 18; //最大每分钟访问次数
+    int64 mnovph = 19; //最大每小时访问次数
+    int64 avgDayTotal = 20;
 }
 
 message GetFunctionDetailRequest {

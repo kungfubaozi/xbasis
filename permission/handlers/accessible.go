@@ -141,7 +141,7 @@ func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApi
 }
 
 func (svc *accessibleService) GetFunctionRepo() *functionRepo {
-	return &functionRepo{Client: svc.Client}
+	return &functionRepo{Client: svc.Client, session: svc.session.Clone()}
 }
 
 func (svc *accessibleService) GetRepo() *bindingRepo {

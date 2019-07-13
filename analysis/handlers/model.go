@@ -33,3 +33,25 @@ type trackingFields struct {
 	ProcessTiming      float64   `json:"processing"`
 	VerificationTiming float64   `json:"verification"`
 }
+
+type stateFunction struct {
+	functionId       string
+	total            int64
+	todayTotal       int64
+	lastDayTotal     int64
+	error            int64
+	todayError       int64
+	lastDayError     int64
+	avgTiming        int64
+	minTiming        int64
+	maxTiming        int64
+	timing           int64
+	lastDayUserVisit int64
+	todayUserVisit   int64
+	functionName     string
+	path             string
+	appId            string
+	mnovps           int64
+	mnovpm           int64
+	mnovph           int64
+}

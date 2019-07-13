@@ -156,7 +156,7 @@ func (r *request) route(req *http.Request) {
 			Headers:   header,
 			Action:    "UserRequestApiFinished",
 			StateCode: int64(resp.StatusCode),
-			Message:   fmt.Sprintf("StatusCode: %d Timline: %dms", resp.StatusCode, processing),
+			Message:   fmt.Sprintf("StatusCode: %d Timing: %dms", resp.StatusCode, processing),
 			Fields: &analysisclient.LogFields{
 				"function_id":   r.funcId,
 				"function_name": r.funcName,
