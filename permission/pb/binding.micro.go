@@ -8,6 +8,8 @@ It is generated from these files:
 	permission/pb/binding.proto
 
 It has these top-level messages:
+	GetTargetBindRolesRequest
+	GetTargetBindRolesResponse
 	BindingRolesRequest
 	BindingRoleRequest
 */
@@ -48,6 +50,7 @@ type BindingService interface {
 	FunctionRole(ctx context.Context, in *BindingRolesRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	UnbindUserRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
 	UnbindFunctionRole(ctx context.Context, in *BindingRoleRequest, opts ...client.CallOption) (*xbasis_commons_dto.Status, error)
+	GetTargetBindRoles(ctx context.Context, in *GetTargetBindRolesRequest, opts ...client.CallOption) (*GetTargetBindRolesResponse, error)
 }
 
 type bindingService struct {
@@ -108,6 +111,16 @@ func (c *bindingService) UnbindFunctionRole(ctx context.Context, in *BindingRole
 	return out, nil
 }
 
+func (c *bindingService) GetTargetBindRoles(ctx context.Context, in *GetTargetBindRolesRequest, opts ...client.CallOption) (*GetTargetBindRolesResponse, error) {
+	req := c.c.NewRequest(c.name, "Binding.GetTargetBindRoles", in)
+	out := new(GetTargetBindRolesResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Binding service
 
 type BindingHandler interface {
@@ -115,6 +128,7 @@ type BindingHandler interface {
 	FunctionRole(context.Context, *BindingRolesRequest, *xbasis_commons_dto.Status) error
 	UnbindUserRole(context.Context, *BindingRoleRequest, *xbasis_commons_dto.Status) error
 	UnbindFunctionRole(context.Context, *BindingRoleRequest, *xbasis_commons_dto.Status) error
+	GetTargetBindRoles(context.Context, *GetTargetBindRolesRequest, *GetTargetBindRolesResponse) error
 }
 
 func RegisterBindingHandler(s server.Server, hdlr BindingHandler, opts ...server.HandlerOption) error {
@@ -123,6 +137,7 @@ func RegisterBindingHandler(s server.Server, hdlr BindingHandler, opts ...server
 		FunctionRole(ctx context.Context, in *BindingRolesRequest, out *xbasis_commons_dto.Status) error
 		UnbindUserRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error
 		UnbindFunctionRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error
+		GetTargetBindRoles(ctx context.Context, in *GetTargetBindRolesRequest, out *GetTargetBindRolesResponse) error
 	}
 	type Binding struct {
 		binding
@@ -149,4 +164,8 @@ func (h *bindingHandler) UnbindUserRole(ctx context.Context, in *BindingRoleRequ
 
 func (h *bindingHandler) UnbindFunctionRole(ctx context.Context, in *BindingRoleRequest, out *xbasis_commons_dto.Status) error {
 	return h.BindingHandler.UnbindFunctionRole(ctx, in, out)
+}
+
+func (h *bindingHandler) GetTargetBindRoles(ctx context.Context, in *GetTargetBindRolesRequest, out *GetTargetBindRolesResponse) error {
+	return h.BindingHandler.GetTargetBindRoles(ctx, in, out)
 }

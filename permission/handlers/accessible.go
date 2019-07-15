@@ -103,6 +103,8 @@ func (svc *accessibleService) LookupApi(ctx context.Context, in *inner.LookupApi
 		repo := svc.GetFunctionRepo()
 		defer repo.Close()
 
+		fmt.Println("appId:", in.AppId, "path:"+in.Path)
+
 		f, err := repo.FindApi(in.AppId, in.Path)
 		if err != nil {
 			return nil
@@ -238,6 +240,10 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 				defer wg.Done()
 
 				f1, err := repo.FindRelationFunctionById(in.FunctionId, in.AppId)
+				if err != nil && err == mgo.ErrNotFound {
+					resp(errstate.ErrInvalidFunction)
+					return
+				}
 				if err != nil {
 					resp(errstate.ErrSystem)
 					return
@@ -251,6 +257,10 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 				defer wg.Done()
 
 				u1, err := repo.FindRelationUserById(in.UserId, in.AppId)
+				if err != nil && err == mgo.ErrNotFound {
+					resp(errstate.ErrInvalidUser)
+					return
+				}
 				if err != nil {
 					resp(errstate.ErrSystem)
 					return
@@ -267,6 +277,7 @@ func (svc *accessibleService) Check(ctx context.Context, in *inner.CheckRequest,
 			}
 
 			ok := false
+
 			for _, v := range f.Roles {
 				for _, v1 := range u.Roles {
 					if v == v1 {

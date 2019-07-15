@@ -13,7 +13,7 @@ It has these top-level messages:
 	FunctionSearchResponse
 	GetFunctionItemsRequest
 	GetFunctionItemsResponse
-	FindItemResponse
+	SimpleFunctionItem
 	GetFunctionItemRequest
 	GetFunctionItemResponse
 	FunctionItemDetail

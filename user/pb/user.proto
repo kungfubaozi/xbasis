@@ -18,6 +18,8 @@ message SearchRequest {
     bool card = 5;
     string appId = 6;
     bool invite = 7;
+    string filterRoleId = 8;
+    bool exceptApp = 9;
 }
 
 message SearchResponse {

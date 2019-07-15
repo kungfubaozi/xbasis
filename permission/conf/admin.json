@@ -369,30 +369,6 @@
           "auth_type": [
             5632
           ]
-        },
-        {
-          "api": "/role/searchUserRelations",
-          "name": "SearchRoleUserRelations",
-          "desc": "查找关联用户",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
-        },
-        {
-          "api": "/role/searchFunctionRelations",
-          "name": "SearchRoleFunctionRelations",
-          "desc": "查找关联功能",
-          "roles": [
-            "Administrator",
-            "AppManage"
-          ],
-          "auth_type": [
-            5632
-          ]
         }
       ]
     },

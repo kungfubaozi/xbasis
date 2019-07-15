@@ -2,6 +2,8 @@ package xbsgatewayclient
 
 import (
 	"github.com/Shopify/sarama"
+	"github.com/vmihailenco/msgpack"
+	"konekko.me/xbasis/commons/constants"
 	"konekko.me/xbasis/commons/transport"
 )
 
@@ -14,7 +16,16 @@ type gatewayClient struct {
 }
 
 func (svc *gatewayClient) SendFunctionChanged(af *xbasistransport.AppFunction) {
-	panic("implement me")
+	b, err := msgpack.Marshal(af)
+	if err != nil {
+		return
+	}
+	message := &sarama.ProducerMessage{
+		Partition: 1,
+		Topic:     xbasisconstants.SyncFunctionTopic,
+		Value:     sarama.StringEncoder(string(b)),
+	}
+	_, _, err = svc.producer.SendMessage(message)
 }
 
 func NewClient(addr string) GatewayClient {

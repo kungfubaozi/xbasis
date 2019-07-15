@@ -12,39 +12,17 @@ import (
 	generator "konekko.me/xbasis/commons/generator"
 	"konekko.me/xbasis/commons/indexutils"
 	"konekko.me/xbasis/commons/wrapper"
-	external "konekko.me/xbasis/permission/pb"
+	permissionpb "konekko.me/xbasis/permission/pb"
 )
 
 type roleService struct {
 	session *mgo.Session
 	pool    *redis.Pool
 	*indexutils.Client
-	bindingService external.BindingService
+	bindingService permissionpb.BindingService
 }
 
-func (svc *roleService) SearchUserRelations(ctx context.Context, in *external.SearchUserRelationsRequest, out *external.SearchUserRelationsResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
-		return nil
-	})
-}
-
-func (svc *roleService) SearchFunctionRelations(ctx context.Context, in *external.SearchFunctionRelationsRequest, out *external.SearchFunctionRelationsResponse) error {
-	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
-
-		if len(in.RoleId) == 0 {
-			return nil
-		}
-
-		//e := svc.GetElasticClient().Search(functionIndex)
-		//query := elastic.NewBoolQuery()
-		//
-		//query.Must(elastic.NewMatchPhraseQuery("app_id", in.AppId))
-
-		return nil
-	})
-}
-
-func (svc *roleService) SearchRole(ctx context.Context, in *external.SearchRoleRequest, out *external.SearchRoleResponse) error {
+func (svc *roleService) SearchRole(ctx context.Context, in *permissionpb.SearchRoleRequest, out *permissionpb.SearchRoleResponse) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		if len(in.AppId) == 0 {
@@ -72,14 +50,14 @@ func (svc *roleService) SearchRole(ctx context.Context, in *external.SearchRoleR
 			return nil
 		}
 
-		var datas []*external.SimpleRoleInfo
+		var datas []*permissionpb.SimpleRoleInfo
 
 		if v.Hits.TotalHits > 0 {
 			for _, v := range v.Hits.Hits {
 				i := &roleIndexModel{}
 				err := json.Unmarshal(*v.Source, i)
 				if err == nil {
-					d := &external.SimpleRoleInfo{
+					d := &permissionpb.SimpleRoleInfo{
 						Name:      i.Name,
 						Id:        i.Id,
 						CreateAt:  i.CreateAt,
@@ -98,7 +76,7 @@ func (svc *roleService) SearchRole(ctx context.Context, in *external.SearchRoleR
 }
 
 //修改为不分页
-func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRolesRequest, out *external.GetRoleResponse) error {
+func (svc *roleService) GetAppRoles(ctx context.Context, in *permissionpb.GetAppRolesRequest, out *permissionpb.GetRoleResponse) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		if len(in.AppId) == 0 {
 			return nil
@@ -112,9 +90,9 @@ func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRole
 		}
 
 		fmt.Println("data", len(roles))
-		var rs []*external.SimpleRoleInfo
+		var rs []*permissionpb.SimpleRoleInfo
 		for _, v := range roles {
-			rs = append(rs, &external.SimpleRoleInfo{
+			rs = append(rs, &permissionpb.SimpleRoleInfo{
 				Id:       v.Id,
 				Name:     v.Name,
 				CreateAt: v.CreateAt,
@@ -126,7 +104,7 @@ func (svc *roleService) GetAppRoles(ctx context.Context, in *external.GetAppRole
 	})
 }
 
-func (svc *roleService) GetRole(ctx context.Context, in *external.GetRoleRequest, out *external.GetRoleResponse) error {
+func (svc *roleService) GetRole(ctx context.Context, in *permissionpb.GetRoleRequest, out *permissionpb.GetRoleResponse) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
@@ -134,25 +112,25 @@ func (svc *roleService) GetRole(ctx context.Context, in *external.GetRoleRequest
 
 func (svc *roleService) GetRepo() *roleRepo {
 	return &roleRepo{session: svc.session.Clone(),
-		id: generator.NewIDG(), conn: svc.pool.Get(), Client: svc.Client}
+		id: generator.NewIDG(), Client: svc.Client}
 }
 
 //add new role if not exists
-func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *commons.Status) error {
+func (svc *roleService) Add(ctx context.Context, in *permissionpb.RoleRequest, out *commons.Status) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		repo := svc.GetRepo()
 		defer repo.Close()
 
 		_, err := repo.FindByName(in.Name, in.AppId)
 		if err != nil && err == mgo.ErrNotFound {
-			err = repo.Save(in.Name, auth.User, in.AppId)
+			err = repo.Save(in.Name, in.AppId, auth.User)
 			if err != nil {
 				return nil
 			}
 			return errstate.Success
 		}
 
-		if err == nil {
+		if err != nil {
 			return errstate.ErrRoleAlreadyExists
 		}
 
@@ -162,19 +140,19 @@ func (svc *roleService) Add(ctx context.Context, in *external.RoleRequest, out *
 
 //remove role
 //需要删除所有关联的角色对象包括(gs-user-roles-relation)
-func (svc *roleService) Remove(ctx context.Context, in *external.RoleRequest, out *commons.Status) error {
+func (svc *roleService) Remove(ctx context.Context, in *permissionpb.RoleRequest, out *commons.Status) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 
 		return nil
 	})
 }
 
-func (svc *roleService) Rename(ctx context.Context, in *external.RoleRequest, out *commons.Status) error {
+func (svc *roleService) Rename(ctx context.Context, in *permissionpb.RoleRequest, out *commons.Status) error {
 	return xbasiswrapper.ContextToAuthorize(ctx, out, func(auth *xbasiswrapper.WrapperUser) *commons.State {
 		return nil
 	})
 }
 
-func NewRoleService(session *mgo.Session, pool *redis.Pool, bindingService external.BindingService, client *indexutils.Client) external.RoleHandler {
+func NewRoleService(session *mgo.Session, pool *redis.Pool, bindingService permissionpb.BindingService, client *indexutils.Client) permissionpb.RoleHandler {
 	return &roleService{session: session, pool: pool, bindingService: bindingService, Client: client}
 }

@@ -2,10 +2,12 @@ package xbasisgateway
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/micro/go-micro/metadata"
 	"github.com/vmihailenco/msgpack"
+	"io/ioutil"
 	"konekko.me/xbasis/analysis/client"
 	"konekko.me/xbasis/application/pb/inner"
 	"konekko.me/xbasis/authentication/pb/inner"
@@ -20,6 +22,7 @@ import (
 	"konekko.me/xbasis/permission/handlers"
 	"konekko.me/xbasis/permission/pb/inner"
 	"konekko.me/xbasis/safety/pb"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -467,7 +470,32 @@ func (r *request) verification() bool {
 					resp(status.State)
 
 					break
-				case constants.AuthTypeOfFace:
+				case constants.AuthTypeOfFace: //需要刷脸认证时，从body中取出对应信息
+
+					if r.c.Request.Method != "POST" {
+						resp(errstate.ErrRequest)
+						return
+					}
+
+					b, err := ioutil.ReadAll(r.c.Request.Body)
+					if err != nil {
+						return
+					}
+					var face map[string]interface{}
+					err = json.Unmarshal(b, &face)
+					if err != nil {
+						return
+					}
+
+					v, ok := face[fmt.Sprintf("_xbs_face_auth")]
+					if !ok {
+						return
+					}
+
+					if reflect.TypeOf(v).Kind() != reflect.String {
+						return
+					}
+
 					break
 				case constants.AuthTypeOfMobileConfirm:
 					break

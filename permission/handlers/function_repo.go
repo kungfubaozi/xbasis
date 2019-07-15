@@ -14,12 +14,13 @@ type functionRepo struct {
 }
 
 func (repo *functionRepo) AddFunction(function *function) error {
-	id, err := repo.AddData(functionIndex, &SimplifiedFunction{
-		Id:    function.Id,
-		Name:  function.Name,
-		AppId: function.AppId,
-		Path:  function.Api,
-		Share: function.Share,
+	id, err := repo.AddDataById(function.Id, functionIndex, &SimplifiedFunction{
+		Id:        function.Id,
+		Name:      function.Name,
+		AppId:     function.AppId,
+		Path:      function.Api,
+		Share:     function.Share,
+		JoinField: "relation",
 	})
 	if err != nil {
 		return err
@@ -79,6 +80,10 @@ func (repo *functionRepo) FindGroupExists(groupId, appId string) bool {
 		return false
 	}
 	return c > 0
+}
+
+func (repo *functionRepo) UpdateFunction(appId, id string, f *function) error {
+	return repo.functionCollection(appId).Update(bson.M{"_id": id}, f)
 }
 
 //

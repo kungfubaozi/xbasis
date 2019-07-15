@@ -1,7 +1,9 @@
 package permissionhandlers
 
 import (
+	"context"
 	"fmt"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	generator "konekko.me/xbasis/commons/generator"
@@ -46,5 +48,12 @@ func (repo *bindingRepo) SetFunctionRole(id, appId string, r *functionRolesRelat
 
 func (repo *bindingRepo) SetUserRole(id, appId string, r *userRolesRelation) error {
 	_, err := repo.userRelationCollection(id).Upsert(bson.M{"user_id": id, "app_id": appId}, r)
+	return err
+}
+
+func (repo *bindingRepo) RecheckFunctionAuthorize(functionId string) error {
+	q := elastic.NewBoolQuery()
+	q.Must(elastic.NewMatchPhraseQuery("functionId", functionId))
+	_, err := repo.GetElasticClient().UpdateByQuery("xbs-function-authorize.*").Query(q).Script(elastic.NewScript("ctx._source.recheck = true")).Do(context.Background())
 	return err
 }

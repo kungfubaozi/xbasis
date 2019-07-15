@@ -2,6 +2,8 @@ package permissionhandlers
 
 import (
 	"context"
+	"fmt"
+	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
 	constants "konekko.me/xbasis/commons/constants"
@@ -22,6 +24,37 @@ type bindingService struct {
 	innerUserService xbasissvc_internal_user.UserService
 	roleService      external.RoleService
 	log              analysisclient.LogClient
+}
+
+func (svc *bindingService) GetTargetBindRoles(ctx context.Context, in *external.GetTargetBindRolesRequest, out *external.GetTargetBindRolesResponse) error {
+	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
+
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		roleRepo := svc.GetRoleRepo()
+		defer roleRepo.Close()
+
+		var roles []string
+
+		if in.User {
+			v, err := repo.FindRelationUserById(in.Id, in.AppId)
+			if err != nil {
+				return nil
+			}
+			roles = v.Roles
+		} else {
+			v, err := repo.FindRelationFunctionById(in.Id, in.AppId)
+			if err != nil {
+				return nil
+			}
+			roles = v.Roles
+		}
+
+		out.Data = roles
+
+		return errstate.Success
+	})
 }
 
 func (svc *bindingService) GetRepo() *bindingRepo {
@@ -102,21 +135,25 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 			}
 
 			var roles []string
-			for _, v := range in.Roles {
-				ok := true
-				for _, v1 := range role.Roles {
-					if v == v1 {
-						ok = false
-						break
+			if in.Override {
+				roles = in.Roles
+			} else {
+				for _, v := range in.Roles {
+					ok := true
+					for _, v1 := range role.Roles {
+						if v == v1 {
+							ok = false
+							break
+						}
+					}
+					if ok {
+						roles = append(roles, v)
 					}
 				}
-				if ok {
-					roles = append(roles, v)
-				}
-			}
 
-			if len(role.Roles) > 0 {
-				roles = append(roles, role.Roles...)
+				if len(role.Roles) > 0 {
+					roles = append(roles, role.Roles...)
+				}
 			}
 
 			role.Roles = roles
@@ -125,6 +162,12 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 			err = repo.SetUserRole(in.Id, in.AppId, role)
 			if err != nil {
 				return errstate.ErrRequest
+			}
+
+			err = svc.updateRelationCount("ctx._source.relation_users += 1", roles...)
+			if err != nil {
+				fmt.Println("err update count")
+				return nil
 			}
 
 			svc.log.Info(&analysisclient.LogContent{
@@ -154,7 +197,7 @@ func (svc *bindingService) UserRole(ctx context.Context, in *external.BindingRol
 
 func (svc *bindingService) FunctionRole(ctx context.Context, in *external.BindingRolesRequest, out *commons.Status) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
-		if len(in.AppId) > 0 && len(in.Id) > 0 && len(in.Roles) > 0 {
+		if len(in.AppId) > 0 && len(in.Id) > 0 {
 
 			headers := &analysisclient.LogHeaders{
 				TraceId:     auth.TraceId,
@@ -208,33 +251,60 @@ func (svc *bindingService) FunctionRole(ctx context.Context, in *external.Bindin
 
 			//先查找当前功能是否已经绑定角色
 			role, err := repo.FindRelationFunctionById(in.Id, in.AppId)
+			if err != nil && err == mgo.ErrNotFound {
+				err = nil
+				role = &functionRolesRelation{
+					CreateAt:   time.Now().UnixNano(),
+					AppId:      in.AppId,
+					FunctionId: in.Id,
+				}
+			}
+
 			if err != nil {
 				return errstate.ErrRequest
 			}
 
 			var roles []string
-			for _, v := range in.Roles {
-				ok := true
-				for _, v1 := range role.Roles {
-					if v == v1 {
-						ok = false
-						break
+			if in.Override {
+				roles = in.Roles
+			} else {
+				if len(in.Roles) == 0 {
+					return nil
+				}
+				for _, v := range in.Roles {
+					ok := true
+					for _, v1 := range role.Roles {
+						if v == v1 {
+							ok = false
+							break
+						}
+					}
+					if ok {
+						roles = append(roles, v)
 					}
 				}
-				if ok {
-					roles = append(roles, v)
-				}
-			}
 
-			if len(role.Roles) > 0 {
-				roles = append(roles, role.Roles...)
+				if len(role.Roles) > 0 {
+					roles = append(roles, role.Roles...)
+				}
 			}
 
 			role.Roles = roles
 
+			//已经授权访问的用户需要重新检查
+			err = repo.RecheckFunctionAuthorize(in.Id)
+			if err != nil {
+				return nil
+			}
+
 			//更新数据库
 			err = repo.SetFunctionRole(in.Id, in.AppId, role)
 			if err == nil {
+
+				err = svc.updateRelationCount("ctx._source.relation_functions += 1", roles...)
+				if err != nil {
+					return nil
+				}
 
 				svc.log.Info(&analysisclient.LogContent{
 					Headers: headers,
@@ -313,6 +383,11 @@ func (svc *bindingService) UnbindUserRole(ctx context.Context, in *external.Bind
 
 			err = repo.SetUserRole(in.Id, in.AppId, user)
 
+			if err != nil {
+				return nil
+			}
+
+			err = svc.updateRelationCount("ctx._source.relation_users -= 1", in.RoleId)
 			if err != nil {
 				return nil
 			}
@@ -396,6 +471,11 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.
 				return nil
 			}
 
+			err = svc.updateRelationCount("ctx._source.relation_functions -= 1", in.RoleId)
+			if err != nil {
+				return nil
+			}
+
 			svc.log.Info(&analysisclient.LogContent{
 				Headers: headers,
 				Action:  "UnbindFunctionRole",
@@ -417,6 +497,15 @@ func (svc *bindingService) UnbindFunctionRole(ctx context.Context, in *external.
 
 		return nil
 	})
+}
+
+func (svc *bindingService) updateRelationCount(script string, roles ...string) error {
+	_, err := svc.GetElasticClient().UpdateByQuery(roleIndex).
+		Script(elastic.NewScript(script)).Query(elastic.NewTermsQuery("id", roles)).Do(context.Background())
+	if err != nil {
+		return nil
+	}
+	return err
 }
 
 func NewBindingService(client *indexutils.Client, session *mgo.Session,

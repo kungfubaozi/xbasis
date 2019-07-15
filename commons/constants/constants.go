@@ -24,6 +24,7 @@ const (
 const (
 	MessageChannel          = "xbasis.channel.message"
 	ConnectionFanoutChannel = "xbasis.channel.connection.fanout"
+	SyncFunctionTopic       = "xbs-function-sync-topic"
 )
 
 const (

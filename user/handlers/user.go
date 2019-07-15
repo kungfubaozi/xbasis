@@ -38,7 +38,6 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 		e := svc.client.GetElasticClient().Search(typeUserIndex)
 
 		query := elastic.NewBoolQuery()
-		query.Must(elastic.NewMatchPhraseQuery("join_field", "relation"))
 
 		if len(v1) > 0 {
 			q := elastic.NewQueryStringQuery(v1)
@@ -54,10 +53,20 @@ func (svc *userService) Search(ctx context.Context, in *userpb.SearchRequest, ou
 			query.Must(q)
 		}
 		if len(in.AppId) > 0 {
-			query.Must(elastic.NewMatchPhraseQuery("app_"+in.AppId, true))
+			a := elastic.NewMatchPhraseQuery("app_"+in.AppId, true)
+			if in.ExceptApp {
+				query.MustNot(a)
+			} else {
+				query.Must(a)
+			}
 		}
 		if in.Invite {
 			query.Must(elastic.NewMatchPhraseQuery("from_invite", true))
+		}
+		if len(in.FilterRoleId) > 0 {
+			query.Must(elastic.NewHasChildQuery("child", elastic.NewMatchQuery("roles", in.FilterRoleId)))
+		} else {
+			query.Must(elastic.NewMatchPhraseQuery("join_field", "relation"))
 		}
 
 		v, err := e.Type("_doc").Query(query).From(int(in.Size * in.Page)).Size(int(in.Size)).Do(context.Background())

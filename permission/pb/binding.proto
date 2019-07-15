@@ -13,12 +13,26 @@ service Binding {
     rpc UnbindUserRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
 
     rpc UnbindFunctionRole (BindingRoleRequest) returns (xbasis.commons.dto.Status);
+
+    rpc GetTargetBindRoles (GetTargetBindRolesRequest) returns (GetTargetBindRolesResponse);
+}
+
+message GetTargetBindRolesRequest {
+    bool user = 1;
+    string id = 2;
+    string appId = 3;
+}
+
+message GetTargetBindRolesResponse {
+    xbasis.commons.dto.State state = 1;
+    repeated string data = 2;
 }
 
 message BindingRolesRequest {
     string appId = 1;
     string id = 2;
     repeated string roles = 3;
+    bool override = 4;
 }
 
 message BindingRoleRequest {

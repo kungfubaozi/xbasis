@@ -25,25 +25,31 @@ service Function {
 
     rpc Search (FunctionSearchRequest) returns (FunctionSearchResponse);
 
-    rpc ModifySettings ( ModifySettingsRequest) returns (xbasis.commons.dto.Status);
+    rpc ModifySettings (ModifySettingsRequest) returns (xbasis.commons.dto.Status);
 }
 
-message  ModifySettingsRequest {
+message ModifySettingsRequest {
     string appId = 1;
     string functionId = 2;
+    string name = 3;
+    string api = 4;
+    int64 valTokenTimes = 5;
+    repeated string noGrants = 6;
+    repeated int64 authTypes = 7;
+    bool share = 8;
 }
 
 message FunctionSearchRequest {
-    string key = 1;
-    string value = 2;
-    int64 page = 3;
-    int64 size = 4;
-    string appId = 5;
+    int64 page = 1;
+    int64 size = 2;
+    string appId = 3;
+    string keyword = 4;
+    string filterRoleId = 5;
 }
 
 message FunctionSearchResponse {
     xbasis.commons.dto.State state = 1;
-    repeated FindItemResponse data = 2;
+    repeated SimpleFunctionItem data = 2;
 }
 
 message GetFunctionItemsRequest {
@@ -53,15 +59,16 @@ message GetFunctionItemsRequest {
 
 message GetFunctionItemsResponse {
     xbasis.commons.dto.State state = 1;
-    repeated FindItemResponse data = 2;
+    repeated SimpleFunctionItem data = 2;
 }
 
-message FindItemResponse {
+message SimpleFunctionItem {
     bool function = 1;
     string name = 2;
     string id = 3;
     string appId = 4;
     int64 createAt = 5;
+    string path = 6;
 }
 
 message GetFunctionItemRequest {
@@ -89,6 +96,7 @@ message FunctionItemDetail {
     int64 todayUserVisit = 11;
     int64 totalUserVisit = 12;
     int64 totalVisit = 13;
+    bool valCode = 14;
 }
 
 message FunctionBindRole {

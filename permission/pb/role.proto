@@ -19,52 +19,6 @@ service Role {
 
     rpc SearchRole (SearchRoleRequest) returns (SearchRoleResponse);
 
-    //搜索关联的用户
-    rpc SearchUserRelations (SearchUserRelationsRequest) returns (SearchUserRelationsResponse);
-
-    //搜索关联的功能
-    rpc SearchFunctionRelations (SearchFunctionRelationsRequest) returns (SearchFunctionRelationsResponse);
-}
-
-message SearchUserRelationsRequest {
-    string roleId = 1;
-    string keyword = 2;
-    string appId = 3;
-}
-
-message SearchUserRelationsResponse {
-    xbasis.commons.dto.State state = 1;
-    repeated UserRelationItem data = 2;
-}
-
-message UserRelationItem {
-    string username = 1;
-    string phone = 2;
-    string email = 3;
-    string realName = 4;
-    string userId = 5;
-    string icon = 6;
-    int64 state = 7;
-    string account = 8;
-    bool invite = 9;
-    bool fromInvite = 10;
-    string label = 11;
-}
-
-message SearchFunctionRelationsRequest {
-    string roleId = 1;
-    string keyword = 2;
-    string appId = 3;
-}
-
-message SearchFunctionRelationsResponse {
-    xbasis.commons.dto.State state = 1;
-    repeated FunctionRelationItem data = 2;
-}
-
-message FunctionRelationItem {
-    string name = 1;
-    string functionId = 2;
 }
 
 message SearchRoleRequest {

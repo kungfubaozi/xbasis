@@ -2,13 +2,11 @@ package permissionhandlers
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	generator "konekko.me/xbasis/commons/generator"
 	"konekko.me/xbasis/commons/hashcode"
 	"konekko.me/xbasis/commons/indexutils"
-	"konekko.me/xbasis/permission/utils"
 	"sync"
 	"time"
 )
@@ -16,7 +14,6 @@ import (
 type roleRepo struct {
 	session *mgo.Session
 	id      generator.IDGenerator
-	conn    redis.Conn
 	*indexutils.Client
 }
 
@@ -82,7 +79,15 @@ func (repo *roleRepo) Save(name, appId, userId string) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.conn.Do("hmset", permissionutils.GetAppRoleKey(appId), r.Id, r.Name)
+	_, err = repo.AddData(roleIndex, &roleIndexModel{
+		Name:              name,
+		CreateAt:          time.Now().UnixNano(),
+		RelationFunctions: 0,
+		RelationUsers:     0,
+		Id:                r.Id,
+		AppId:             appId,
+		CreateUserId:      userId,
+	})
 	return err
 }
 
@@ -104,7 +109,4 @@ func (repo *roleRepo) collection(appId string) *mgo.Collection {
 
 func (repo *roleRepo) Close() {
 	repo.session.Close()
-	if repo.conn != nil {
-		repo.conn.Close()
-	}
 }

@@ -95,7 +95,6 @@ func (g *gateway) request(c *gin.Context) {
 	}
 
 	if !r.address() {
-		r.json(errstate.ErrRequest)
 		return
 	}
 

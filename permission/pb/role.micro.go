@@ -8,12 +8,6 @@ It is generated from these files:
 	permission/pb/role.proto
 
 It has these top-level messages:
-	SearchUserRelationsRequest
-	SearchUserRelationsResponse
-	UserRelationItem
-	SearchFunctionRelationsRequest
-	SearchFunctionRelationsResponse
-	FunctionRelationItem
 	SearchRoleRequest
 	SearchRoleResponse
 	GetAppRolesRequest
@@ -61,10 +55,6 @@ type RoleService interface {
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	GetAppRoles(ctx context.Context, in *GetAppRolesRequest, opts ...client.CallOption) (*GetRoleResponse, error)
 	SearchRole(ctx context.Context, in *SearchRoleRequest, opts ...client.CallOption) (*SearchRoleResponse, error)
-	// 搜索关联的用户
-	SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, opts ...client.CallOption) (*SearchUserRelationsResponse, error)
-	// 搜索关联的功能
-	SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, opts ...client.CallOption) (*SearchFunctionRelationsResponse, error)
 }
 
 type roleService struct {
@@ -145,26 +135,6 @@ func (c *roleService) SearchRole(ctx context.Context, in *SearchRoleRequest, opt
 	return out, nil
 }
 
-func (c *roleService) SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, opts ...client.CallOption) (*SearchUserRelationsResponse, error) {
-	req := c.c.NewRequest(c.name, "Role.SearchUserRelations", in)
-	out := new(SearchUserRelationsResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *roleService) SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, opts ...client.CallOption) (*SearchFunctionRelationsResponse, error) {
-	req := c.c.NewRequest(c.name, "Role.SearchFunctionRelations", in)
-	out := new(SearchFunctionRelationsResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for Role service
 
 type RoleHandler interface {
@@ -174,10 +144,6 @@ type RoleHandler interface {
 	GetRole(context.Context, *GetRoleRequest, *GetRoleResponse) error
 	GetAppRoles(context.Context, *GetAppRolesRequest, *GetRoleResponse) error
 	SearchRole(context.Context, *SearchRoleRequest, *SearchRoleResponse) error
-	// 搜索关联的用户
-	SearchUserRelations(context.Context, *SearchUserRelationsRequest, *SearchUserRelationsResponse) error
-	// 搜索关联的功能
-	SearchFunctionRelations(context.Context, *SearchFunctionRelationsRequest, *SearchFunctionRelationsResponse) error
 }
 
 func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.HandlerOption) error {
@@ -188,8 +154,6 @@ func RegisterRoleHandler(s server.Server, hdlr RoleHandler, opts ...server.Handl
 		GetRole(ctx context.Context, in *GetRoleRequest, out *GetRoleResponse) error
 		GetAppRoles(ctx context.Context, in *GetAppRolesRequest, out *GetRoleResponse) error
 		SearchRole(ctx context.Context, in *SearchRoleRequest, out *SearchRoleResponse) error
-		SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, out *SearchUserRelationsResponse) error
-		SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, out *SearchFunctionRelationsResponse) error
 	}
 	type Role struct {
 		role
@@ -224,12 +188,4 @@ func (h *roleHandler) GetAppRoles(ctx context.Context, in *GetAppRolesRequest, o
 
 func (h *roleHandler) SearchRole(ctx context.Context, in *SearchRoleRequest, out *SearchRoleResponse) error {
 	return h.RoleHandler.SearchRole(ctx, in, out)
-}
-
-func (h *roleHandler) SearchUserRelations(ctx context.Context, in *SearchUserRelationsRequest, out *SearchUserRelationsResponse) error {
-	return h.RoleHandler.SearchUserRelations(ctx, in, out)
-}
-
-func (h *roleHandler) SearchFunctionRelations(ctx context.Context, in *SearchFunctionRelationsRequest, out *SearchFunctionRelationsResponse) error {
-	return h.RoleHandler.SearchFunctionRelations(ctx, in, out)
 }

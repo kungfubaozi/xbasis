@@ -181,8 +181,11 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			CreateUserId: repo.config.UserId,
 		}
 
+		var ru int64 = 0
+
 		if v == "Administrator" || v == "User" {
 			adminRoles = append(adminRoles, role.Id)
+			ru = 1
 		}
 
 		if v == "User" && sync {
@@ -216,7 +219,7 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 			CreateAt:      role.CreateAt,
 			AppId:         appId,
 			CreateUserId:  repo.config.UserId,
-			RelationUsers: 1,
+			RelationUsers: ru,
 		}
 	}
 
@@ -271,6 +274,12 @@ func (repo *initializeRepo) generate(appId string, config *functionsConfig, sync
 				CreateUserId: repo.config.UserId,
 				Id:           repo.id.Get(),
 				Share:        v.Share,
+			}
+
+			for _, v1 := range v.AuthType {
+				if v1 == constants.AuthTypeOfValcode {
+					f.ValTokenTimes = 1
+				}
 			}
 
 			var roles []string

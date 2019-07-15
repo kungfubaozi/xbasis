@@ -22,6 +22,16 @@ type appService struct {
 	stop        chan bool
 }
 
+func (r *request) serv() {
+	if apps[r.toAppId] == nil {
+		apps[r.toAppId] = &appService{
+			serviceName: r.serviceName,
+			appId:       r.toAppId,
+			stop:        make(chan bool),
+		}
+	}
+}
+
 func (r *request) address() bool {
 
 	svc := apps[r.toAppId]
@@ -60,7 +70,11 @@ func (r *request) address() bool {
 			if err != nil {
 				panic(err)
 			}
-			if apps[r.toAppId].watch == nil {
+			w1 := apps[r.toAppId]
+			if w1 != nil {
+				r.serv()
+			}
+			if apps[r.toAppId] == nil {
 				apps[r.toAppId].watch = w
 			}
 			go func() {
@@ -102,11 +116,7 @@ func (r *request) address() bool {
 func (r *request) nodes(service *registry.Service) {
 	d := apps[r.toAppId]
 	if d == nil {
-		apps[r.toAppId] = &appService{
-			serviceName: r.serviceName,
-			appId:       r.toAppId,
-			stop:        make(chan bool),
-		}
+		r.serv()
 	}
 	var addrs []string
 	if r.serviceName != service.Name {

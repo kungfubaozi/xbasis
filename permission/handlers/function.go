@@ -2,6 +2,7 @@ package permissionhandlers
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/olivere/elastic"
 	"gopkg.in/mgo.v2"
 	"konekko.me/xbasis/analysis/client"
@@ -29,14 +30,146 @@ type functionService struct {
 func (svc *functionService) ModifySettings(ctx context.Context, in *external.ModifySettingsRequest, out *commons.Status) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
-		return nil
+		repo := svc.GetRepo()
+		defer repo.Close()
+
+		header := &analysisclient.LogHeaders{
+			TraceId:     auth.TraceId,
+			ServiceName: constants.PermissionService,
+			ModuleName:  "ModifyFunctionSettings",
+		}
+
+		f, err := repo.FindApiById(in.AppId, in.FunctionId)
+		if err != nil {
+			return nil
+		}
+
+		if in.ValTokenTimes > 0 {
+			ok := false
+			for _, v := range f.AuthTypes {
+				if v == constants.AuthTypeOfValcode {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				f.AuthTypes = append(f.AuthTypes, constants.AuthTypeOfValcode)
+			}
+			f.ValTokenTimes = in.ValTokenTimes
+		}
+
+		if len(in.AuthTypes) > 0 {
+			for _, v := range in.AuthTypes {
+				switch v {
+				case constants.AuthTypeOfFace:
+				case constants.AuthTypeOfToken:
+				case constants.AuthTypeOfValcode:
+				case constants.AuthTypeOfMobileConfirm:
+				case constants.AuthTypeOfMiniProgramUserConfirm:
+				case constants.AuthTypeOfMiniProgramCodeConfirm:
+				default:
+					return errstate.ErrFunctionAuthType
+				}
+			}
+		}
+
+		if len(in.Name) > 0 {
+			f.Name = in.Name
+		}
+
+		if len(in.Api) > 0 {
+			f.Api = in.Api
+		}
+
+		f.Share = in.Share
+
+		err = repo.UpdateFunction(in.AppId, in.FunctionId, f)
+		if err != nil {
+			return nil
+		}
+
+		svc.gateway.SendFunctionChanged(&xbasistransport.AppFunction{
+			Id:               f.Id,
+			Name:             f.Name,
+			NoGrantPlatforms: f.NoGrantPlatforms,
+			AppId:            f.AppId,
+			Path:             f.Api,
+			AuthTypes:        f.AuthTypes,
+			ValTokenTimes:    f.ValTokenTimes,
+			Share:            f.Share,
+		})
+
+		svc.log.Info(&analysisclient.LogContent{
+			Headers: header,
+			Action:  "UpdateFunctionSettings",
+			Fields: &analysisclient.LogFields{
+				"id":     f.Id,
+				"app_id": f.AppId,
+			},
+			Index: &analysisclient.LogIndex{
+				Name: functionIndex,
+				Id:   f.Id,
+				Fields: &analysisclient.LogFields{
+					"share": f.Share,
+					"name":  f.Name,
+					"path":  f.Api,
+				},
+			},
+		})
+
+		return errstate.Success
 	})
 }
 
 func (svc *functionService) Search(ctx context.Context, in *external.FunctionSearchRequest, out *external.FunctionSearchResponse) error {
 	return wrapper.ContextToAuthorize(ctx, out, func(auth *wrapper.WrapperUser) *commons.State {
 
-		return nil
+		if len(in.AppId) == 0 {
+			return nil
+		}
+
+		query := elastic.NewBoolQuery()
+
+		v1 := in.Keyword
+
+		e := svc.GetElasticClient().Search(functionIndex)
+
+		if len(v1) > 0 {
+			q := elastic.NewQueryStringQuery("*" + v1 + "*")
+			q.Field("path")
+			q.Field("name")
+			query.Must(q)
+		}
+		query.Must(elastic.NewMatchPhraseQuery("appId", in.AppId))
+		if len(in.FilterRoleId) > 0 {
+			query.Must(elastic.NewHasChildQuery("child", elastic.NewMatchQuery("roles", in.FilterRoleId)))
+		}
+
+		v, err := e.Type("_doc").Query(query).From(int(in.Size*in.Page)).Size(int(in.Size)).Sort("total", false).Do(context.Background())
+		if err != nil {
+			return nil
+		}
+
+		var datas []*external.SimpleFunctionItem
+
+		if v.Hits.TotalHits > 0 {
+			for _, s := range v.Hits.Hits {
+				t := &SimplifiedFunction{}
+				err := json.Unmarshal(*s.Source, t)
+				if err == nil {
+					datas = append(datas, &external.SimpleFunctionItem{
+						Name:  t.Name,
+						Id:    t.Id,
+						Path:  t.Path,
+						AppId: t.AppId,
+					})
+				}
+			}
+		}
+
+		out.Data = datas
+
+		return errstate.Success
 	})
 }
 
@@ -54,9 +187,9 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 			return nil
 		}
 
-		var data []*external.FindItemResponse
+		var data []*external.SimpleFunctionItem
 		for _, v := range groups {
-			data = append(data, &external.FindItemResponse{
+			data = append(data, &external.SimpleFunctionItem{
 				Function: false,
 				Id:       v.Id,
 				Name:     v.Name,
@@ -70,7 +203,7 @@ func (svc *functionService) GetFunctionItems(ctx context.Context, in *external.G
 				return nil
 			}
 			for _, v := range functions {
-				data = append(data, &external.FindItemResponse{
+				data = append(data, &external.SimpleFunctionItem{
 					Function: true,
 					Id:       v.Id,
 					Name:     v.Name,
@@ -127,11 +260,6 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 
 		function.AuthTypes = []*external.FunctionAuthTypes{
 			{
-				Name:    "ValCode",
-				Type:    constants.AuthTypeOfValcode,
-				Enabled: isAuthEnabled(constants.AuthTypeOfValcode),
-			},
-			{
 				Name:    "Token",
 				Type:    constants.AuthTypeOfToken,
 				Enabled: isAuthEnabled(constants.AuthTypeOfToken),
@@ -147,19 +275,22 @@ func (svc *functionService) GetFunctionItemDetail(ctx context.Context, in *exter
 				Enabled: isAuthEnabled(constants.AuthTypeOfFace),
 			},
 			{
-				Name:    "Gosion Mini Program",
+				Name:    "xBasis Mini Program",
 				Type:    constants.AuthTypeOfMiniProgramCodeConfirm,
 				Enabled: isAuthEnabled(constants.AuthTypeOfMiniProgramCodeConfirm),
 			},
 		}
 
+		function.ValTokenTimes = f.ValTokenTimes
+		function.ValCode = isAuthEnabled(constants.AuthTypeOfValcode)
+
 		isGrant := func(t int64) bool {
 			for _, v := range f.NoGrantPlatforms {
 				if v == t {
-					return false
+					return true
 				}
 			}
-			return true
+			return false
 		}
 
 		function.Platforms = []*external.FunctionNoGrantPlatforms{
@@ -307,6 +438,7 @@ func (svc *functionService) Add(ctx context.Context, in *external.FunctionReques
 		}
 
 		_, err := repo.FindApi(in.AppId, in.Api)
+
 		if err != nil && err == mgo.ErrNotFound {
 
 			f := &function{
